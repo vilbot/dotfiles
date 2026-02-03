@@ -1,0 +1,41 @@
+vim.cmd.colorscheme("gruber-darker")
+local opt = vim.opt
+
+opt.shell = "cmd.exe"
+vim.opt.shellcmdflag = "/s /c"
+vim.opt.shellquote = ""       -- Don't quote the whole command
+vim.opt.shellxquote = ""      -- ...really, don't quote it.
+vim.opt.shellpipe = ">"
+vim.opt.grepformat = "%f:%l:%c:%m"
+
+opt.tabstop = 4
+opt.softtabstop = 4
+opt.shiftwidth = 4
+opt.expandtab = true
+opt.smartindent = true
+opt.autoindent = true
+opt.cursorline = true
+opt.number = true
+opt.relativenumber = true
+opt.numberwidth = 4
+opt.ruler = true
+opt.wrap = false
+opt.sidescroll = 5
+opt.scrolloff = 8
+opt.incsearch = true
+opt.hlsearch = true
+opt.updatetime = 50
+opt.mouse = "a"
+opt.clipboard = "unnamedplus"
+opt.showmode = true
+opt.signcolumn = "no"
+opt.splitright = true
+opt.splitbelow = false
+opt.wildmenu = true
+opt.title = true
+opt.completeopt = { "menu", "menuone", "noinsert" }
+opt.path:append("**")
+opt.ignorecase = true
+opt.smartcase = true
+vim.g.VM_show_warnings = 0
+opt.termguicolors = true

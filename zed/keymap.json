@@ -1,0 +1,66 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+    {
+        "context": "(VimControl || menu || Terminal || Workspace) && !(FileFinder || (FileFinder > Picker > Editor) || (FileFinder > Picker > menu))",
+        "bindings": {
+            "ctrl-f": "file_finder::Toggle",
+            "ctrl-g": ["pane::DeploySearch", { "replace_enabled": true }],
+            "ctrl-b": "workspace::ToggleLeftDock",
+            "ctrl-j": "workspace::ToggleBottomDock"
+        }
+    },
+    {
+        "context": "Workspace",
+        "bindings": {
+            "alt-p": [
+                "task::Spawn",
+                {
+                    "build-and-run-game": "build-and-run-game"
+                }
+            ]
+        }
+    },
+    {
+        "context": "RulesLibrary || Pane || Workspace || Terminal || SettingsWindow",
+        "bindings": {
+            "ctrl-w": null
+        }
+    },
+    {
+        "context": "Terminal",
+        "bindings": {
+            "ctrl-w j": "workspace::ActivatePaneDown",
+            "ctrl-w k": "workspace::ActivatePaneUp",
+            "ctrl-w h": "workspace::ActivatePaneLeft",
+            "ctrl-w l": "workspace::ActivatePaneRight"
+            // "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"]
+        }
+    },
+    {
+        "context": "FileFinder || (FileFinder > Picker > Editor)",
+        "bindings": {
+            "ctrl-w": "file_finder::ToggleSplitMenu"
+        }
+    },
+    {
+        "context": "VimControl && !menu || !Editor && !Terminal",
+        "bindings": {
+            "alt-l": "vim::ResizePaneRight",
+            "alt-h": "vim::ResizePaneLeft",
+            "alt-j": "vim::ResizePaneDown",
+            "alt-k": "vim::ResizePaneUp"
+        }
+    }
+    // {
+    //     "context": "vim_mode == normal || vim_mode == normal",
+    //     "bindings": {
+    //         "=": "editor::Format"
+    //     }
+    // }
+]

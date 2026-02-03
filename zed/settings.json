@@ -1,0 +1,80 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+    "hard_tabs": false,
+    "soft_wrap": "prefer_line",
+    "preferred_line_length": 80,
+    "inlay_hints": {
+        "show_other_hints": false,
+        "show_value_hints": false,
+        "show_type_hints": false,
+        "show_parameter_hints": false,
+    },
+    "show_wrap_guides": true,
+    "disable_ai": true,
+    "agent": {
+        "dock": "right",
+        "model_parameters": [],
+    },
+    "icon_theme": "Zed (Default)",
+    "rounded_selection": true,
+    "cursor_blink": false,
+    "vim_mode": true,
+    "relative_line_numbers": "enabled",
+    "ui_font_size": 16,
+    "buffer_font_size": 16,
+    "tab_size": 4,
+    "buffer_font_family": "Hack",
+    // "buffer_font_family": "NSimSun",
+    // "buffer_font_family": "Noto Sans Mono",
+    // "buffer_font_family": "Source Code Pro",
+    // "buffer_font_family": "Adwaita Mono",
+    // "buffer_font_family": "Cascadia Mono",
+    // "buffer_font_family": "JetBrainsMono Nerd Font",
+    // "buffer_font_family": "SF Mono",
+    // "buffer_font_family": "Iosevka",
+    "theme": {
+        "mode": "system",
+        "light": "One Dark",
+        "dark": "One Dark",
+    },
+    "languages": {
+        "C": {
+            "enable_language_server": true,
+            "show_completion_documentation": true,
+            "show_completions_on_input": true,
+            "extend_comment_on_newline": false,
+        },
+        "C++": {
+            "enable_language_server": true,
+            "show_completion_documentation": true,
+            "show_completions_on_input": true,
+            "extend_comment_on_newline": false,
+            "format_on_save": "off",
+            "formatter": "language_server",
+        },
+        "CSharp": {
+            "enable_language_server": true,
+        },
+        "Java": {
+            "enable_language_server": true,
+            "language_servers": ["jdtls"],
+        },
+    },
+    "lsp": {
+        "jdtls": {
+            "initialization_options": {
+                "settings": {
+                    "java.jdt.ls.java.home": "C:\\Program Files\\OpenJDK\\jdk-21",
+                    "lombok_support": true,
+                },
+            },
+        },
+    },
+}
