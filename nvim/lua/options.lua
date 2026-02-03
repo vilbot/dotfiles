@@ -1,11 +1,10 @@
-vim.cmd.colorscheme("gruber-darker")
 local opt = vim.opt
 
-opt.shell = "cmd.exe"
-vim.opt.shellcmdflag = "/s /c"
-vim.opt.shellquote = ""       -- Don't quote the whole command
-vim.opt.shellxquote = ""      -- ...really, don't quote it.
-vim.opt.shellpipe = ">"
+-- opt.shell = "cmd.exe"
+-- vim.opt.shellcmdflag = "/s /c"
+-- vim.opt.shellquote = ""       -- Don't quote the whole command
+-- vim.opt.shellxquote = ""      -- ...really, don't quote it.
+-- vim.opt.shellpipe = ">"
 vim.opt.grepformat = "%f:%l:%c:%m"
 
 opt.tabstop = 4
