@@ -25,8 +25,17 @@ return {
             })
         end
     },
+    { 
+        "abecodes/tabout.nvim",
+        config = function()
+            require("tabout").setup({
+                tabouts = {
+                    { open = ":", close = ")" }
+                }
+            })
+        end
+    },
     { "windwp/nvim-autopairs", config = function () require("nvim-autopairs").setup({}) end },
-    { "abecodes/tabout.nvim", config = function () require("tabout").setup({}) end },
     { "echasnovski/mini.surround", config = function () require("mini.surround").setup({}) end },
     { "mrjones2014/smart-splits.nvim", config = function () require("smart-splits").setup({}) end },
     -- { "mg979/vim-visual-multi", config = function () require("vim-visual-multi").setup({}) end },
