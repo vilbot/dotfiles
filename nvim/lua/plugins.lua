@@ -110,4 +110,9 @@ return {
     { "saadparwaiz1/cmp_luasnip" },
     { "L3MON4D3/LuaSnip" },
     { "rafamadriz/friendly-snippets" },
+    {
+        "basola21/PDFview",
+        lazy = false,
+        dependencies = { "nvim-telescope/telescope.nvim" }
+    },
 }

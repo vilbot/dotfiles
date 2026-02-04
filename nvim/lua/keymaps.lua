@@ -46,6 +46,12 @@ map('n', '<C-b>', function()
     })
 end, {desc = "Buffers with delete capability"})
 
+-- Navigate to the next page in the PDF
+map("n", "<leader>jj", "<cmd>:lua require('pdfview.renderer').next_page()<CR>", { desc = "PDFview: Next page" })
+
+-- Navigate to the previous page in the PDF
+map("n", "<leader>kk", "<cmd>:lua require('pdfview.renderer').previous_page()<CR>", { desc = "PDFview: Previous page" })
+
 -- SMART-SPLITS
 local splits = require('smart-splits')
 map('n', '<A-h>',  splits.resize_left)
