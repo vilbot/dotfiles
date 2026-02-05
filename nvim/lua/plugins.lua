@@ -1,17 +1,25 @@
 return {
     { "nvim-lua/plenary.nvim" },
-    { 
-        "nvim-treesitter/nvim-treesitter", 
+    {
+        "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         config = function()
-            require("nvim-treesitter.config").setup({
-                ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
-                sync_install = false,
-                auto_install = false,
-                highlight = {
-                    enabled = true
-                }
-            })
+            local status, ts_config = pcall(require, "nvim-treesitter.configs")
+            if not status then
+                status, ts_config = pcall(require, "nvim-treesitter.config")
+            end
+            if status then
+                ts_config.setup({
+                    ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
+                    sync_install = false,
+                    auto_install = false,
+                    highlight = {
+                        enabled = true
+                    }
+                })
+            else
+                print("Treesitter could not be loaded, skipping setup")
+            end
         end
     },
     {
