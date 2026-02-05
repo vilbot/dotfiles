@@ -46,11 +46,27 @@ map('n', '<C-b>', function()
     })
 end, {desc = "Buffers with delete capability"})
 
+-- Navigate to the next page in the PDF (supports counts, e.g., 5<leader>jj)
+map("n", "<leader>jj", function()
+    local count = vim.v.count1
+    for _ = 1, count do
+        require('pdfview.renderer').next_page()
+    end
+end, { desc = "PDFview: Next page(s)" })
+
+-- Navigate to the previous page in the PDF (supports counts, e.g., 5<leader>kk)
+map("n", "<leader>kk", function()
+    local count = vim.v.count1
+    for _ = 1, count do
+        require('pdfview.renderer').previous_page()
+    end
+end, { desc = "PDFview: Previous page(s)" })
+
 -- Navigate to the next page in the PDF
-map("n", "<leader>jj", "<cmd>:lua require('pdfview.renderer').next_page()<CR>", { desc = "PDFview: Next page" })
+-- map("n", "<leader>jj", "<cmd>:lua require('pdfview.renderer').next_page()<CR>", { desc = "PDFview: Next page" })
 
 -- Navigate to the previous page in the PDF
-map("n", "<leader>kk", "<cmd>:lua require('pdfview.renderer').previous_page()<CR>", { desc = "PDFview: Previous page" })
+-- map("n", "<leader>kk", "<cmd>:lua require('pdfview.renderer').previous_page()<CR>", { desc = "PDFview: Previous page" })
 
 -- SMART-SPLITS
 local splits = require('smart-splits')
