@@ -2,29 +2,25 @@ local wezterm = require 'wezterm'
 local act = wezterm.action
 local mux = wezterm.mux
 
+local is_windows = wezterm.target_triple:find("window") ~= nil
+
 local function split_current(direction)
     return wezterm.action_callback(function(window, pane)
         local proc = pane:get_foreground_process_name()
         
-        -- Default to PowerShell (pwsh) if detection fails
-        local my_args = { "pwsh.exe", "-NoLogo" }
-        local proc_name = "unknown" -- for logging
-
-        if proc then
+        local my_args = is_windows and { "pwsh.exe", "-NoLogo" } or { "/usr/bin/fish", "-li" }
+        
+        if is_windows and proc then
             proc_name = proc:lower()
             -- Check for CMD
             if proc_name:find("cmd.exe") then
                 my_args = { "cmd.exe" }
-            -- Check for PowerShell
+                -- Check for PowerShell
             elseif proc_name:find("pwsh") or proc_name:find("powershell") then
                 my_args = { "pwsh.exe", "-NoLogo" }
             end
         end
 
-        wezterm.log_info("Split: Detected '" .. proc_name .. "' -> Launching " .. my_args[1])
-
-        -- USE pane:split() INSTEAD of window:perform_action
-        -- This is often more reliable for simple splits
         pane:split({
             direction = direction,
             args = my_args,
@@ -52,25 +48,26 @@ wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
   return zoomed .. index .. tab.active_pane.title
 end)
 
-return {
-    -- default_prog = { "cmd.exe"},
-    default_prog = { "pwsh.exe", "-NoLogo" },
-    launch_menu = {
-        {
-            label = "PowerShell",
-            args = { "pwsh.exe", "-NoLogo" },
-        },
-        {
-            label = "cmd",
-            args = { "cmd.exe" },
-        },
+local windows_launch_menu = {
+    {
+        label = "PowerShell",
+        args = { "pwsh.exe", "-NoLogo" },
     },
+    {
+        label = "cmd",
+        args = { "cmd.exe" },
+    },
+}
+
+return {
+    default_prog = is_windows and { "pwsh.exe", "-NoLogo" } or { '/usr/bin/fish', '-li'},
+    launch_menu = is_windows and windows_launch_menu or {},
 
     -- APPEARANCE
     font = wezterm.font {
         family = 'Liberation Mono',
-    }
-    ,
+    },
+
     font_size = 11.0,
     adjust_window_size_when_changing_font_size = false,
 
