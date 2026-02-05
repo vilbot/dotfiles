@@ -59,6 +59,25 @@ local windows_launch_menu = {
     },
 }
 
+local my_keys = {
+    { mods = 'CTRL|SHIFT', key = 'T', action = act.ShowLauncher },
+    { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
+    { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
+    { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
+    { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
+    { mods = "LEADER", key = "w", action = act.CloseCurrentPane { confirm = true } },
+}
+
+if is_windows then
+    -- Windows: Use the original function that worked
+    table.insert(my_keys, { mods = "LEADER", key = "v", action = split_current("Right") })
+    table.insert(my_keys, { mods = "LEADER", key = "s", action = split_current("Bottom") })
+else
+    -- Linux: Standard native splits (prevents the errors you saw)
+    table.insert(my_keys, { mods = "LEADER", key = "v", action = act.SplitPane { direction = "Right", command = { domain = "CurrentPaneDomain" } } })
+    table.insert(my_keys, { mods = "LEADER", key = "s", action = act.SplitPane { direction = "Down", command = { domain = "CurrentPaneDomain" } } })
+end
+
 return {
     default_prog = is_windows and { "pwsh.exe", "-NoLogo" } or { '/usr/bin/fish', '-li'},
     launch_menu = is_windows and windows_launch_menu or {},
@@ -71,23 +90,7 @@ return {
     font_size = 11.0,
     adjust_window_size_when_changing_font_size = false,
 
-    colors = {
-        foreground = '#e4e4ef',
-        background = '#181818',
-        cursor_bg = '#ffdd33',
-        cursor_border = '#ffdd33',
-        cursor_fg = '#181818',
-        selection_bg = '#ffdd33',
-        selection_fg = '#181818',
-        ansi = {
-            '#484848', '#f43841', '#73c936', '#ffdd33',
-            '#96a6c8', '#9e95c7', '#585858', '#e4e4ef',
-        },
-        brights = {
-            '#484848', '#f43841', '#73c936', '#ffdd33',
-            '#96a6c8', '#9e95c7', '#585858', '#e4e4ef',
-        },
-    },
+    color_scheme = 'Gruber (base16)',
 
     enable_tab_bar = false,
     window_decorations = "RESIZE|TITLE",
@@ -97,36 +100,37 @@ return {
 
     -- KEY BINDINGS
     leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 },
-
-    keys = { 
-        {
-            mods = 'CTRL|SHIFT',
-            key = 'T',
-            action = act.ShowLauncher
-        },
-        -- Horizontal split
-        {
-            mods = "LEADER",
-            key = "v",
-            action = split_current("Right")
-        },
-        -- Vertical split
-        {
-            mods = "LEADER",
-            key = "s",
-            action = split_current("Bottom")
-        },
-
-        -- Navigation between panes
-        { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
-        { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
-        { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
-        { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
-
-        { 
-            mods = "LEADER", 
-            key = "w", 
-            action = act.CloseCurrentPane { confirm = true } 
-        },
-    }
+    
+    keys = my_keys,
+    -- keys = { 
+    --     {
+    --         mods = 'CTRL|SHIFT',
+    --         key = 'T',
+    --         action = act.ShowLauncher
+    --     },
+    --     -- Horizontal split
+    --     {
+    --         mods = "LEADER",
+    --         key = "v",
+    --         action = split_current("Right")
+    --     },
+    --     -- Vertical split
+    --     {
+    --         mods = "LEADER",
+    --         key = "s",
+    --         action = split_current("Bottom")
+    --     },
+    --
+    --     -- Navigation between panes
+    --     { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
+    --     { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
+    --     { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
+    --     { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
+    --
+    --     { 
+    --         mods = "LEADER", 
+    --         key = "w", 
+    --         action = act.CloseCurrentPane { confirm = true } 
+    --     },
+    -- }
 }
