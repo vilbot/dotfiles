@@ -99,38 +99,7 @@ return {
     initial_cols = 120,
 
     -- KEY BINDINGS
-    leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 },
+    leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
     
     keys = my_keys,
-    -- keys = { 
-    --     {
-    --         mods = 'CTRL|SHIFT',
-    --         key = 'T',
-    --         action = act.ShowLauncher
-    --     },
-    --     -- Horizontal split
-    --     {
-    --         mods = "LEADER",
-    --         key = "v",
-    --         action = split_current("Right")
-    --     },
-    --     -- Vertical split
-    --     {
-    --         mods = "LEADER",
-    --         key = "s",
-    --         action = split_current("Bottom")
-    --     },
-    --
-    --     -- Navigation between panes
-    --     { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
-    --     { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
-    --     { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
-    --     { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
-    --
-    --     { 
-    --         mods = "LEADER", 
-    --         key = "w", 
-    --         action = act.CloseCurrentPane { confirm = true } 
-    --     },
-    -- }
 }
