@@ -99,7 +99,7 @@ return {
     initial_cols = 120,
 
     -- KEY BINDINGS
-    leader = { key = 'a', mods = 'CTRL', timeout_milliseconds = 1000 },
+    leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 },
     
     keys = my_keys,
 }
