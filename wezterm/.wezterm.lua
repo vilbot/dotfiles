@@ -85,6 +85,8 @@ return {
     -- APPEARANCE
     font = wezterm.font {
         family = 'Liberation Mono',
+        -- family = 'DroidSansMonoSlashed',
+        -- family = 'SF Mono',
     },
 
     font_size = 11.0,
