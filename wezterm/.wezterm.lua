@@ -94,12 +94,18 @@ return {
 
     enable_tab_bar = false,
     window_decorations = "RESIZE|TITLE",
+
+    window_frame = {
+        active_titlebar_bg = '#000000',
+        inactive_titlebar_bg = '#000000',
+    },
+
     window_padding = { left = 5, right = 5, top = 10, bottom = 0 },
     initial_rows = 40,
     initial_cols = 120,
 
     -- KEY BINDINGS
     leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 },
-    
+
     keys = my_keys,
 }

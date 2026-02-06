@@ -22,6 +22,15 @@ return {
             end
         end
     },
+    { "mason-org/mason.nvim" },
+    { "mason-org/mason-lspconfig.nvim" },
+    { "neovim/nvim-lspconfig" },
+    { "hrsh7th/nvim-cmp" },
+    { "hrsh7th/cmp-nvim-lsp" },
+    { "hrsh7th/cmp-buffer" },
+    { "saadparwaiz1/cmp_luasnip" },
+    { "L3MON4D3/LuaSnip" },
+    { "rafamadriz/friendly-snippets" },
     {
         "stevearc/oil.nvim",
         config = function() 
@@ -35,6 +44,8 @@ return {
     },
     { 
         "abecodes/tabout.nvim",
+        dependencies = { "nvim-treesitter/nvim-treesitter", "hrsh7th/nvim-cmp", "L3MON4D3/LuaSnip" },
+      
         config = function()
             require("tabout").setup({
                 tabouts = {
@@ -45,7 +56,10 @@ return {
                     { open = '[', close = ']' },
                     { open = '{', close = '}' },
                     { open = ":", close = ")" },
-                }
+                },
+                ignore_beginning = true,
+                tabouts_max_lines = 10,
+                -- completion = true,
             })
         end
     },
@@ -124,15 +138,6 @@ return {
             })
         end
     },
-    { "mason-org/mason.nvim" },
-    { "mason-org/mason-lspconfig.nvim" },
-    { "neovim/nvim-lspconfig" },
-    { "hrsh7th/nvim-cmp" },
-    { "hrsh7th/cmp-nvim-lsp" },
-    { "hrsh7th/cmp-buffer" },
-    { "saadparwaiz1/cmp_luasnip" },
-    { "L3MON4D3/LuaSnip" },
-    { "rafamadriz/friendly-snippets" },
     {
         "basola21/PDFview",
         lazy = false,
