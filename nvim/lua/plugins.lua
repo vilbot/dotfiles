@@ -83,6 +83,9 @@ return {
             vim.cmd.colorscheme("gruber-darker")
         end
     },
+    {
+        "https://github.com/rebelot/kanagawa.nvim"
+    },
     { 
         "nvim-telescope/telescope.nvim", 
         branch = "0.1.x",
@@ -132,7 +135,12 @@ return {
                         previewer = false,
                     },
                     colorscheme = {
-                        enable_preview = true
+                        enable_preview = true,
+                        previewer = false,
+                        theme = "ivy",
+                        layout_config = {
+                            height = 0.25
+                        }
                     }
                 }
             })

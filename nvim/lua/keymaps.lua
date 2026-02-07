@@ -32,6 +32,7 @@ map('n', '<C-f>', builtin.find_files)
 map('n', '<C-g>', builtin.live_grep)
 map('v', '<C-g>', builtin.grep_string)
 map('n', '<C-p>', builtin.registers)
+map('n', '<leader>c', builtin.colorscheme)
 map('n', '<C-b>', function()
     require('telescope.builtin').buffers({
         attach_mappings = function(prompt_bufnr, map_local)
