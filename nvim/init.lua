@@ -8,4 +8,4 @@ require("functions")
 require("lsp")
 require("completion")
 
-vim.cmd.colorscheme("vscode")
+vim.cmd.colorscheme("kanagawa-dragon")

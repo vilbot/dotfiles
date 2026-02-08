@@ -84,8 +84,8 @@ return {
 
     -- APPEARANCE
     font = wezterm.font {
-        -- family = 'Liberation Mono',
-        family = 'DroidSansMonoSlashed',
+        family = 'Liberation Mono',
+        -- family = 'DroidSansMonoSlashed',
         -- family = 'JetBrains Mono',
     },
 
