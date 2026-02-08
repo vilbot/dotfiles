@@ -29,10 +29,10 @@ local function split_current(direction)
     end)
 end
 
-wezterm.on('gui-startup', function(cmd)
-    local tab, pane, window = mux.spawn_window(cmd or {})
-    window:gui_window():maximize()
-end)
+-- wezterm.on('gui-startup', function(cmd)
+--     local tab, pane, window = mux.spawn_window(cmd or {})
+--     window:gui_window():maximize()
+-- end)
 
 wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
   local zoomed = ''
@@ -84,9 +84,9 @@ return {
 
     -- APPEARANCE
     font = wezterm.font {
-        family = 'Liberation Mono',
-        -- family = 'DroidSansMonoSlashed',
-        -- family = 'SF Mono',
+        -- family = 'Liberation Mono',
+        family = 'DroidSansMonoSlashed',
+        -- family = 'JetBrains Mono',
     },
 
     font_size = 11.0,
