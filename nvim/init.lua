@@ -7,3 +7,5 @@ require("keymaps")
 require("functions")
 require("lsp")
 require("completion")
+
+vim.cmd.colorscheme("vscode")

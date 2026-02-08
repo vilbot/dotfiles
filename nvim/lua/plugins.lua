@@ -22,6 +22,16 @@ return {
             end
         end
     },
+    {
+        "https://github.com/folke/snacks.nvim",
+        config = function()
+            require("snacks").setup({
+                opts = {
+
+                }
+            })
+        end
+    },
     { "mason-org/mason.nvim" },
     { "mason-org/mason-lspconfig.nvim" },
     { "neovim/nvim-lspconfig" },
@@ -80,12 +90,12 @@ return {
                     operators = false
                 },
             })
-            vim.cmd.colorscheme("gruber-darker")
         end
     },
-    {
-        "https://github.com/rebelot/kanagawa.nvim"
-    },
+    { "rebelot/kanagawa.nvim" },
+    { "Mofiqul/vscode.nvim" },
+    { "shaunsingh/nord.nvim" },
+    { "AlexvZyl/nordic.nvim" },
     { 
         "nvim-telescope/telescope.nvim", 
         branch = "0.1.x",
