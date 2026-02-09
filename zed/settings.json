@@ -17,8 +17,9 @@
         "show_parameter_hints": false,
     },
     "show_wrap_guides": true,
-    "disable_ai": true,
+    "disable_ai": false,
     "agent": {
+        "always_allow_tool_actions": false,
         "dock": "right",
         "model_parameters": [],
     },
@@ -28,9 +29,10 @@
     "vim_mode": true,
     "relative_line_numbers": "enabled",
     "ui_font_size": 16,
-    "buffer_font_size": 16,
+    "buffer_font_size": 13,
     "tab_size": 4,
-    "buffer_font_family": "Hack",
+    // "buffer_font_family": "Hack",
+    "buffer_font_family": "Liberation Mono",
     // "buffer_font_family": "NSimSun",
     // "buffer_font_family": "Noto Sans Mono",
     // "buffer_font_family": "Source Code Pro",
@@ -40,9 +42,9 @@
     // "buffer_font_family": "SF Mono",
     // "buffer_font_family": "Iosevka",
     "theme": {
-        "mode": "system",
-        "light": "One Dark",
-        "dark": "One Dark",
+        "mode": "dark",
+        "light": "Gruber Banana 🍌",
+        "dark": "Gruber Darker",
     },
     "languages": {
         "C": {
@@ -65,6 +67,9 @@
         "Java": {
             "enable_language_server": true,
             "language_servers": ["jdtls"],
+        },
+        "Rust": {
+            "enable_language_server": false,
         },
     },
     "lsp": {

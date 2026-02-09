@@ -93,6 +93,7 @@ return {
     adjust_window_size_when_changing_font_size = false,
 
     color_scheme = 'Gruber (base16)',
+    -- color_scheme = 'Vesper',
 
     enable_tab_bar = false,
     window_decorations = "RESIZE|TITLE",

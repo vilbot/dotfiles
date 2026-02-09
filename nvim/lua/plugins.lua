@@ -11,8 +11,9 @@ return {
             if status then
                 ts_config.setup({
                     ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
+                    install_strategy = "prefer_git",
                     sync_install = false,
-                    auto_install = false,
+                    auto_install = true,
                     highlight = {
                         enabled = true
                     }
@@ -55,7 +56,6 @@ return {
     { 
         "abecodes/tabout.nvim",
         dependencies = { "nvim-treesitter/nvim-treesitter", "hrsh7th/nvim-cmp", "L3MON4D3/LuaSnip" },
-      
         config = function()
             require("tabout").setup({
                 tabouts = {
@@ -77,25 +77,6 @@ return {
     { "echasnovski/mini.surround", config = function () require("mini.surround").setup({}) end },
     { "mrjones2014/smart-splits.nvim", config = function () require("smart-splits").setup({}) end },
     -- { "mg979/vim-visual-multi", config = function () require("vim-visual-multi").setup({}) end },
-    {
-        "blazkowolf/gruber-darker.nvim",
-        priority = 1000,
-        config = function()
-            require("gruber-darker").setup({
-                bold = false,
-                italic = {
-                    comments = false,
-                    strings = false,
-                    keywords = false,
-                    operators = false
-                },
-            })
-        end
-    },
-    { "rebelot/kanagawa.nvim" },
-    { "Mofiqul/vscode.nvim" },
-    { "shaunsingh/nord.nvim" },
-    { "AlexvZyl/nordic.nvim" },
     { 
         "nvim-telescope/telescope.nvim", 
         branch = 'master',
@@ -171,5 +152,68 @@ return {
         "basola21/PDFview",
         lazy = false,
         dependencies = { "nvim-telescope/telescope.nvim" }
+    },
+
+    -- THEMES --
+    {
+        "blazkowolf/gruber-darker.nvim",
+        priority = 1000,
+        lazy = false,
+        config = function(_, opts) 
+            require("gruber-darker").setup(opts)
+            vim.api.nvim_create_autocmd("User", {
+                pattern = "VeryLazy",
+                callback = function()
+                    vim.cmd.colorscheme("gruber-darker")
+                end,
+            })
+        end,
+
+        opts = {
+            bold = false,
+            italic = {
+                comments = false,
+                strings = false,
+                keywords = false,
+                operators = false
+            },
+        }
+    },
+    {
+        "ellisonleao/gruvbox.nvim",
+        config = true,
+        priority = 1000,
+        lazy = false,
+
+        opts = {
+            bold = false,
+            italic = {
+                comments = false,
+                strings = false,
+                keywords = false,
+                operators = false
+            },
+        }
+    },
+    { "rebelot/kanagawa.nvim" },
+    { "Mofiqul/vscode.nvim" },
+    { "shaunsingh/nord.nvim" },
+    { "AlexvZyl/nordic.nvim" },
+    { "jacoborus/tender.vim" },
+    { "savq/melange-nvim" },
+    {
+        'datsfilipe/vesper.nvim',
+        priority = 1000,
+        opts = {
+            transparent = true, -- Boolean: Sets the background to transparent
+            italics = {
+                comments = false, -- Boolean: Italicizes comments
+                keywords = false, -- Boolean: Italicizes keywords
+                functions = false, -- Boolean: Italicizes functions
+                strings = false, -- Boolean: Italicizes strings
+                variables = false, -- Boolean: Italicizes variables
+            },
+            bold = false
+        }
     },
 }

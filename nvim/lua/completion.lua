@@ -58,8 +58,9 @@ cmp.setup({
 -- === EXCEPTION FOR C/C++ ===
 -- Disable auto-completion popup for C files.
 -- You must press <C-Space> to see it.
-cmp.setup.filetype({ "c", "cpp" }, {
-    completion = {
-        autocomplete = false
-    }
-})
+
+-- cmp.setup.filetype({ "c", "cpp" }, {
+--     completion = {
+--         autocomplete = false
+--     }
+-- })

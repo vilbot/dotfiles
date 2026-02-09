@@ -12,8 +12,8 @@
             "ctrl-f": "file_finder::Toggle",
             "ctrl-g": ["pane::DeploySearch", { "replace_enabled": true }],
             "ctrl-b": "workspace::ToggleLeftDock",
-            "ctrl-j": "workspace::ToggleBottomDock"
-        }
+            "ctrl-j": "workspace::ToggleBottomDock",
+        },
     },
     {
         "context": "Workspace",
@@ -21,32 +21,39 @@
             "alt-p": [
                 "task::Spawn",
                 {
-                    "build-and-run-game": "build-and-run-game"
-                }
-            ]
-        }
+                    "build-and-run-game": "build-and-run-game",
+                },
+            ],
+        },
     },
     {
         "context": "RulesLibrary || Pane || Workspace || Terminal || SettingsWindow",
         "bindings": {
-            "ctrl-w": null
-        }
+            "ctrl-w": null,
+        },
     },
+    // {
+    //     "context": "Editor && vim_mode == insert && !in_snippet && !showing_completions",
+    //     "bindings": {
+    //         "tab": "editor::MoveToEndOfLargerSyntaxNode",
+    //         "shift-tab": "editor::Tab",
+    //     },
+    // },
     {
         "context": "Terminal",
         "bindings": {
             "ctrl-w j": "workspace::ActivatePaneDown",
             "ctrl-w k": "workspace::ActivatePaneUp",
             "ctrl-w h": "workspace::ActivatePaneLeft",
-            "ctrl-w l": "workspace::ActivatePaneRight"
+            "ctrl-w l": "workspace::ActivatePaneRight",
             // "ctrl-k": ["workspace::ActivatePaneInDirection", "Up"]
-        }
+        },
     },
     {
         "context": "FileFinder || (FileFinder > Picker > Editor)",
         "bindings": {
-            "ctrl-w": "file_finder::ToggleSplitMenu"
-        }
+            "ctrl-w": "file_finder::ToggleSplitMenu",
+        },
     },
     {
         "context": "VimControl && !menu || !Editor && !Terminal",
@@ -54,9 +61,9 @@
             "alt-l": "vim::ResizePaneRight",
             "alt-h": "vim::ResizePaneLeft",
             "alt-j": "vim::ResizePaneDown",
-            "alt-k": "vim::ResizePaneUp"
-        }
-    }
+            "alt-k": "vim::ResizePaneUp",
+        },
+    },
     // {
     //     "context": "vim_mode == normal || vim_mode == normal",
     //     "bindings": {

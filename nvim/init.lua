@@ -8,4 +8,5 @@ require("functions")
 require("lsp")
 require("completion")
 
-vim.cmd.colorscheme("kanagawa-dragon")
+-- vim.cmd.colorscheme("gruvbox")
+vim.cmd.colorscheme("gruber-darker")

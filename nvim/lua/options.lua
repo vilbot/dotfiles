@@ -37,5 +37,5 @@ opt.path:append("**")
 opt.ignorecase = true
 opt.smartcase = true
 vim.g.VM_show_warnings = 0
-opt.termguicolors = true
+vim.o.termguicolors = true
 -- opt.autoread = true
