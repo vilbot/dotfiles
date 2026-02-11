@@ -84,9 +84,12 @@ return {
 
     -- APPEARANCE
     font = wezterm.font {
-        family = 'Liberation Mono',
-        -- family = 'DroidSansMonoSlashed',
+        -- family = 'Noto Sans Mono',
+        family = 'DroidSansMonoSlashed',
+        -- family = 'IBM Plex Mono',
         -- family = 'JetBrains Mono',
+        -- family = 'Liberation Mono',
+        -- family = 'Ubuntu Mono',
     },
 
     font_size = 11.0,

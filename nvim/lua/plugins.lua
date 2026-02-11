@@ -4,34 +4,39 @@ return {
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         config = function()
-            local status, ts_config = pcall(require, "nvim-treesitter.configs")
-            if not status then
-                status, ts_config = pcall(require, "nvim-treesitter.config")
-            end
-            if status then
-                ts_config.setup({
-                    ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
-                    install_strategy = "prefer_git",
-                    sync_install = false,
-                    auto_install = true,
-                    highlight = {
-                        enabled = true
-                    }
-                })
-            else
-                print("Treesitter could not be loaded, skipping setup")
-            end
+            require('nvim-treesitter.config').setup({
+                ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
+                sync_install = false,
+                auto_install = true,
+                highlight = { enable = true }
+            })
+
+            vim.api.nvim_create_autocmd("FileType", {
+                callback = function()
+                    if vim.bo.buftype == "" then
+                        pcall(vim.treesitter.start)
+                    end
+                end,
+            })
+
         end
     },
     {
         "https://github.com/folke/snacks.nvim",
-        config = function()
-            require("snacks").setup({
-                opts = {
-
-                }
-            })
-        end
+        priority = 1000,
+        lazy = false,
+        opts = {
+            terminal = {enabled = true},
+            -- styles = {
+            --     terminal = {
+            --         position = "float", -- Explicitly tell it to float
+            --         backdrop = 60,      -- Dims the background so you can see it's a float
+            --         width = 0.8,
+            --         height = 0.8,
+            --         border = "rounded",
+            --     }
+            -- },
+        }
     },
     { "mason-org/mason.nvim" },
     { "mason-org/mason-lspconfig.nvim" },
@@ -67,9 +72,9 @@ return {
                     { open = '{', close = '}' },
                     { open = ":", close = ")" },
                 },
-                ignore_beginning = true,
+                ignore_beginning = false,
                 tabouts_max_lines = 10,
-                -- completion = true,
+                completion = true,
             })
         end
     },
@@ -161,12 +166,7 @@ return {
         lazy = false,
         config = function(_, opts) 
             require("gruber-darker").setup(opts)
-            vim.api.nvim_create_autocmd("User", {
-                pattern = "VeryLazy",
-                callback = function()
-                    vim.cmd.colorscheme("gruber-darker")
-                end,
-            })
+            vim.cmd.colorscheme("gruber-darker")
         end,
 
         opts = {

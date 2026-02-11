@@ -1,28 +1,18 @@
 local map = vim.keymap.set
 
-vim.g.VM_leader = '\\'
-
--- VISUAL-MULTI
-vim.g.VM_maps = {
-    ["Find Under"]      = "gn",
-    ["Find Next"]       = "gn",
-    ["Find Prev"]       = "g<S-n>",
-    ["Skip Region"]     = "gm",
-    ["Remove Region"]   = "g<S-m>",
-    ["Select All"]      = "ga",
-    ["Add Cursor Up"]   = "<C-A-k>",
-    ["Add Cursor Down"] = "<C-A-j>",
-}
-
 -- Move text
 map("v", "<A-j>", ":m '>+1<CR>gv=gv")
 map("v", "<A-k>", ":m '<-2<CR>gv=gv")
 
 map('n', '<leader>s', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace on cursor"})
+-- ??? 
 map("x", "<leader>S", [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
 map('n', 'x', '"_x')
 map('n', '0p', '"0p')
 map('n', '0P', '"0P')
+
+map("n", "<leader>j", function() Snacks.terminal.toggle() end, { desc = "Toggle Terminal" })
+map("t", "<leader>j", function() Snacks.terminal.toggle() end, { desc = "Toggle Terminal" })
 
 -- TELESCOPE
 local builtin = require('telescope.builtin')

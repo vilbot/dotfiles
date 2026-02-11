@@ -1,50 +1,57 @@
-// Zed settings
-//
-// For information on how to configure Zed, see the Zed
-// documentation: https://zed.dev/docs/configuring-zed
-//
-// To see all of Zed's default settings without changing your
-// custom settings, run `zed: open default settings` from the
-// command palette (cmd-shift-p / ctrl-shift-p)
 {
     "hard_tabs": false,
-    "soft_wrap": "prefer_line",
+    "soft_wrap": "none",
     "preferred_line_length": 80,
     "inlay_hints": {
-        "show_other_hints": false,
-        "show_value_hints": false,
-        "show_type_hints": false,
+        "enabled": true,
+        "show_other_hints": true,
+        "show_value_hints": true,
+        "show_type_hints": true,
         "show_parameter_hints": false,
     },
     "show_wrap_guides": true,
+    "vim_mode": true,
+    "vim": {
+        "use_smartcase_find": true,
+    },
+
+    // Look and feel
+    "sync_items_across_panes": true,
+    "tab_bar": {
+        "show": false,
+    },
+    "relative_line_numbers": "enabled",
+    "scrollbar": {
+        "show": "never",
+    },
+    "project_panel": {
+        "auto_reveal_entries": true,
+    },
+    "cursor_blink": false,
+    "hide_mouse": "on_typing_and_movement",
+    "tab_size": 4,
+    "ui_font_size": 16,
+    "buffer_font_size": 14,
+    "buffer_font_family": "Droid Sans Mono Slashed",
+    // "window_decorations": "server",
+    "icon_theme": "Zed (Default)",
+    "theme": {
+        "mode": "dark",
+        "light": "One Light",
+        "dark": "Gruber Darker",
+    },
+
+    // Code help
     "disable_ai": false,
     "agent": {
+        "default_model": {
+            "provider": "zed.dev",
+            "model": "claude-sonnet-4-5-thinking",
+            "enable_thinking": true,
+        },
         "always_allow_tool_actions": false,
         "dock": "right",
         "model_parameters": [],
-    },
-    "icon_theme": "Zed (Default)",
-    "rounded_selection": true,
-    "cursor_blink": false,
-    "vim_mode": true,
-    "relative_line_numbers": "enabled",
-    "ui_font_size": 16,
-    "buffer_font_size": 13,
-    "tab_size": 4,
-    // "buffer_font_family": "Hack",
-    "buffer_font_family": "Liberation Mono",
-    // "buffer_font_family": "NSimSun",
-    // "buffer_font_family": "Noto Sans Mono",
-    // "buffer_font_family": "Source Code Pro",
-    // "buffer_font_family": "Adwaita Mono",
-    // "buffer_font_family": "Cascadia Mono",
-    // "buffer_font_family": "JetBrainsMono Nerd Font",
-    // "buffer_font_family": "SF Mono",
-    // "buffer_font_family": "Iosevka",
-    "theme": {
-        "mode": "dark",
-        "light": "Gruber Banana 🍌",
-        "dark": "Gruber Darker",
     },
     "languages": {
         "C": {
@@ -67,6 +74,9 @@
         "Java": {
             "enable_language_server": true,
             "language_servers": ["jdtls"],
+            "code_actions_on_format": {
+                "source.organizeImports": true,
+            },
         },
         "Rust": {
             "enable_language_server": false,
@@ -76,7 +86,7 @@
         "jdtls": {
             "initialization_options": {
                 "settings": {
-                    "java.jdt.ls.java.home": "C:\\Program Files\\OpenJDK\\jdk-21",
+                    // "java.jdt.ls.java.home": "C:\\Program Files\\OpenJDK\\jdk-21",
                     "lombok_support": true,
                 },
             },

@@ -1,22 +1,7 @@
-// Zed keymap
-//
-// For information on binding keys, see the Zed
-// documentation: https://zed.dev/docs/key-bindings
-//
-// To see the default key bindings run `zed: open default keymap`
-// from the command palette.
+// :dev open key context view
 [
     {
-        "context": "(VimControl || menu || Terminal || Workspace) && !(FileFinder || (FileFinder > Picker > Editor) || (FileFinder > Picker > menu))",
-        "bindings": {
-            "ctrl-f": "file_finder::Toggle",
-            "ctrl-g": ["pane::DeploySearch", { "replace_enabled": true }],
-            "ctrl-b": "workspace::ToggleLeftDock",
-            "ctrl-j": "workspace::ToggleBottomDock",
-        },
-    },
-    {
-        "context": "Workspace",
+        "context": "Workspace && !FileFinder",
         "bindings": {
             "alt-p": [
                 "task::Spawn",
@@ -27,18 +12,26 @@
         },
     },
     {
-        "context": "RulesLibrary || Pane || Workspace || Terminal || SettingsWindow",
+        "context": "Editor  && vim_mode == normal",
         "bindings": {
-            "ctrl-w": null,
+            "alt-b": ["task::Spawn", { "task_name": "Java: Compile & Run" }],
+            "ctrl-b": "tab_switcher::ToggleAll",
+            "ctrl-l": "editor::ShowCompletions",
+            "space a": "editor::ToggleCodeActions",
+            "space r": "editor::Rename",
+            "g i": "editor::GoToImplementation",
+            "space d": "diagnostics::Deploy",
+            "] d": "editor::GoToDiagnostic",
+            "[ d": "editor::GoToPreviousDiagnostic",
+            "g =": "editor::Format",
         },
     },
-    // {
-    //     "context": "Editor && vim_mode == insert && !in_snippet && !showing_completions",
-    //     "bindings": {
-    //         "tab": "editor::MoveToEndOfLargerSyntaxNode",
-    //         "shift-tab": "editor::Tab",
-    //     },
-    // },
+    {
+        "context": "Editor  && vim_mode == insert",
+        "bindings": {
+            "ctrl-l": "editor::ShowCompletions",
+        },
+    },
     {
         "context": "Terminal",
         "bindings": {
@@ -50,11 +43,20 @@
         },
     },
     {
-        "context": "FileFinder || (FileFinder > Picker > Editor)",
+        "context": "(VimControl || menu || Terminal || Workspace) && !(FileFinder || (FileFinder > Picker > Editor) || (FileFinder > Picker > menu))",
         "bindings": {
-            "ctrl-w": "file_finder::ToggleSplitMenu",
+            "ctrl-f": "file_finder::Toggle",
+            "ctrl-g": ["pane::DeploySearch", { "replace_enabled": true }],
+            "ctrl-e": "workspace::ToggleLeftDock",
+            "ctrl-j": "workspace::ToggleBottomDock",
         },
     },
+    // {
+    //     "context": "FileFinder || (FileFinder > Picker > Editor)",
+    //     "bindings": {
+    //         "ctrl-w": "file_finder::ToggleSplitMenu",
+    //     },
+    // },
     {
         "context": "VimControl && !menu || !Editor && !Terminal",
         "bindings": {
@@ -62,12 +64,21 @@
             "alt-h": "vim::ResizePaneLeft",
             "alt-j": "vim::ResizePaneDown",
             "alt-k": "vim::ResizePaneUp",
+            "ctrl-w q": "pane::CloseAllItems",
+        },
+    },
+    {
+        "context": "RulesLibrary || Pane || Workspace || Terminal || SettingsWindow",
+        "bindings": {
+            "ctrl-w": null,
+            "ctrl-b": null,
         },
     },
     // {
-    //     "context": "vim_mode == normal || vim_mode == normal",
+    //     "context": "Editor && vim_mode == insert && !in_snippet && !showing_completions",
     //     "bindings": {
-    //         "=": "editor::Format"
-    //     }
-    // }
+    //         "tab": "editor::MoveToEndOfLargerSyntaxNode",
+    //         "shift-tab": "editor::Tab",
+    //     },
+    // },
 ]
