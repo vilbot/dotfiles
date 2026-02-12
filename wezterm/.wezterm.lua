@@ -1,65 +1,90 @@
 local wezterm = require 'wezterm'
 local act = wezterm.action
+local config = wezterm.config_builder()
 
-wezterm.on('format-window-title', function(tab, pane, tabs, panes, config)
-  local zoomed = ''
-  if tab.active_pane.is_zoomed then
-    zoomed = '[Z] '
-  end
+local current_font = wezterm.font {
+    -- family = 'Liberation Mono',
+    family = 'DroidSansMonoSlashed',
+    -- family = 'Noto Sans Mono',
+    -- family = 'IBM Plex Mono',
+    -- family = 'JetBrains Mono',
+    -- family = 'Ubuntu Mono',
+}
 
-  local index = ''
-  if #tabs > 1 then
-    index = string.format('[%d/%d] ', tab.tab_index + 1, #tabs)
-  end
 
-  return zoomed .. index .. tab.active_pane.title
+
+config.default_prog = { '/usr/bin/fish', '-li'}
+
+-- Colorscheme
+config.color_scheme = 'Gruber (base16)'
+-- config.color_scheme = 'Vesper'
+
+-- Fonts
+config.font = current_font
+config.font_size = 11.0
+config.adjust_window_size_when_changing_font_size = false
+
+-- Window and tabs
+config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
+config.initial_rows = 40
+config.initial_cols = 120
+config.window_decorations = "RESIZE|TITLE"
+config.window_frame = {
+    inactive_titlebar_bg = '#181818',
+    active_titlebar_bg = '#181818',
+    font_size = 10,
+    font = current_font,
+}
+config.colors = {
+    tab_bar = {
+        background = '#181818', -- for retro tab bar
+        inactive_tab_edge = '#181818' -- for fancy tab bar
+    }
+}
+
+config.enable_tab_bar = true
+config.use_fancy_tab_bar = false
+config.show_close_tab_button_in_tabs = false
+config.show_new_tab_button_in_tab_bar = false
+config.tab_bar_at_bottom = false
+config.tab_max_width = 100
+
+wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
+    local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
+
+    if tab.is_active then
+        return {
+            { Background = { Color = '#333333' } },
+            { Foreground = { Color = '#d0d0d0' } },
+            { Text = ' ' .. title .. ' '},
+        }
+    end
+    if not tab.is_active then
+        return {
+            { Background = { Color = '#181818' } },
+            { Foreground = { Color = '#808080' } },
+            { Text = " " .. title .. " " },
+        }
+    end
+
+    return "?"
 end)
 
-return {
-    default_prog = { '/usr/bin/fish', '-li'},
+-- Keybinds
+config.leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 }
 
-    -- Colorscheme
-    color_scheme = 'Gruber (base16)',
-    -- color_scheme = 'Vesper',
-
-    -- Fonts
-    font = wezterm.font {
-        -- family = 'Liberation Mono',
-        family = 'DroidSansMonoSlashed',
-        -- family = 'Noto Sans Mono',
-        -- family = 'IBM Plex Mono',
-        -- family = 'JetBrains Mono',
-        -- family = 'Ubuntu Mono',
-    },
-    font_size = 11.0,
-    adjust_window_size_when_changing_font_size = false,
-
-    -- Window and tabs
-    window_padding = { left = 5, right = 5, top = 10, bottom = 0 },
-    initial_rows = 40,
-    initial_cols = 120,
-    window_decorations = "RESIZE|TITLE",
-
-    enable_tab_bar = true,
-    use_fancy_tab_bar = true,
-    show_close_tab_button_in_tabs = false,
-    show_new_tab_button_in_tab_bar = false,
-
-    window_frame = {
-        active_titlebar_bg = '#181818',
-        inactive_titlebar_bg = '#181818',
-    },
-
-    -- Keybinds
-    leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 },
-
-    keys = {
-        { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
-        { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
-        { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
-        { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
-        { mods = "LEADER", key = "w", action = act.CloseCurrentPane { confirm = true } },
-        { mods = "LEADER", key = "v", action = act.SplitPane { direction = "Right" } },
-        { mods = "LEADER", key = "s", action = act.SplitPane { direction = "Down" } },
-    },
+config.keys = {
+    { mods = "LEADER", key = "w", action = act.CloseCurrentPane { confirm = true } },
+    { mods = "LEADER", key = "v", action = act.SplitPane { direction = "Right" } },
+    { mods = "LEADER", key = "s", action = act.SplitPane { direction = "Down" } },
+    { mods = "ALT", key = "H", action = act.AdjustPaneSize { "Left", 1 } },
+    { mods = "ALT", key = "L", action = act.AdjustPaneSize { "Right", 1 } },
+    { mods = "ALT", key = "K", action = act.AdjustPaneSize { "Up", 1 } },
+    { mods = "ALT", key = "J", action = act.AdjustPaneSize { "Down", 1 } },
+    { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
+    { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
+    { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
+    { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
 }
+
+return config
