@@ -1,18 +1,12 @@
--- lua/lsp.lua
-
--- 1. Setup Mason (Installs the servers)
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "jdtls", "clangd", "lua_ls"}, 
+    ensure_installed = { "jdtls", "clangd", "lua_ls"},
 })
 
--- 2. Configure JDTLS (The 0.11+ Way)
--- We use vim.lsp.config() to set the keymaps before enabling it.
 vim.lsp.config('jdtls', {
     on_attach = function(client, bufnr)
         local opts = { noremap=true, silent=true, buffer=bufnr }
 
-        -- Keymaps (IntelliJ-like)
         vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
         vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
         vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
@@ -25,7 +19,6 @@ vim.lsp.config('clangd', {
     on_attach = function(client, bufnr)
         local opts = { noremap=true, silent=true, buffer=bufnr }
 
-        -- Keymaps (IntelliJ-like)
         vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
         vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
         vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
@@ -35,10 +28,26 @@ vim.lsp.config('clangd', {
 })
 
 vim.lsp.config('lua_ls', {
+    settings = {
+        Lua = {
+            runtime = {
+                version = 'LuaJIT',
+            },
+            diagnostics = {
+                globals = { 'vim' },
+            },
+            workspace = {
+                library = vim.api.nvim_get_runtime_file("", true),
+                checkThirdParty = false,
+            },
+            telemetry = {
+                enable = false,
+            },
+        },
+    },
     on_attach = function(client, bufnr)
         local opts = { noremap=true, silent=true, buffer=bufnr }
 
-        -- Keymaps (IntelliJ-like)
         vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
         vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
         vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
@@ -47,7 +56,5 @@ vim.lsp.config('lua_ls', {
     end
 })
 
--- 3. Enable the Server
--- This command replaces the old 'lspconfig.jdtls.setup' call.
 vim.lsp.enable("jdtls", "clangd", "lua_ls")
 

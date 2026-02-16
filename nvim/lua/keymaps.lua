@@ -5,24 +5,23 @@ map("v", "<A-j>", ":m '>+1<CR>gv=gv")
 map("v", "<A-k>", ":m '<-2<CR>gv=gv")
 
 map('n', '<leader>s', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace on cursor"})
--- ??? 
-map("x", "<leader>S", [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
+map('x', '<leader>S', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
+
 map('n', 'x', '"_x')
 map('n', '0p', '"0p')
 map('n', '0P', '"0P')
 
-map("n", "<leader>j", function() Snacks.terminal.toggle() end, { desc = "Toggle Terminal" })
-map("t", "<leader>j", function() Snacks.terminal.toggle() end, { desc = "Toggle Terminal" })
 
--- TELESCOPE
+
+map('n', '<leader>q', '<cmd>NvimTreeOpen<cr>')
+map('n', '<leader>w', '<CMD>Oil<CR>')
+
 local builtin = require('telescope.builtin')
 local action = require 'telescope.actions'
-map('n', '<leader>w', '<CMD>Oil<CR>')
 map('n', '<C-f>', builtin.find_files)
 map('n', '<C-g>', builtin.live_grep)
 map('v', '<C-g>', builtin.grep_string)
 map('n', '<C-p>', builtin.registers)
-map('n', '<leader>t', builtin.colorscheme)
 map('n', '<C-b>', function()
     require('telescope.builtin').buffers({
         attach_mappings = function(prompt_bufnr, map_local)
@@ -36,6 +35,8 @@ map('n', '<C-b>', function()
         end,
     })
 end, {desc = "Buffers with delete capability"})
+
+
 
 -- Navigate to the next page in the PDF (supports counts, e.g., 5<leader>jj)
 map("n", "<leader>jj", function()
@@ -59,7 +60,8 @@ end, { desc = "PDFview: Previous page(s)" })
 -- Navigate to the previous page in the PDF
 -- map("n", "<leader>kk", "<cmd>:lua require('pdfview.renderer').previous_page()<CR>", { desc = "PDFview: Previous page" })
 
--- SMART-SPLITS
+
+
 local splits = require('smart-splits')
 map('n', '<A-h>',  splits.resize_left)
 map('n', '<A-j>',  splits.resize_down)
@@ -69,3 +71,6 @@ map('n', '<A-->',  '<C-w>_')
 map('n', '<A-=>',  '<C-w>=')
 map('n', '<A-\\>', '<C-w>|')
 
+
+
+-- Blink keymaps are here: |blink-keymaps|

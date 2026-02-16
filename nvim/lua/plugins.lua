@@ -8,9 +8,10 @@ return {
                 ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
                 sync_install = false,
                 auto_install = true,
-                highlight = { enable = true }
+                highlight = { enable = true },
             })
 
+            -- without this colors dont load properly
             vim.api.nvim_create_autocmd("FileType", {
                 callback = function()
                     if vim.bo.buftype == "" then
@@ -21,136 +22,145 @@ return {
 
         end
     },
-    {
-        "https://github.com/folke/snacks.nvim",
-        priority = 1000,
-        lazy = false,
-        opts = {
-            terminal = {enabled = true},
-            -- styles = {
-            --     terminal = {
-            --         position = "float", -- Explicitly tell it to float
-            --         backdrop = 60,      -- Dims the background so you can see it's a float
-            --         width = 0.8,
-            --         height = 0.8,
-            --         border = "rounded",
-            --     }
-            -- },
-        }
-    },
     { "mason-org/mason.nvim" },
     { "mason-org/mason-lspconfig.nvim" },
     { "neovim/nvim-lspconfig" },
-    { "hrsh7th/nvim-cmp" },
-    { "hrsh7th/cmp-nvim-lsp" },
-    { "hrsh7th/cmp-buffer" },
-    { "saadparwaiz1/cmp_luasnip" },
-    { "L3MON4D3/LuaSnip" },
-    { "rafamadriz/friendly-snippets" },
     {
-        "stevearc/oil.nvim",
-        config = function() 
-            require("oil").setup({
-                skip_confirm_for_simple_edits = true,
-                view_options = {
-                    show_hidden = true
+        'saghen/blink.cmp',
+        version = 'v0.*',
+        dependencies = { 'rafamadriz/friendly-snippets' },
+        opts = {
+            fuzzy = {
+                prebuilt_binaries = {
+                    download = true,
+                    force_version = nil,
                 }
-            })
-        end
-    },
-    { 
-        "abecodes/tabout.nvim",
-        dependencies = { "nvim-treesitter/nvim-treesitter", "hrsh7th/nvim-cmp", "L3MON4D3/LuaSnip" },
-        config = function()
-            require("tabout").setup({
-                tabouts = {
-                    { open = "'", close = "'" },
-                    { open = '"', close = '"' },
-                    { open = '`', close = '`' },
-                    { open = '(', close = ')' },
-                    { open = '[', close = ']' },
-                    { open = '{', close = '}' },
-                    { open = ":", close = ")" },
+            },
+            appearance = {
+                -- 'mono' () for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+                -- Adjusts spacing to ensure icons are aligned
+                nerd_font_variant = 'mono'
+            },
+            -- *blink-keymaps*
+            keymap = {
+                preset = 'super-tab',
+                ['<C-n>'] = { 'show', 'select_next', 'fallback' },
+                -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
+            },
+            completion = {
+                menu = {
+                    auto_show = function()
+                        return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
+                    end,
+                    draw = {
+                        padding = { 0, 1 }, -- padding only on right side
+                        components = {
+                            kind_icon = {
+                                text = function(ctx) return ' ' .. ctx.kind_icon .. ctx.icon_gap .. ' ' end
+                            }
+                        }
+                    }
                 },
-                ignore_beginning = false,
-                tabouts_max_lines = 10,
-                completion = true,
-            })
-        end
+            }
+        },
+    },
+    {
+        "kawre/neotab.nvim",
+        event = "InsertEnter",
+        opts = {
+            -- configuration goes here
+        },
     },
     { "windwp/nvim-autopairs", config = function () require("nvim-autopairs").setup({}) end },
     { "echasnovski/mini.surround", config = function () require("mini.surround").setup({}) end },
     { "mrjones2014/smart-splits.nvim", config = function () require("smart-splits").setup({}) end },
-    -- { "mg979/vim-visual-multi", config = function () require("vim-visual-multi").setup({}) end },
-    { 
+    {
         "nvim-telescope/telescope.nvim", 
         branch = 'master',
         -- branch = "0.1.x",
         dependencies = { "nvim-lua/plenary.nvim" },
-        config = function()
-            require("telescope").setup({
-                defaults = {
-                    layout_strategy = "horizontal",
-                    layout_config = {
-                        prompt_position = "top"
+        opts = {
+            defaults = {
+                layout_strategy = "horizontal",
+                layout_config = {
+                    prompt_position = "top"
+                },
+                sorting_strategy = "ascending",
+                selection_caret = "☞ ", -- ➤
+                winblend = 0,
+                mappings = {
+                    i = {
+                        ["<C-s>"] = "select_horizontal",
                     },
-                    sorting_strategy = "ascending",
-                    selection_caret = "☞ ", -- ➤
-                    winblend = 0,
-                    mappings = {
-                        i = {
-                            ["<C-s>"] = "select_horizontal",
-                        },
-                        n = {
-                            ["<C-s>"] = "select_horizontal",
-                        }
-                    },
-                    vimgrep_arguments = {
-                        "rg",
-                        "--color=never",
-                        "--no-heading",
-                        "--with-filename",
-                        "--line-number",
-                        "--column",
-                        "--smart-case"
-                    },
-                    file_ignore_patterns = {
-                        "target/",
-                        "%.class",
-                        "%.jar",
-                        "%.idea/",
-                        "%.git/"
+                    n = {
+                        ["<C-s>"] = "select_horizontal",
                     }
                 },
-                pickers = {
-                    find_files = {
-                        theme = "dropdown",
-                        previewer = false,
-                    },
-                    live_grep = {
+                vimgrep_arguments = {
+                    "rg",
+                    "--color=never",
+                    "--no-heading",
+                    "--with-filename",
+                    "--line-number",
+                    "--column",
+                    "--smart-case"
+                },
+                file_ignore_patterns = {
+                    "target/",
+                    "%.class",
+                    "%.jar",
+                    "%.idea/",
+                    "%.git/"
+                }
+            },
+            pickers = {
+                find_files = {
+                    theme = "dropdown",
+                    previewer = false,
+                },
+                live_grep = {
 
-                    },
-                    grep_string = {
+                },
+                grep_string = {
 
-                    },
-                    registers = {
-                        theme = "cursor",
+                },
+                registers = {
+                    theme = "cursor",
 
-                    },
-                    buffers = {
-                        theme = "dropdown",
-                        previewer = false,
-                    },
-                    colorscheme = {
-                        enable_preview = true,
-                        previewer = false,
-                        theme = "ivy",
-                        layout_config = {
-                            height = 0.25
-                        }
+                },
+                buffers = {
+                    enable_preview = true,
+                    previewer = false,
+                    theme = "ivy",
+                    layout_config = {
+                        height = 0.25
+                    }
+                },
+                colorscheme = {
+                    enable_preview = true,
+                    previewer = false,
+                    theme = "ivy",
+                    layout_config = {
+                        height = 0.25
                     }
                 }
-            })
+            }
+        }
+    },
+    {
+        "stevearc/oil.nvim",
+        opts = {
+            skip_confirm_for_simple_edits = true,
+            view_options = {
+                show_hidden = true
+            },
+        }
+    },
+    {
+        "nvim-tree/nvim-tree.lua",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        config = function()
+            require("nvim-tree").setup()
         end
     },
     {
@@ -164,7 +174,7 @@ return {
         "blazkowolf/gruber-darker.nvim",
         priority = 1000,
         lazy = false,
-        config = function(_, opts) 
+        config = function(_, opts)
             require("gruber-darker").setup(opts)
             vim.cmd.colorscheme("gruber-darker")
         end,

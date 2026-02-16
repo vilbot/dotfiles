@@ -3,15 +3,15 @@ local act = wezterm.action
 local config = wezterm.config_builder()
 
 local current_font = wezterm.font {
-    -- family = 'Liberation Mono',
     family = 'DroidSansMonoSlashed',
     -- family = 'Noto Sans Mono',
+    -- family = 'Liberation Mono',
     -- family = 'IBM Plex Mono',
+    -- family = 'Hack',
+    -- family = 'Iosevka'
     -- family = 'JetBrains Mono',
     -- family = 'Ubuntu Mono',
 }
-
-
 
 config.default_prog = { '/usr/bin/fish', '-li'}
 
@@ -31,19 +31,18 @@ config.initial_cols = 120
 config.window_decorations = "RESIZE|TITLE"
 config.window_frame = {
     inactive_titlebar_bg = '#181818',
-    active_titlebar_bg = '#181818',
+    active_titlebar_bg = '#282828',
     font_size = 10,
-    font = current_font,
+    font = current_font
 }
 config.colors = {
     tab_bar = {
-        background = '#181818', -- for retro tab bar
-        inactive_tab_edge = '#181818' -- for fancy tab bar
+        inactive_tab_edge = '#282828', -- for fancy tab bar
     }
 }
 
 config.enable_tab_bar = true
-config.use_fancy_tab_bar = false
+config.use_fancy_tab_bar = true
 config.show_close_tab_button_in_tabs = false
 config.show_new_tab_button_in_tab_bar = false
 config.tab_bar_at_bottom = false
@@ -52,22 +51,19 @@ config.tab_max_width = 100
 wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
     local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
 
+    local background = '#282828'
+    local foreground = '#a0a0a0'
+
     if tab.is_active then
-        return {
-            { Background = { Color = '#333333' } },
-            { Foreground = { Color = '#d0d0d0' } },
-            { Text = ' ' .. title .. ' '},
-        }
-    end
-    if not tab.is_active then
-        return {
-            { Background = { Color = '#181818' } },
-            { Foreground = { Color = '#808080' } },
-            { Text = " " .. title .. " " },
-        }
+        background = '#181818'
+        foreground = '#d0d0d0'
     end
 
-    return "?"
+    return {
+      { Background = { Color = background } },
+      { Foreground = { Color = foreground } },
+      { Text = " " .. title .. " "},
+    }
 end)
 
 -- Keybinds
