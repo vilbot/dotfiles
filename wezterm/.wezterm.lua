@@ -3,8 +3,8 @@ local act = wezterm.action
 local config = wezterm.config_builder()
 
 local current_font = wezterm.font {
-    -- family = 'DroidSansMonoSlashed',
-    family = 'Noto Sans Mono',
+    family = 'Droid Sans Mono Slashed',
+    -- family = 'Noto Sans Mono',
     -- family = 'Liberation Mono',
     -- family = 'IBM Plex Mono',
     -- family = 'Hack',
