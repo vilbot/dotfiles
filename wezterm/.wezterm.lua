@@ -3,8 +3,8 @@ local act = wezterm.action
 local config = wezterm.config_builder()
 
 local current_font = wezterm.font {
-    family = 'DroidSansMonoSlashed',
-    -- family = 'Noto Sans Mono',
+    -- family = 'DroidSansMonoSlashed',
+    family = 'Noto Sans Mono',
     -- family = 'Liberation Mono',
     -- family = 'IBM Plex Mono',
     -- family = 'Hack',
@@ -13,7 +13,8 @@ local current_font = wezterm.font {
     -- family = 'Ubuntu Mono',
 }
 
-config.default_prog = { '/usr/bin/fish', '-li'}
+-- config.default_prog = { '/usr/bin/fish', '-li'}
+config.default_prog = { 'pwsh.exe', '-NoLogo'}
 
 -- Colorscheme
 config.color_scheme = 'Gruber (base16)'
