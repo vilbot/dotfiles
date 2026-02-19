@@ -5,7 +5,7 @@ return {
         build = ":TSUpdate",
         config = function()
             require('nvim-treesitter.config').setup({
-                ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
+                ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java", "xml" },
                 sync_install = false,
                 auto_install = true,
                 highlight = { enable = true },
@@ -39,29 +39,54 @@ return {
             appearance = {
                 -- 'mono' () for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
                 -- Adjusts spacing to ensure icons are aligned
-                nerd_font_variant = 'mono'
+                nerd_font_variant = 'mono',
+                use_nvim_cmp_as_default = true,
             },
             -- *blink-keymaps*
             keymap = {
-                preset = 'super-tab',
+                preset = 'enter',
                 ['<C-n>'] = { 'show', 'select_next', 'fallback' },
                 -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
             },
             completion = {
+                list = {
+                    selection = {
+                        preselect = function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
+                        auto_insert = false,
+                    },
+                },
                 menu = {
-                    auto_show = function()
+                    auto_show = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+                    draw = {
+                        padding = { 0, 1 },
+                        components = {
+                            kind_icon = { text = function(ctx) return ' ' .. ctx.kind_icon .. ctx.icon_gap .. ' ' end }
+                        },
+                    },
+                    border = "rounded",
+                    winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
+                },
+                documentation = {
+                    auto_show = true,
+                    auto_show_delay_ms = 2000,
+                    window = {
+                        border = "rounded",
+                        winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
+                    },
+                },
+                ghost_text = {
+                    enabled = function()
                         return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
                     end,
-                    draw = {
-                        padding = { 0, 1 }, -- padding only on right side
-                        components = {
-                            kind_icon = {
-                                text = function(ctx) return ' ' .. ctx.kind_icon .. ctx.icon_gap .. ' ' end
-                            }
-                        }
-                    }
                 },
-            }
+            },
+            signature = {
+                enabled = true,
+                trigger = {
+                    enabled = true,
+                    show_on_insert = true,
+                },
+            },
         },
     },
     {
@@ -168,8 +193,6 @@ return {
         lazy = false,
         dependencies = { "nvim-telescope/telescope.nvim" }
     },
-
-    -- THEMES --
     {
         "blazkowolf/gruber-darker.nvim",
         priority = 1000,
@@ -189,41 +212,12 @@ return {
             },
         }
     },
-    {
-        "ellisonleao/gruvbox.nvim",
-        config = true,
-        priority = 1000,
-        lazy = false,
-
-        opts = {
-            bold = false,
-            italic = {
-                comments = false,
-                strings = false,
-                keywords = false,
-                operators = false
-            },
-        }
-    },
+    { "ellisonleao/gruvbox.nvim" },
     { "rebelot/kanagawa.nvim" },
     { "Mofiqul/vscode.nvim" },
     { "shaunsingh/nord.nvim" },
     { "AlexvZyl/nordic.nvim" },
     { "jacoborus/tender.vim" },
     { "savq/melange-nvim" },
-    {
-        'datsfilipe/vesper.nvim',
-        priority = 1000,
-        opts = {
-            transparent = true, -- Boolean: Sets the background to transparent
-            italics = {
-                comments = false, -- Boolean: Italicizes comments
-                keywords = false, -- Boolean: Italicizes keywords
-                functions = false, -- Boolean: Italicizes functions
-                strings = false, -- Boolean: Italicizes strings
-                variables = false, -- Boolean: Italicizes variables
-            },
-            bold = false
-        }
-    },
+    { 'datsfilipe/vesper.nvim', },
 }

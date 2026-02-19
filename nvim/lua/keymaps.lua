@@ -7,6 +7,7 @@ map("v", "<A-k>", ":m '<-2<CR>gv=gv")
 map('n', '<leader>s', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace on cursor"})
 map('x', '<leader>S', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
 
+-- rethink these
 map('n', 'x', '"_x')
 map('n', '0p', '"0p')
 map('n', '0P', '"0P')
