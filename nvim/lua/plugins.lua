@@ -93,7 +93,12 @@ return {
         "kawre/neotab.nvim",
         event = "InsertEnter",
         opts = {
-            -- configuration goes here
+            smart_punctuators = {
+                enabled = true,
+                semicolon = {
+                    enabled = true
+                },
+            },
         },
     },
     { "windwp/nvim-autopairs", config = function () require("nvim-autopairs").setup({}) end },
