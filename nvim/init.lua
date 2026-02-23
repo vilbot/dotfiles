@@ -1,11 +1,338 @@
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-vim.g.loaded_netrw = 1
-vim.g.loaded_netrwPlugin = 1
+vim.g.mapleader = ' '
+vim.g.maplocalleader = ' '
 
-require("lazy-setup")
-require("options")
-require("functions")
-require("keymaps")
-require("lsp")
-require("colors")
+vim.opt.termguicolors = true
+vim.opt.number = true
+vim.opt.relativenumber = true
+vim.opt.cursorline = true
+vim.opt.wrap = false
+vim.opt.scrolloff = 8
+
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+vim.opt.autoindent = true
+vim.opt.smartindent = true
+vim.opt.cindent = true
+
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.inccommand = 'split'
+vim.opt.smoothscroll = false
+
+vim.opt.signcolumn = "yes"
+-- vim.opt.completeopt = 'menuone,noinsert,noselect,fuzzy,popup'
+vim.opt.splitright = true
+vim.opt.splitbelow = true
+vim.opt.cpoptions = '_'
+vim.opt.guicursor = 'n-c-v:block,i-ci-ve:ver25,r-cr:hor20,o:hor50' --,a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor'
+-- vim.g.loaded_matchparen = 1
+
+vim.opt.backup = false
+vim.opt.writebackup = false
+vim.opt.swapfile = false
+vim.opt.undofile = true
+vim.opt.undodir = vim.fn.stdpath('data') .. '/undodir'
+vim.opt.autoread = true
+vim.opt.autowrite = false
+
+vim.opt.autochdir = false
+vim.opt.path:append('**') -- includes subdirectories in searches
+vim.opt.mouse = 'a'
+vim.opt.clipboard = 'unnamedplus'
+vim.opt.title = true
+vim.opt.titlestring = "%{%v:lua.MyTitleString()%}"
+function _G.MyTitleString()
+  local filename = vim.fn.expand('%:t') ~= '' and vim.fn.expand('%:t') or vim.fn.expand('%:F')
+  local modified = vim.bo.modified and '' or ''
+  return modified  .. filename
+end
+
+vim.opt.wildmenu = true
+
+
+-- AUTOCOMMANDS
+vim.api.nvim_create_autocmd("FileType", {
+    pattern = "*",
+    desc = "removes autoinsertion of comments",
+    callback = function()
+        vim.opt_local.formatoptions:remove({ "c", "r", "o" })
+    end,
+})
+
+vim.api.nvim_create_autocmd('TextYankPost', {
+    callback = function() 
+        vim.hl.on_yank()
+    end,
+})
+
+
+-- PLUGINS
+vim.pack.add({
+    'https://github.com/windwp/nvim-autopairs',
+    'https://github.com/kawre/neotab.nvim',
+    'https://github.com/mrjones2014/smart-splits.nvim',
+    'https://github.com/nvim-mini/mini.nvim',
+    'https://github.com/blazkowolf/gruber-darker.nvim',
+
+    'https://github.com/stevearc/oil.nvim',
+    'https://github.com/nvim-lua/plenary.nvim',
+    {
+        src = 'https://github.com/nvim-telescope/telescope.nvim', 
+        version = '*'
+    },
+    {
+        src = 'https://github.com/nvim-treesitter/nvim-treesitter',
+        version = 'main',
+        build = ':TSUpdate',
+    },
+    'https://github.com/neovim/nvim-lspconfig',
+    'https://github.com/mason-org/mason.nvim',
+    'https://github.com/saghen/blink.cmp',
+    'https://github.com/L3MON4D3/LuaSnip',
+})
+
+-- PLUGINS SETTINGS
+require('nvim-autopairs').setup{}
+require('neotab').setup{}
+require('smart-splits').setup{}
+require('mini.surround').setup{}
+require('gruber-darker').setup{
+    bold = false,
+    italic = {
+        strings = false,
+        comments = false,
+        operators = false,
+        folds = false,
+    },
+}
+require('oil').setup{
+    skip_confirm_for_simple_edits = true,
+    view_options = {
+        show_hidden = true
+    },
+}
+require('telescope').setup{
+    defaults = {
+        layout_strategy = "center",
+        layout_config = {
+            prompt_position = "top"
+        },
+        sorting_strategy = "ascending",
+        selection_caret = "☞ ", -- ➤
+        winblend = 0,
+        mappings = {
+            i = {
+                ["<C-s>"] = "select_horizontal",
+            },
+            n = {
+                ["<C-s>"] = "select_horizontal",
+            }
+        },
+        vimgrep_arguments = {
+            "rg",
+            "--color=never",
+            "--no-heading",
+            "--with-filename",
+            "--line-number",
+            "--column",
+            "--smart-case"
+        },
+        file_ignore_patterns = {
+            "target/",
+            "%.class",
+            "%.jar",
+            "%.idea/",
+            "%.git/"
+        }
+    },
+    pickers = {
+        find_files = {
+            theme = "dropdown",
+            previewer = false,
+        },
+        live_grep = {
+
+        },
+        grep_string = {
+
+        },
+        registers = {
+            theme = "cursor",
+
+        },
+        buffers = {
+            theme = "ivy",
+            previewer = false,
+            layout_config = {
+                height = 0.25
+            }
+        },
+        colorscheme = {
+            enable_preview = true,
+            previewer = false,
+            theme = "dropdown",
+        },
+    }
+}
+require('nvim-treesitter').install({ 'java', 'c', 'cpp', 'c_sharp', 'lua'})
+vim.api.nvim_create_autocmd('FileType', {
+    callback = function(args)
+        local lang = vim.treesitter.language.get_lang(args.match)
+        if lang and vim.treesitter.language.add(lang) then
+            vim.treesitter.start()
+        end
+    end,
+})
+require('mason').setup{}
+require('blink.cmp').setup{
+    fuzzy = { implementation = 'lua' },
+    appearance = {
+        -- 'mono' () for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
+        -- Adjusts spacing to ensure icons are aligned
+        nerd_font_variant = 'mono',
+        use_nvim_cmp_as_default = true,
+    },
+    -- *blink-keymaps*
+    keymap = {
+        preset = 'enter',
+        ['<C-n>'] = { 'show', 'select_next', 'fallback' },
+        -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
+    },
+    completion = {
+        list = {
+            selection = {
+                preselect = function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
+                auto_insert = false,
+            },
+        },
+        menu = {
+            auto_show = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+            draw = {
+                padding = { 0, 1 },
+                components = {
+                    kind_icon = { text = function(ctx) return ' ' .. ctx.kind_icon .. ctx.icon_gap .. ' ' end }
+                },
+            },
+            border = "rounded",
+            winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
+        },
+        documentation = {
+            auto_show = true,
+            auto_show_delay_ms = 2000,
+            window = {
+                border = "rounded",
+                winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
+            },
+        },
+        ghost_text = {
+            enabled = function()
+                return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
+            end,
+        },
+    },
+    signature = {
+        enabled = true,
+        trigger = {
+            enabled = true,
+            show_on_insert = true,
+        },
+    },
+}
+
+local open_floating_preview = vim.lsp.util.open_floating_preview
+function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+  opts = opts or {}
+  opts.border = "rounded"
+  return open_floating_preview(contents, syntax, opts, ...)
+end
+
+vim.diagnostic.config({
+  float = { border = "rounded" }
+})
+
+vim.lsp.config('lua_ls', {
+    settings = {
+        Lua = {
+            runtime = { version = 'LuaJIT' },
+            workspace = {
+                checkThirdParty = false,
+                library = vim.api.nvim_get_runtime_file('', true),
+            },
+            diagnostics = {
+                disable = { 'redundant-parameter', 'trailing-space' }
+            }
+        },
+    },
+})
+vim.lsp.enable({ 'lua_ls', 'jdtls', 'clangd' })
+
+
+-- KEYMAPS
+local map = vim.keymap.set
+
+vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(args)
+        local opts = { buffer = args.buf }
+        map('n', 'gd',         vim.lsp.buf.definition, opts)
+        map('n', 'gD',         vim.lsp.buf.declaration, opts)
+        map('n', 'gr',         vim.lsp.buf.references, opts)
+        map('n', 'gi',         vim.lsp.buf.implementation, opts)
+        map('n', 'K',          vim.lsp.buf.hover, opts)
+        map('n', '<leader>rn', vim.lsp.buf.rename, opts)
+        map('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+        map('n', '<leader>f',  vim.lsp.buf.format, opts)
+        map('n', '<leader>d',  vim.diagnostic.open_float, opts)
+        map('n', ']d',         function() vim.diagnostic.jump({count=1, float=true}) end, opts)
+        map('n', '[d',         function() vim.diagnostic.jump({count=-1, float=true}) end, opts)
+    end,
+})
+
+local builtin = require('telescope.builtin')
+local action = require('telescope.actions')
+map('n', '<C-f>', builtin.find_files)
+map('n', '<C-g>', builtin.live_grep)
+map('v', '<C-g>', builtin.grep_string)
+map('n', '<C-p>', builtin.registers)
+map('n', '<C-b>', function()
+    require('telescope.builtin').buffers({
+        attach_mappings = function(prompt_bufnr, map_local)
+            map_local('i', '<C-d>', function()
+                action.delete_buffer(prompt_bufnr)
+            end)
+            map_local('n', '<C-d>', function()
+                action.delete_buffer(prompt_bufnr)
+            end)
+            return true
+        end,
+    })
+end, {desc = "Buffers with delete capability"})
+
+map('n', '<leader>w', '<CMD>Oil<CR>')
+map('n', '<C-s>', '<CMD>w | restart<CR>')
+map('n', '<leader>c', '<CMD>noh<CR>')
+
+map('n', 'n', 'nzzzv')
+map('n', 'N', 'Nzzzv')
+map('n', '<C-d>', '<C-d>zz')
+map('n', '<C-u>', '<C-u>zz')
+map('n', 'J', 'mzJ`z', { desc = 'Join lines without moving cursor' })
+
+map('v', '<A-j>', ":m '>+1<CR>gv=gv", { desc = 'Move lines up and down'})
+map('v', '<A-k>', ":m '<-2<CR>gv=gv", { desc = 'Move lines up and down'})
+
+local splits = require('smart-splits')
+map('n', '<A-h>',  splits.resize_left)
+map('n', '<A-j>',  splits.resize_down)
+map('n', '<A-k>',  splits.resize_up)
+map('n', '<A-l>',  splits.resize_right)
+map('n', '<A-->',  '<C-w>_')
+map('n', '<A-=>',  '<C-w>=')
+map('n', '<A-\\>', '<C-w>|')
+
+vim.cmd.colorscheme('gruber-darker')
+vim.api.nvim_set_hl(0, 'MatchParen', {fg = '#ffffff', bg = '#484848'})
+vim.api.nvim_set_hl(0, 'NormalFloat', {fg = '#ffffff', bg = '#181818'})
+vim.api.nvim_set_hl(0, 'BlinkCmpGhostText', {fg = '#686868', bg = '#282828'})
