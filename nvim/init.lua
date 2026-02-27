@@ -197,19 +197,21 @@ require('blink.cmp').setup{
     },
     -- *blink-keymaps*
     keymap = {
-        preset = 'enter',
+        preset = 'default',
+        ['<C-f>'] = { 'select_and_accept', 'fallback'},
+        ['<CR>'] = { 'select_and_accept', 'fallback'},
         ['<C-n>'] = { 'show', 'select_next', 'fallback' },
-        -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
+        ['<C-e>'] = { 'hide', 'show', 'fallback' },
     },
     completion = {
         list = {
             selection = {
-                preselect = function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
+                preselect = true, -- function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
                 auto_insert = false,
             },
         },
         menu = {
-            auto_show = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+            auto_show = false, -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
             draw = {
                 padding = { 0, 1 },
                 components = {
@@ -228,9 +230,7 @@ require('blink.cmp').setup{
             },
         },
         ghost_text = {
-            enabled = function()
-                return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
-            end,
+            enabled = true, -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
         },
     },
     signature = {
@@ -252,6 +252,10 @@ end
 vim.diagnostic.config({
   float = { border = "rounded" }
 })
+
+vim.lsp.config['*'] = {
+    capabilities = require('blink.cmp').get_lsp_capabilities()
+}
 
 vim.lsp.config('lua_ls', {
     settings = {
@@ -311,8 +315,11 @@ map('n', '<C-b>', function()
 end, {desc = "Buffers with delete capability"})
 
 map('n', '<leader>w', '<CMD>Oil<CR>')
-map('n', '<C-s>', '<CMD>w | restart<CR>')
-map('n', '<leader>c', '<CMD>noh<CR>')
+map('n', '<C-s>', '<CMD>w<CR>')
+map('i', '<C-s>', '<CMD>w<CR>')
+map('n', '<C-/>', 'gcc', { remap = true });
+map('v', '<C-/>', 'gc', { remap = true });
+map('n', '<leader>n', '<CMD>noh<CR>')
 
 map('n', 'n', 'nzzzv')
 map('n', 'N', 'Nzzzv')
@@ -336,3 +343,4 @@ vim.cmd.colorscheme('gruber-darker')
 vim.api.nvim_set_hl(0, 'MatchParen', {fg = '#ffffff', bg = '#484848'})
 vim.api.nvim_set_hl(0, 'NormalFloat', {fg = '#ffffff', bg = '#181818'})
 vim.api.nvim_set_hl(0, 'BlinkCmpGhostText', {fg = '#686868', bg = '#282828'})
+vim.api.nvim_set_hl(0, '@property.cpp', {fg = '#ffffff', bg = '#181818'})

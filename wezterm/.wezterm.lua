@@ -2,16 +2,16 @@ local wezterm = require 'wezterm'
 local act = wezterm.action
 local config = wezterm.config_builder()
 
-local current_font = wezterm.font {
-    family = 'DroidSansMonoSlashed',
-    -- family = 'Noto Sans Mono',
-    -- family = 'Liberation Mono',
-    -- family = 'IBM Plex Mono',
-    -- family = 'Hack',
-    -- family = 'Iosevka'
-    -- family = 'JetBrains Mono',
-    -- family = 'Ubuntu Mono',
-}
+local current_font = wezterm.font
+    -- ('DroidSansMonoSlashed')
+    -- ('Noto Sans Mono')
+    ('Liberation Mono', { weight = 500 })
+    -- ('IBM Plex Mono')
+    -- ('Hack')
+    -- ('Iosevka')
+    -- ('JetBrains Mono')
+    -- ('Ubuntu Mono')
+
 
 config.default_prog = { '/usr/bin/fish', '-li'}
 
