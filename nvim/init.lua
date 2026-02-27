@@ -94,7 +94,7 @@ vim.pack.add({
     'https://github.com/L3MON4D3/LuaSnip',
 })
 
--- PLUGINS SETTINGS
+-- PLUGIN SETTINGS
 require('nvim-autopairs').setup{}
 require('neotab').setup{}
 require('smart-splits').setup{}
@@ -249,10 +249,6 @@ function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
   return open_floating_preview(contents, syntax, opts, ...)
 end
 
-vim.diagnostic.config({
-  float = { border = "rounded" }
-})
-
 vim.lsp.config['*'] = {
     capabilities = require('blink.cmp').get_lsp_capabilities()
 }
@@ -339,6 +335,7 @@ map('n', '<A-->',  '<C-w>_')
 map('n', '<A-=>',  '<C-w>=')
 map('n', '<A-\\>', '<C-w>|')
 
+-- COLORS
 vim.cmd.colorscheme('gruber-darker')
 vim.api.nvim_set_hl(0, 'MatchParen', {fg = '#ffffff', bg = '#484848'})
 vim.api.nvim_set_hl(0, 'NormalFloat', {fg = '#ffffff', bg = '#181818'})
