@@ -13,7 +13,7 @@ local current_font = wezterm.font
     -- ('Ubuntu Mono')
 
 
-config.default_prog = { '/usr/bin/fish', '-li'}
+-- config.default_prog = { '/usr/bin/fish', '-li'}
 
 -- Colorscheme
 config.color_scheme = 'Gruber (base16)'
