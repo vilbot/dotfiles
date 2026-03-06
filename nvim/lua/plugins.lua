@@ -43,15 +43,14 @@ return {
             },
             -- *blink-keymaps*
             keymap = {
-                preset = 'super-tab',
+                preset = 'default',
                 ['<C-n>'] = { 'show', 'select_next', 'fallback' },
+                ['<C-f>'] = { 'select_and_accept', 'fallback' },
                 -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
             },
             completion = {
                 menu = {
-                    auto_show = function()
-                        return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
-                    end,
+                    auto_show = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
                     draw = {
                         padding = { 0, 1 }, -- padding only on right side
                         components = {
