@@ -4,7 +4,7 @@ return {
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
         config = function()
-            require('nvim-treesitter.configs').setup({
+            require('nvim-treesitter.config').setup({
                 ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
                 sync_install = false,
                 auto_install = true,
@@ -30,37 +30,58 @@ return {
         version = 'v0.*',
         dependencies = { 'rafamadriz/friendly-snippets' },
         opts = {
-            fuzzy = {
-                prebuilt_binaries = {
-                    download = true,
-                    force_version = nil,
-                }
-            },
+            fuzzy = { implementation = 'lua' },
             appearance = {
                 -- 'mono' () for 'Nerd Font Mono' or 'normal' for 'Nerd Font'
                 -- Adjusts spacing to ensure icons are aligned
-                nerd_font_variant = 'mono'
+                nerd_font_variant = 'mono',
+                use_nvim_cmp_as_default = true,
             },
             -- *blink-keymaps*
             keymap = {
-                preset = 'default',
+                preset = 'enter',
                 ['<C-n>'] = { 'show', 'select_next', 'fallback' },
-                ['<C-f>'] = { 'select_and_accept', 'fallback' },
                 -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
             },
             completion = {
-                menu = {
-                    auto_show = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
-                    draw = {
-                        padding = { 0, 1 }, -- padding only on right side
-                        components = {
-                            kind_icon = {
-                                text = function(ctx) return ' ' .. ctx.kind_icon .. ctx.icon_gap .. ' ' end
-                            }
-                        }
-                    }
+                list = {
+                    selection = {
+                        preselect = function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
+                        auto_insert = false,
+                    },
                 },
-            }
+                menu = {
+                    auto_show = false, --function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+                    draw = {
+                        padding = { 0, 1 },
+                        components = {
+                            kind_icon = { text = function(ctx) return ' ' .. ctx.kind_icon .. ctx.icon_gap .. ' ' end }
+                        },
+                    },
+                    border = "rounded",
+                    winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
+                },
+                documentation = {
+                    auto_show = true,
+                    auto_show_delay_ms = 2000,
+                    window = {
+                        border = "rounded",
+                        winhighlight = "Normal:Normal,FloatBorder:FloatBorder,CursorLine:BlinkCmpMenuSelection,Search:None",
+                    },
+                },
+                ghost_text = {
+                    enabled = function()
+                        return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
+                    end,
+                },
+            },
+            signature = {
+                enabled = true,
+                trigger = {
+                    enabled = true,
+                    show_on_insert = true,
+                },
+            },
         },
     },
     {
