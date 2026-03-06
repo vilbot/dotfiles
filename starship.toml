@@ -1,0 +1,25 @@
+add_newline = false
+
+format = '''$directory$git_branch $character $cmd_duration'''
+
+[character] 
+format = '$symbol'
+success_symbol = '> '
+error_symbol = '!> '
+disabled = false
+
+[cmd_duration]
+disabled = true
+min_time = 1_000
+show_milliseconds = true
+format = '[$duration]($style)'
+style = '#787878'
+
+[directory]
+style = 'green'
+truncation_length = 0
+truncate_to_repo = false
+
+[git_branch]
+symbol = ''
+format = '\($branch\)'

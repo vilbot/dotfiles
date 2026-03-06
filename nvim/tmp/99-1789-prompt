@@ -1,3 +1,15 @@
+<Context>
+You receive a selection in neovim that you need to replace with new code.
+The selection's contents may contain notes, incorporate the notes every time if there are some.
+consider the context of the selection and what you are suppose to be implementing
+<SELECTION_LOCATION>
+range(point(352,1),point(353,64))
+</SELECTION_LOCATION>
+<SELECTION_CONTENT>
+map('v', '<leader>9v', function () _99.visual() end)
+map('v', '<leader>9s', function () _99.stop_all_requests() end)
+</SELECTION_CONTENT>
+<FILE_CONTAINING_SELECTION>
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -76,6 +88,7 @@ vim.pack.add({
     'https://github.com/mrjones2014/smart-splits.nvim',
     'https://github.com/nvim-mini/mini.nvim',
     'https://github.com/blazkowolf/gruber-darker.nvim',
+
     'https://github.com/stevearc/oil.nvim',
     'https://github.com/nvim-lua/plenary.nvim',
     {
@@ -89,8 +102,13 @@ vim.pack.add({
     },
     'https://github.com/neovim/nvim-lspconfig',
     'https://github.com/mason-org/mason.nvim',
-    'https://github.com/saghen/blink.cmp',
+    {
+        src = 'https://github.com/saghen/blink.cmp',
+        version = '2.*'
+    },
+    'https://github.com/saghen/blink.compat',
     'https://github.com/L3MON4D3/LuaSnip',
+    'https://github.com/ThePrimeagen/99',
 })
 
 -- PLUGIN SETTINGS
@@ -240,6 +258,11 @@ require('blink.cmp').setup{
         },
     },
 }
+require('99').setup{ 
+    -- completion = {
+    --     source = 'blink',
+    -- },
+}
 
 local open_floating_preview = vim.lsp.util.open_floating_preview
 function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
@@ -337,6 +360,9 @@ map('n', '<A-->',  '<C-w>_')
 map('n', '<A-=>',  '<C-w>=')
 map('n', '<A-\\>', '<C-w>|')
 
+local _99 = require('99')
+map('v', '<leader>9v', function () _99.visual() end)
+map('v', '<leader>9s', function () _99.stop_all_requests() end)
 
 -- COLORS
 vim.cmd.colorscheme('gruber-darker')
@@ -344,3 +370,25 @@ vim.api.nvim_set_hl(0, 'MatchParen', {fg = '#ffffff', bg = '#484848'})
 vim.api.nvim_set_hl(0, 'NormalFloat', {fg = '#ffffff', bg = '#181818'})
 vim.api.nvim_set_hl(0, 'BlinkCmpGhostText', {fg = '#686868', bg = '#282828'})
 vim.api.nvim_set_hl(0, '@property.cpp', {fg = '#ffffff', bg = '#181818'})
+</FILE_CONTAINING_SELECTION>
+
+</Context>
+<Prompt>
+is this correct?
+</Prompt>
+
+<Location><File>/home/vilgot/dotfiles/nvim/init.lua</File><Function>range(point(352,1),point(353,64))</Function></Location>
+<FunctionText>map('v', '<leader>9v', function () _99.visual() end)
+map('v', '<leader>9s', function () _99.stop_all_requests() end)</FunctionText>
+<TEMP_FILE>./tmp/99-1789</TEMP_FILE>
+<MustObey>
+NEVER alter any file other than TEMP_FILE.
+never provide the requested changes as conversational output. Return only the code.
+ONLY provide requested changes by writing the change to TEMP_FILE
+
+never attempt to read TEMP_FILE.
+It is purely for output.
+Previous contents, which may not exist, can be written over without worry
+After writing TEMP_FILE once you should be done.  Be done and end the session.
+
+</MustObey>
