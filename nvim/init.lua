@@ -70,28 +70,57 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 
 -- PLUGINS
-vim.pack.add({
-    'https://github.com/windwp/nvim-autopairs',
-    'https://github.com/kawre/neotab.nvim',
-    'https://github.com/mrjones2014/smart-splits.nvim',
-    'https://github.com/nvim-mini/mini.nvim',
-    'https://github.com/blazkowolf/gruber-darker.nvim',
-    'https://github.com/stevearc/oil.nvim',
-    'https://github.com/nvim-lua/plenary.nvim',
-    {
-        src = 'https://github.com/nvim-telescope/telescope.nvim', 
-        version = '*'
-    },
-    {
-        src = 'https://github.com/nvim-treesitter/nvim-treesitter',
-        version = 'main',
-        build = ':TSUpdate',
-    },
-    'https://github.com/neovim/nvim-lspconfig',
-    'https://github.com/mason-org/mason.nvim',
-    'https://github.com/saghen/blink.cmp',
-    'https://github.com/L3MON4D3/LuaSnip',
+local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
+if not vim.uv.fs_stat(lazypath) then
+    vim.fn.system({
+        'git', 'clone', '--filter=blob:none',
+        'https://github.com/folke/lazy.nvim.git',
+        lazypath
+    })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require('lazy').setup({
+    'windwp/nvim-autopairs',
+    'kawre/neotab.nvim',
+    'mrjones2014/smart-splits.nvim',
+    'echasnovski/mini.nvim',
+    'blazkowolf/gruber-darker.nvim',
+    'stevearc/oil.nvim',
+    'nvim-lua/plenary.nvim',
+    { 'nvim-telescope/telescope.nvim', version = '*' },
+    { 'nvim-treesitter/nvim-treesitter', branch = 'main', build = ':TSUpdate' },
+    'neovim/nvim-lspconfig',
+    'mason-org/mason.nvim',
+    { 'saghen/blink.cmp', version = '*' },
+    'L3MON4D3/LuaSnip',
+}, {
+    -- disable lazy's default keymaps so they don't conflict
+    defaults = { lazy = false },
 })
+
+-- vim.pack.add({
+--     'https://github.com/windwp/nvim-autopairs',
+--     'https://github.com/kawre/neotab.nvim',
+--     'https://github.com/mrjones2014/smart-splits.nvim',
+--     'https://github.com/nvim-mini/mini.nvim',
+--     'https://github.com/blazkowolf/gruber-darker.nvim',
+--     'https://github.com/stevearc/oil.nvim',
+--     'https://github.com/nvim-lua/plenary.nvim',
+--     {
+--         src = 'https://github.com/nvim-telescope/telescope.nvim', 
+--         version = '*'
+--     },
+--     {
+--         src = 'https://github.com/nvim-treesitter/nvim-treesitter',
+--         version = 'main',
+--         build = ':TSUpdate',
+--     },
+--     'https://github.com/neovim/nvim-lspconfig',
+--     'https://github.com/mason-org/mason.nvim',
+--     'https://github.com/saghen/blink.cmp',
+--     'https://github.com/L3MON4D3/LuaSnip',
+-- })
 
 -- PLUGIN SETTINGS
 require('nvim-autopairs').setup{}
