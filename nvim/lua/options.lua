@@ -40,3 +40,5 @@ opt.termguicolors = true
 opt.inccommand = "split"
 opt.grepformat = "%f:%l:%c:%m"
 opt.swapfile = false
+vim.g.nord_italic = false
+vim.g.nord_bold = false

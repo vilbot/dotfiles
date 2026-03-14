@@ -10,11 +10,32 @@ map('x', '<leader>S', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {de
 map('n', 'x', '"_x')
 map('n', '0p', '"0p')
 map('n', '0P', '"0P')
-
+map('n', '<C-_>', 'gcc', { remap = true })
+map('v', '<C-_>', 'gc', { remap = true })
+map('n', 'J', 'mzJ`z', { desc = 'Join lines without moving cursor' })
 
 
 map('n', '<leader>q', '<cmd>NvimTreeOpen<cr>')
 map('n', '<leader>w', '<CMD>Oil<CR>')
+
+-- :h vim.lsp.buf.hover.Opts
+vim.api.nvim_create_autocmd('LspAttach', {
+    callback = function(args)
+        local opts = { buffer = args.buf }
+        map('n', 'gd',         vim.lsp.buf.definition, opts)
+        map('n', 'gD',         vim.lsp.buf.declaration, opts)
+        map('n', 'gr',         vim.lsp.buf.references, opts)
+        map('n', 'gi',         vim.lsp.buf.implementation, opts)
+        map('n', 'K',          vim.lsp.buf.hover, opts)
+        map('n', '<leader>rn', vim.lsp.buf.rename, opts)
+        map('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+        map('n', '<leader>f',  vim.lsp.buf.format, opts)
+        map('n', '<leader>t',  vim.lsp.buf.references, opts)
+        map('n', '<leader>d',  vim.diagnostic.open_float, opts)
+        map('n', ']d',         function() vim.diagnostic.jump({count=1, float=true}) end, opts)
+        map('n', '[d',         function() vim.diagnostic.jump({count=-1, float=true}) end, opts)
+    end,
+})
 
 local builtin = require('telescope.builtin')
 local action = require 'telescope.actions'
@@ -35,8 +56,6 @@ map('n', '<C-b>', function()
         end,
     })
 end, {desc = "Buffers with delete capability"})
-
-
 
 -- Navigate to the next page in the PDF (supports counts, e.g., 5<leader>jj)
 map("n", "<leader>jj", function()
@@ -71,6 +90,3 @@ map('n', '<A-->',  '<C-w>_')
 map('n', '<A-=>',  '<C-w>=')
 map('n', '<A-\\>', '<C-w>|')
 
-
-
--- Blink keymaps are here: |blink-keymaps|

@@ -23,3 +23,12 @@ vim.api.nvim_create_autocmd("BufReadPost", {
     require("pdfview").open(file_path)
   end,
 })
+
+local open_floating_preview = vim.lsp.util.open_floating_preview
+function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+  opts = opts or {}
+  opts.border = "rounded"
+  return open_floating_preview(contents, syntax, opts, ...)
+end
+
+

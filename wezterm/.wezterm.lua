@@ -6,6 +6,7 @@ local current_font = wezterm.font {
     -- family = 'Droid Sans Mono Slashed',
     -- family = 'Noto Sans Mono',
     family = 'Liberation Mono',
+    -- family = 'Comic Mono',
     -- family = 'IBM Plex Mono',
     -- family = 'Hack',
     -- family = 'Iosevka'

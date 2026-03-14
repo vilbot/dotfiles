@@ -5,7 +5,7 @@ return {
         build = ":TSUpdate",
         config = function()
             require('nvim-treesitter.config').setup({
-                ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "java" },
+                ensure_installed = { "c", "cpp", "c_sharp", "lua", "vim", "vimdoc", "query", "java" },
                 sync_install = false,
                 auto_install = true,
                 highlight = { enable = true },
@@ -39,19 +39,20 @@ return {
             },
             -- *blink-keymaps*
             keymap = {
-                preset = 'enter',
+                preset = 'default',
+                ['<C-f>'] = { 'select_and_accept', 'fallback'},
                 ['<C-n>'] = { 'show', 'select_next', 'fallback' },
-                -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
+                ['<C-e>'] = { 'hide', 'show', 'fallback' },
             },
             completion = {
                 list = {
                     selection = {
-                        preselect = function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
+                        preselect = true, -- function() return not require('blink.cmp').snippet_active({ direction = 1 }) end,
                         auto_insert = false,
                     },
                 },
                 menu = {
-                    auto_show = false, --function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+                    auto_show = false, -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
                     draw = {
                         padding = { 0, 1 },
                         components = {
@@ -70,13 +71,11 @@ return {
                     },
                 },
                 ghost_text = {
-                    enabled = function()
-                        return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype)
-                    end,
+                    enabled = true -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
                 },
             },
             signature = {
-                enabled = true,
+                enabled = false,
                 trigger = {
                     enabled = true,
                     show_on_insert = true,
@@ -189,7 +188,7 @@ return {
         dependencies = { "nvim-telescope/telescope.nvim" }
     },
 
-    -- THEMES --
+    -- COLORSCHEMES --
     {
         "blazkowolf/gruber-darker.nvim",
         priority = 1000,
@@ -227,7 +226,7 @@ return {
     },
     { "rebelot/kanagawa.nvim" },
     { "Mofiqul/vscode.nvim" },
-    { "shaunsingh/nord.nvim" },
+    { "shaunsingh/nord.nvim", },
     { "AlexvZyl/nordic.nvim" },
     { "jacoborus/tender.vim" },
     { "savq/melange-nvim" },
