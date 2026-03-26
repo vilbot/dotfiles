@@ -22,7 +22,7 @@ opt.clipboard = "unnamedplus"
 opt.showmode = true
 opt.signcolumn = "no"
 opt.splitright = true
-opt.splitbelow = false
+opt.splitbelow = true
 opt.wildmenu = true
 opt.title = true
 opt.titlestring = "%{%v:lua.MyTitleString()%}"
@@ -31,6 +31,7 @@ function _G.MyTitleString()
   local modified = vim.bo.modified and '' or ''
   return modified  .. filename
 end
+opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,t:block"
 opt.laststatus = 3
 opt.completeopt = { "menu", "menuone", "noinsert" }
 opt.path:append("**")
@@ -42,3 +43,7 @@ opt.grepformat = "%f:%l:%c:%m"
 opt.swapfile = false
 vim.g.nord_italic = false
 vim.g.nord_bold = false
+vim.opt.exrc = true
+vim.opt.secure = true
+vim.opt.shell = 'pwsh -NoLogo'
+vim.opt.timeoutlen = 200

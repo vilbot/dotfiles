@@ -5,10 +5,13 @@ return {
         build = ":TSUpdate",
         config = function()
             require('nvim-treesitter.config').setup({
+                install_dir = "C:\\Users\\Vilgot\\AppData\\Local\\nvim-data\\site\\parser",
                 ensure_installed = { "c", "cpp", "c_sharp", "lua", "vim", "vimdoc", "query", "java" },
                 sync_install = false,
                 auto_install = true,
                 highlight = { enable = true },
+                prefer_git = false, 
+                compilers = { "zig" },
             })
 
             -- without this colors dont load properly
@@ -19,7 +22,14 @@ return {
                     end
                 end,
             })
-
+            -- vim.api.nvim_create_autocmd({ "FileType" }, {
+            --     pattern = { "c", "cpp" },
+            --     callback = function()
+            --         local buf = vim.api.nvim_get_current_buf()
+            --         -- Force treesitter to attach if the parser exists
+            --         pcall(vim.treesitter.start, buf)
+            --     end,
+            -- })
         end
     },
     { "mason-org/mason.nvim" },
@@ -98,73 +108,80 @@ return {
         branch = 'master',
         -- branch = "0.1.x",
         dependencies = { "nvim-lua/plenary.nvim" },
-        opts = {
-            defaults = {
-                layout_strategy = "horizontal",
-                layout_config = {
-                    prompt_position = "top"
-                },
-                sorting_strategy = "ascending",
-                selection_caret = "☞ ", -- ➤
-                winblend = 0,
-                mappings = {
-                    i = {
-                        ["<C-s>"] = "select_horizontal",
+        config = function ()
+            require("telescope").setup({
+                -- opts = {
+                    defaults = {
+                        layout_strategy = "horizontal",
+                        layout_config = {
+                            prompt_position = "top"
+                        },
+                        sorting_strategy = "ascending",
+                        selection_caret = "☞ ", -- ➤
+                        winblend = 0,
+                        mappings = {
+                            i = {
+                                ["<C-s>"] = "select_horizontal",
+                            },
+                            n = {
+                                ["<C-s>"] = "select_horizontal",
+                            }
+                        },
+                        vimgrep_arguments = {
+                            "rg",
+                            "--color=never",
+                            "--no-heading",
+                            "--with-filename",
+                            "--line-number",
+                            "--column",
+                            "--smart-case"
+                        },
+                        file_ignore_patterns = {
+                            "target/",
+                            "%.class",
+                            "%.jar",
+                            "%.idea/",
+                            "%.git/"
+                        }
                     },
-                    n = {
-                        ["<C-s>"] = "select_horizontal",
-                    }
-                },
-                vimgrep_arguments = {
-                    "rg",
-                    "--color=never",
-                    "--no-heading",
-                    "--with-filename",
-                    "--line-number",
-                    "--column",
-                    "--smart-case"
-                },
-                file_ignore_patterns = {
-                    "target/",
-                    "%.class",
-                    "%.jar",
-                    "%.idea/",
-                    "%.git/"
-                }
-            },
-            pickers = {
-                find_files = {
-                    theme = "dropdown",
-                    previewer = false,
-                },
-                live_grep = {
+                    pickers = {
+                        -- find_files = {
+                            --     theme = "cursor",
+                            --     previewer = false,
+                            -- },
+                            live_grep = {
+                                layout_strategy = "flex",
+                            },
+                            grep_string = {
+                                layout_strategy = "flex",
+                            },
+                            registers = {
+                                theme = "cursor",
+                            },
+                            marks = {
+                                layout_strategy = "flex",
+                            },
+                            buffers = {
+                                enable_preview = true,
+                                previewer = false,
+                                theme = "ivy",
+                                layout_config = {
+                                    height = 0.25
+                                }
+                            },
+                            colorscheme = {
+                                enable_preview = true,
+                                previewer = false,
+                                theme = "ivy",
+                                layout_config = {
+                                    height = 0.25
+                                }
+                            }
+                        }
+                    -- }
 
-                },
-                grep_string = {
-
-                },
-                registers = {
-                    theme = "cursor",
-
-                },
-                buffers = {
-                    enable_preview = true,
-                    previewer = false,
-                    theme = "ivy",
-                    layout_config = {
-                        height = 0.25
-                    }
-                },
-                colorscheme = {
-                    enable_preview = true,
-                    previewer = false,
-                    theme = "ivy",
-                    layout_config = {
-                        height = 0.25
-                    }
-                }
-            }
-        }
+                })
+        end
     },
     {
         "stevearc/oil.nvim",
@@ -193,10 +210,6 @@ return {
         "blazkowolf/gruber-darker.nvim",
         priority = 1000,
         lazy = false,
-        config = function(_, opts)
-            require("gruber-darker").setup(opts)
-            vim.cmd.colorscheme("gruber-darker")
-        end,
 
         opts = {
             bold = false,
@@ -224,12 +237,20 @@ return {
             },
         }
     },
-    { "rebelot/kanagawa.nvim" },
+    { 
+        "rebelot/kanagawa.nvim",
+        opts = {
+            commentStyle = { italic = false },
+            keywordStyle = { bold = false},
+            statementStyle = { bold = false },
+        }
+    },
     { "Mofiqul/vscode.nvim" },
-    { "shaunsingh/nord.nvim", },
+    { "shaunsingh/nord.nvim" },
     { "AlexvZyl/nordic.nvim" },
     { "jacoborus/tender.vim" },
     { "savq/melange-nvim" },
+    { "tanvirtin/monokai.nvim" },
     {
         'datsfilipe/vesper.nvim',
         priority = 1000,

@@ -3,15 +3,17 @@ local act = wezterm.action
 local config = wezterm.config_builder()
 
 local current_font = wezterm.font {
+    family = 'Liberation Mono',
+    -- family = 'Google Sans Code',
     -- family = 'Droid Sans Mono Slashed',
     -- family = 'Noto Sans Mono',
-    family = 'Liberation Mono',
-    -- family = 'Comic Mono',
-    -- family = 'IBM Plex Mono',
-    -- family = 'Hack',
-    -- family = 'Iosevka'
     -- family = 'JetBrains Mono',
+    -- family = 'Iosevka'
     -- family = 'Ubuntu Mono',
+    -- family = 'IBM Plex Mono',
+    -- family = 'Monocraft',
+    -- family = 'Comic Mono',
+    -- family = 'Hack',
 }
 
 -- config.default_prog = { '/usr/bin/fish', '-li'}
@@ -20,6 +22,7 @@ config.default_prog = { 'pwsh.exe', '-NoLogo'}
 -- Colorscheme
 config.color_scheme = 'Gruber (base16)'
 -- config.color_scheme = 'Vesper'
+-- config.color_scheme = 'Tender (Gogh)'
 
 -- Fonts
 config.font = current_font
@@ -30,10 +33,10 @@ config.adjust_window_size_when_changing_font_size = false
 config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
 config.initial_rows = 40
 config.initial_cols = 120
-config.window_decorations = "RESIZE|TITLE"
+config.window_decorations = "RESIZE"
 config.window_frame = {
-    inactive_titlebar_bg = '#181818',
     active_titlebar_bg = '#282828',
+    -- inactive_titlebar_bg = '#282828', -- not needed
     font_size = 10,
     font = current_font
 }

@@ -6,7 +6,7 @@
         "enabled": true,
         "show_other_hints": true,
         "show_value_hints": true,
-        "show_type_hints": true,
+        "show_type_hints": false,
         "show_parameter_hints": false,
     },
     "show_wrap_guides": true,
@@ -32,14 +32,14 @@
     "tab_size": 4,
     "ui_font_size": 16,
     "buffer_font_size": 14,
-    "buffer_font_family": "Droid Sans Mono Slashed",
+    "buffer_font_family": "Liberation Mono",
     // "window_decorations": "server",
     "icon_theme": "Zed (Default)",
-    "theme": {
-        "mode": "dark",
-        "light": "One Light",
-        "dark": "Gruber Darker",
-    },
+    // "theme": {
+    //     "mode": "dark",
+    //     "light": "One Light",
+    //     "dark": "Gruber Darker",
+    // },
 
     // Code help
     "disable_ai": false,

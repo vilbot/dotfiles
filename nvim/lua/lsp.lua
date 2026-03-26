@@ -8,6 +8,29 @@ vim.lsp.config['*'] = {
     capabilities = require('blink.cmp').get_lsp_capabilities()
 }
 
+vim.lsp.config('jdtls', {
+    cmd = {
+        'C:\\Program Files\\Java\\jdk-21.0.10\\bin\\java.exe',
+        '-jar',
+        vim.fn.glob(vim.fn.stdpath('data') .. '/mason/packages/jdtls/plugins/org.eclipse.equinox.launcher_*.jar'),
+        '-configuration',
+        vim.fn.stdpath('data') .. '/mason/packages/jdtls/config_win',
+        '-data',
+        vim.fn.stdpath('data') .. '/jdtls-workspace',
+    }
+})
+
+vim.lsp.config('clangd', {
+    filetypes = { 'cpp' },
+    cmd = {
+        "clangd", 
+        "--header-insertion=never",
+    },
+    handlers = {
+        ["textDocument/publishDiagnostics"] = function() end,
+    }
+})
+
 vim.lsp.config('lua_ls', {
     settings = {
         Lua = {
