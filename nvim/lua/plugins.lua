@@ -46,6 +46,7 @@ return {
             keymap = {
                 preset = 'enter',
                 ['<C-n>'] = { 'show', 'select_next', 'fallback' },
+                ['<C-f>'] = { 'select_and_accept', 'fallback' },
                 -- ['<C-p>'] = { 'hide', 'select_prev', 'fallback' },
             },
             completion = {
@@ -56,7 +57,7 @@ return {
                     },
                 },
                 menu = {
-                    auto_show = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+                    auto_show = function() return not vim.tbl_contains({ "c", "cpp", "markdown" }, vim.bo.filetype) end,
                     draw = {
                         padding = { 0, 1 },
                         components = {
@@ -149,10 +150,10 @@ return {
                     previewer = false,
                 },
                 live_grep = {
-
+                    layout_strategy = "flex",
                 },
                 grep_string = {
-
+                    layout_strategy = "flex",
                 },
                 registers = {
                     theme = "cursor",
@@ -197,6 +198,15 @@ return {
         "basola21/PDFview",
         lazy = false,
         dependencies = { "nvim-telescope/telescope.nvim" }
+    },
+    {
+        "lervag/vimtex",
+        lazy = false,     -- we don't want to lazy load VimTeX
+        -- tag = "v2.15", -- uncomment to pin to a specific release
+        init = function()
+            -- VimTeX configuration goes here, e.g.
+            vim.g.vimtex_view_method = "zathura"
+        end
     },
     {
         "blazkowolf/gruber-darker.nvim",

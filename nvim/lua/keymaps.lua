@@ -5,7 +5,7 @@ map("v", "<A-j>", ":m '>+1<CR>gv=gv")
 map("v", "<A-k>", ":m '<-2<CR>gv=gv")
 
 map('n', '<leader>s', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace on cursor"})
-map('x', '<leader>S', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
+map('x', '<leader>s', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
 
 -- rethink these
 map('n', 'x', '"_x')
@@ -22,7 +22,7 @@ local action = require 'telescope.actions'
 map('n', '<C-f>', builtin.find_files)
 map('n', '<C-g>', builtin.live_grep)
 map('v', '<C-g>', builtin.grep_string)
-map('n', '<C-p>', builtin.registers)
+map('n', '<leader>p', builtin.registers)
 map('n', '<C-b>', function()
     require('telescope.builtin').buffers({
         attach_mappings = function(prompt_bufnr, map_local)
