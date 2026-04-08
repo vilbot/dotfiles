@@ -1,12 +1,35 @@
-require("mason").setup()
-require("mason-lspconfig").setup({
-    ensure_installed = { "jdtls", "clangd", "lua_ls", "csharp_ls"},
+vim.filetype.add({
+    extension = { razor = "razor" }
 })
 
+require("mason").setup()
+require("mason-lspconfig").setup({
+    ensure_installed = { "html", "cssls", "jdtls", "clangd", "lua_ls"},
+})
 
 vim.lsp.config['*'] = {
     capabilities = require('blink.cmp').get_lsp_capabilities()
 }
+
+require("mason-registry")
+local rzls_path = vim.fn.expand("$MASON/packages/roslyn/libexec/.razorExtension")
+local cmd = {
+    "roslyn",
+    "--stdio",
+    "--logLevel=Information",
+    "--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.get_log_path()),
+    "--razorSourceGenerator=" .. vim.fs.joinpath(rzls_path, "Microsoft.CodeAnalysis.Razor.Compiler.dll"),
+    "--razorDesignTimePath=" .. vim.fs.joinpath(rzls_path, "Targets", "Microsoft.NET.Sdk.Razor.DesignTime.targets"),
+    "--extension",
+    vim.fs.joinpath(rzls_path, "Microsoft.VisualStudioCode.RazorExtension.dll"),
+}
+
+vim.lsp.config('roslyn', {
+    cmd = cmd,
+    handlers = require("roslyn.razor.handlers"),
+    filetypes = { "cs", "razor"},
+    root_markers = { { ".sln", ".csproj", "project.json" }, ".git" },
+})
 
 vim.lsp.config('jdtls', {
     cmd = {
@@ -54,5 +77,5 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end
 })
 
-vim.lsp.enable({"jdtls", "clangd", "lua_ls", "csharp_ls"})
+vim.lsp.enable({ "html", "cssls", "jdtls", "clangd", "lua_ls"})
 

@@ -6,7 +6,7 @@ return {
         config = function()
             require('nvim-treesitter.config').setup({
                 install_dir = "C:\\Users\\Vilgot\\AppData\\Local\\nvim-data\\site\\parser",
-                ensure_installed = { "c", "cpp", "c_sharp", "lua", "vim", "vimdoc", "query", "java" },
+                ensure_installed = { "razor", "html", "css", "c", "cpp", "c_sharp", "lua", "vim", "vimdoc", "query", "java" },
                 sync_install = false,
                 auto_install = true,
                 highlight = { enable = true },
@@ -22,18 +22,26 @@ return {
                     end
                 end,
             })
-            -- vim.api.nvim_create_autocmd({ "FileType" }, {
-            --     pattern = { "c", "cpp" },
-            --     callback = function()
-            --         local buf = vim.api.nvim_get_current_buf()
-            --         -- Force treesitter to attach if the parser exists
-            --         pcall(vim.treesitter.start, buf)
-            --     end,
-            -- })
         end
     },
-    { "mason-org/mason.nvim" },
+    { 
+        "mason-org/mason.nvim",
+        opts = {
+            registries = {
+                "github:mason-org/mason-registry",
+                "github:Crashdummyy/mason-registry",
+            },
+        }
+    },
     { "mason-org/mason-lspconfig.nvim" },
+    {
+        "seblyng/roslyn.nvim",
+        ---@module 'roslyn.config'
+        ---@type RoslynNvimConfig
+        opts = {
+
+        },
+    },
     { "neovim/nvim-lspconfig" },
     {
         'saghen/blink.cmp',
@@ -204,7 +212,13 @@ return {
         lazy = false,
         dependencies = { "nvim-telescope/telescope.nvim" }
     },
+    {
+        "nvim-lualine/lualine.nvim",
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        opts = {
 
+        }
+    },
     -- COLORSCHEMES --
     {
         "blazkowolf/gruber-darker.nvim",

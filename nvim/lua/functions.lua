@@ -44,3 +44,37 @@ function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
   return open_floating_preview(contents, syntax, opts, ...)
 end
 
+vim.api.nvim_create_autocmd("VimLeavePre", {
+    callback = function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.bo[buf].buftype == 'terminal' then
+                vim.api.nvim_buf_delete(buf, { force = true })
+            end
+        end
+    end
+})
+
+local M = {}
+function M.open_term(split_cmd)
+    -- find existing terminal buffer
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.bo[buf].buftype == 'terminal' then
+            -- check if it's already visible in a window
+            for _, win in ipairs(vim.api.nvim_list_wins()) do
+                if vim.api.nvim_win_get_buf(win) == buf then
+                    vim.api.nvim_set_current_win(win)
+                    return
+                end
+            end
+            -- not visible, open it in a split
+            if split_cmd then vim.cmd(split_cmd) end
+            vim.api.nvim_win_set_buf(0, buf)
+            return
+        end
+    end
+    -- no terminal exists, create one
+    if split_cmd then vim.cmd(split_cmd) end
+    vim.cmd('terminal')
+end
+
+return M
