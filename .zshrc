@@ -8,6 +8,7 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 alias jc='javac -d target/classes src/main/java/**/*.java'
 alias jr='java -server -cp target/classes'
+alias restartde='kquitapp6 plasmashell && kstart plasmashell'
 
 
 bindkey -e
