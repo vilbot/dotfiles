@@ -6,19 +6,17 @@ export EDITOR=nvim
 autoload -Uz compinit && compinit -C
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
-alias jc='javac -d target/classes src/main/java/**/*.java'
-alias jr='java -server -cp target/classes'
-alias restartde='kquitapp6 plasmashell && kstart plasmashell'
-
-
 bindkey -e
 bindkey '^[f' vi-forward-word
 
-. ~/Applications/z/z.sh
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
 source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-# source $(brew --prefix)/share/zsh-window-title/zsh-window-title.zsh
 source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+if [ -f "$(brew --prefix)/etc/profile.d/z.sh" ]; then
+    source "$(brew --prefix)/etc/profile.d/z.sh"
+fi
 
 autoload -Uz vcs_info
 zstyle ':vcs_info:git:*' formats '(%b)'
@@ -47,5 +45,3 @@ RPROMPT='%F{#787878}$_cmd_duration'
 
 ZSH_HIGHLIGHT_STYLES[arg0]='fg=yellow'
 ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
-
-# eval "$(starship init zsh)"
