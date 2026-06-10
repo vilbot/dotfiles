@@ -219,6 +219,25 @@ return {
 
         }
     },
+    {
+        "folke/snacks.nvim",
+        priority = 1000,
+        lazy = false,
+        opts = {
+            terminal = {
+                shell = "C:/Program Files/Git/usr/bin/bash.exe",
+            },
+        },
+    },
+    {
+        "coder/claudecode.nvim",
+        dependencies = { "folke/snacks.nvim" },
+        opts = {
+            terminal = {
+                provider = "native",
+            },
+        },
+    },
     -- COLORSCHEMES --
     {
         "blazkowolf/gruber-darker.nvim",
