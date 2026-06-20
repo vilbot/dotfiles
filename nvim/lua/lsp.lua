@@ -4,7 +4,7 @@ vim.filetype.add({
 
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "html", "cssls", "jdtls", "clangd", "lua_ls"},
+    ensure_installed = { "jdtls", "clangd", "lua_ls"},
 })
 
 vim.lsp.config['*'] = {

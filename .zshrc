@@ -1,6 +1,5 @@
 zmodload zsh/datetime
 export PATH="$HOME/.local/bin:$PATH"
-export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 export EDITOR=nvim
 
 autoload -Uz compinit && compinit -C

@@ -25,12 +25,6 @@ opt.splitright = true
 opt.splitbelow = true
 opt.wildmenu = true
 opt.title = true
-opt.titlestring = "%{%v:lua.MyTitleString()%}"
-function _G.MyTitleString()
-  local filename = vim.fn.expand('%:t') ~= '' and vim.fn.expand('%:t') or vim.fn.expand('%:F')
-  local modified = vim.bo.modified and '' or ''
-  return modified  .. filename
-end
 opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,t:block"
 opt.laststatus = 3
 opt.completeopt = { "menu", "menuone", "noinsert" }
@@ -45,5 +39,4 @@ vim.g.nord_italic = false
 vim.g.nord_bold = false
 vim.opt.exrc = true
 vim.opt.secure = true
-vim.opt.shell = 'pwsh -NoLogo'
 vim.opt.timeoutlen = 200

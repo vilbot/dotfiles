@@ -5,13 +5,13 @@ map("v", "<A-j>", ":m '>+1<CR>gv=gv")
 map("v", "<A-k>", ":m '<-2<CR>gv=gv")
 
 map('n', '<leader>s', [[:%s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace on cursor"})
-map('x', '<leader>S', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
+map('x', '<leader>s', [[:s/\<<C-r><C-w>\>/<C-r><C-w>/gI<Left><Left><Left>]], {desc = "find and replace in selection"})
 
 map('n', 'x', '"_x')
 map('n', '<leader>p', '"0p')
 map('n', '<leader>P', '"0P')
-map('n', '<C-_>', 'gcc', { remap = true })
-map('v', '<C-_>', 'gc', { remap = true })
+map('n', '<C-/>', 'gcc', { remap = true })
+map('v', '<C-/>', 'gc', { remap = true })
 map('n', 'J', 'mzJ`z', { desc = 'Join lines without moving cursor' })
 
 map('n', '<leader>m', ':make<CR>')
