@@ -1,0 +1,81 @@
+local wezterm = require 'wezterm'
+local act = wezterm.action
+local config = wezterm.config_builder()
+
+local current_font = wezterm.font {
+    family = 'Droid Sans Mono Slashed',
+    -- family = 'Liberation Mono',
+    -- family = 'JetBrains Mono',
+}
+
+-- Colorscheme
+config.color_scheme = 'Gruber (base16)'
+-- config.color_scheme = 'Vesper'
+-- config.color_scheme = 'Tender (Gogh)'
+
+-- Fonts
+config.font = current_font
+config.font_size = 14.0
+config.adjust_window_size_when_changing_font_size = false
+
+-- Window and tabs
+config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
+config.initial_rows = 40
+config.initial_cols = 140
+config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
+config.integrated_title_button_style = "MacOsNative"
+config.window_frame = {
+    active_titlebar_bg = '#282828',
+    -- inactive_titlebar_bg = '#282828', -- not needed
+    font_size = 10,
+    font = current_font
+}
+config.colors = {
+    tab_bar = {
+        inactive_tab_edge = '#282828', -- for fancy tab bar
+    }
+}
+
+config.enable_tab_bar = true
+config.use_fancy_tab_bar = true
+config.show_close_tab_button_in_tabs = false
+config.show_new_tab_button_in_tab_bar = false
+config.tab_bar_at_bottom = false
+config.tab_max_width = 100
+
+wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
+    local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
+
+    local background = '#282828'
+    local foreground = '#a0a0a0'
+
+    if tab.is_active then
+        background = '#181818'
+        foreground = '#d0d0d0'
+    end
+
+    return {
+      { Background = { Color = background } },
+      { Foreground = { Color = foreground } },
+      { Text = " " .. title .. " "},
+    }
+end)
+
+-- Keybinds
+config.leader = { key = 'Space', mods = 'CTRL', timeout_milliseconds = 1000 }
+
+config.keys = {
+    { mods = "LEADER", key = "w", action = act.CloseCurrentPane { confirm = true } },
+    { mods = "LEADER", key = "v", action = act.SplitPane { direction = "Right" } },
+    { mods = "LEADER", key = "s", action = act.SplitPane { direction = "Down" } },
+    -- { mods = "OPT", key = "H", action = act.AdjustPaneSize { "Left", 1 } },
+    -- { mods = "OPT", key = "L", action = act.AdjustPaneSize { "Right", 1 } },
+    -- { mods = "OPT", key = "K", action = act.AdjustPaneSize { "Up", 1 } },
+    -- { mods = "OPT", key = "J", action = act.AdjustPaneSize { "Down", 1 } },
+    { mods = "LEADER", key = "h", action = act.ActivatePaneDirection "Left" },
+    { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
+    { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
+    { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
+}
+
+return config

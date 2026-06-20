@@ -1,0 +1,67 @@
+local wezterm = require 'wezterm'
+local colors = require 'colors'
+local tabs = require 'tabs'
+
+local config = wezterm.config_builder()
+
+-- config stuff here
+
+config.initial_cols = 160
+config.initial_rows = 38
+config.adjust_window_size_when_changing_font_size = false
+config.enable_kitty_graphics = true
+config.enable_csi_u_key_encoding = true
+config.use_ime = true
+
+wezterm.on("gui-startup", function(cmd)
+  local screen = wezterm.gui.screens().active
+  local ratio = 0.9
+  local width, height = screen.width * ratio, screen.height * ratio
+  local tab, pane, window = wezterm.mux.spawn_window {
+    position = {
+      x = (screen.width - width) / 2,
+      y = (screen.height - height) / 2 - 30,
+      origin = 'ActiveScreen' }
+  }
+  window:gui_window():set_inner_size(width, height)
+end)
+
+config.font_size = 12
+
+-- This will show font info in the debug console
+-- wezterm.log_info(wezterm.font('Fira Code'))
+
+-- config.font = wezterm.font('Liberation Mono', {weight = 500, italic = false})
+config.font = wezterm.font('JetBrains Mono NL', {weight = 300, italic = false})
+-- config.font = wezterm.font('Comic Mono', {weight = 500, italic = false})
+-- config.font = wezterm.font('Cascadia Mono', {weight = 400, italic = false})
+-- config.font = wezterm.font('Fira Code', {weight = 400, italic = false})
+
+-- config.font = wezterm.font('Noto Sans Mono', {weight = 400, italic = false})
+-- config.font = wezterm.font('Hack', {weight = 400, italic = false})
+-- config.font = wezterm.font("Iosevka", {weight="Regular", stretch="Normal", style="Normal"})
+-- config.font = wezterm.font("Source Code Pro", {weight="Regular", stretch="Expanded", style="Normal"})
+
+config.window_close_confirmation = 'NeverPrompt'
+
+config.window_padding = {
+  left = 5,
+  right = 0,
+  top = 0,
+  bottom = 0,
+}
+
+config.keys = {
+  {
+    key = 'Enter',
+    mods = 'ALT',
+    action = wezterm.action.DisableDefaultAssignment,
+  }
+}
+
+colors.apply(config)
+tabs.apply(config)
+
+config.default_prog = {'pwsh.exe'}
+
+return config
