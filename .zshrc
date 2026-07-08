@@ -44,3 +44,6 @@ RPROMPT='%F{#787878}$_cmd_duration'
 
 ZSH_HIGHLIGHT_STYLES[arg0]='fg=yellow'
 ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
+
+# Added by Antigravity IDE
+export PATH="/Users/vilgot/.antigravity-ide/antigravity-ide/bin:$PATH"
