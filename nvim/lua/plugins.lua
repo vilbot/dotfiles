@@ -255,6 +255,9 @@ return {
         }
     },
     {
+        "https://github.com/luisiacc/handmade-hero-theme"
+    },
+    {
         "ellisonleao/gruvbox.nvim",
         config = true,
         priority = 1000,

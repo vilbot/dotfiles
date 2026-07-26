@@ -2,28 +2,33 @@ local wezterm = require 'wezterm'
 local act = wezterm.action
 local config = wezterm.config_builder()
 
-local current_font = wezterm.font {
-    family = 'Consolas',
-    -- family = 'Liberation Mono',
-    -- family = 'Google Sans Code',
-    -- family = 'Droid Sans Mono Slashed',
-    -- family = 'Noto Sans Mono',
-    -- family = 'JetBrains Mono',
-    -- family = 'Iosevka'
-    -- family = 'Ubuntu Mono',
-    -- family = 'IBM Plex Mono',
-    -- family = 'Monocraft',
-    -- family = 'Comic Mono',
-    -- family = 'Hack',
-}
-
--- config.default_prog = { '/usr/bin/fish', '-li'}
 config.default_prog = { 'pwsh.exe', '-NoLogo'}
+
+config.launch_menu = {
+  {
+    label = 'VS 2022 Developer PowerShell',
+    args = {
+      'pwsh.exe',
+      '-NoExit',
+      '-Command',
+      -- Replace the path if you use Pro/Enterprise or a different version
+      -- Replace <YourInstanceID> with your specific VS instance ID
+      '&{Import-Module "C:\\Program Files\\Microsoft Visual Studio\\18\\Community\\Common7\\Tools\\Microsoft.VisualStudio.DevShell.dll"; Enter-VsDevShell e21d14fb}'
+    },
+  },
+}
 
 -- Colorscheme
 config.color_scheme = 'Gruber (base16)'
 -- config.color_scheme = 'Vesper'
 -- config.color_scheme = 'Tender (Gogh)'
+
+local current_font = wezterm.font {
+    -- family = 'Droid Sans Mono Slashed',
+    -- family = 'Consolas',
+    family = 'Liberation Mono',
+    -- family = 'JetBrains Mono',
+}
 
 -- Fonts
 config.font = current_font
@@ -87,6 +92,7 @@ config.keys = {
     { mods = "LEADER", key = "l", action = act.ActivatePaneDirection "Right" },
     { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
     { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
+    { mods = 'CTRL', key = 'L', action = wezterm.action.ShowLauncher },
 }
 
 return config
