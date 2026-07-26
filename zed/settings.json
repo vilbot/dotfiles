@@ -1,94 +1,70 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
 {
-    "hard_tabs": false,
-    "soft_wrap": "none",
-    "preferred_line_length": 80,
-    "inlay_hints": {
-        "enabled": true,
-        "show_other_hints": true,
-        "show_value_hints": true,
-        "show_type_hints": true,
-        "show_parameter_hints": false,
+  "project_panel": {
+    "dock": "left"
+  },
+  "outline_panel": {
+    "dock": "left"
+  },
+  "collaboration_panel": {
+    "dock": "left"
+  },
+  "agent": {
+    "dock": "right",
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "git_panel": {
+    "dock": "left"
+  },
+  "preview_tabs": {
+    "enabled": true
+  },
+  "relative_line_numbers": "enabled",
+  "cursor_blink": false,
+  "multi_cursor_modifier": "alt",
+  "terminal": {
+    "dock": "bottom"
+  },
+  "diagnostics_max_severity": "off",
+  "diagnostics": {
+    "lsp_pull_diagnostics": {
+      "enabled": true
     },
-    "show_wrap_guides": true,
-    "vim_mode": true,
-    "vim": {
-        "use_smartcase_find": true,
-    },
-
-    // Look and feel
-    "sync_items_across_panes": true,
-    "tab_bar": {
-        "show": false,
-    },
-    "relative_line_numbers": "enabled",
-    "scrollbar": {
-        "show": "never",
-    },
-    "project_panel": {
-        "auto_reveal_entries": true,
-    },
-    "cursor_blink": false,
-    "hide_mouse": "on_typing_and_action",
-    "tab_size": 4,
-    "ui_font_size": 16,
-    "buffer_font_size": 14,
-    "buffer_font_family": "Droid Sans Mono Slashed",
-    // "window_decorations": "server",
-    "icon_theme": "Zed (Default)",
-    "theme": {
-        "mode": "dark",
-        "light": "One Light",
-        "dark": "Gruber Darker",
-    },
-
-    // Code help
-    "disable_ai": false,
-    "agent": {
-        "default_model": {
-            "provider": "zed.dev",
-            "model": "claude-sonnet-4-5-thinking",
-            "enable_thinking": true,
-        },
-        "dock": "right",
-        "model_parameters": [],
-    },
-    "languages": {
-        "C": {
-            "enable_language_server": true,
-            "show_completion_documentation": true,
-            "show_completions_on_input": true,
-            "extend_comment_on_newline": false,
-        },
-        "C++": {
-            "enable_language_server": true,
-            "show_completion_documentation": true,
-            "show_completions_on_input": true,
-            "extend_comment_on_newline": false,
-            "format_on_save": "off",
-            "formatter": "language_server",
-        },
-        "CSharp": {
-            "enable_language_server": true,
-        },
-        "Java": {
-            "enable_language_server": true,
-            "language_servers": ["jdtls"],
-            "code_actions_on_format": {
-                "source.organizeImports": true,
-            },
-        },
-        "Rust": {
-            "enable_language_server": false,
-        },
-    },
-    "lsp": {
-        "jdtls": {
-            "initialization_options": {
-                "settings": {
-                    // "java.jdt.ls.java.home": "C:\\Program Files\\OpenJDK\\jdk-21",
-                    "lombok_support": true,
-                },
-            },
-        },
-    },
+    "include_warnings": true
+  },
+  "agent_servers": {
+    "claude-acp": {
+      "default_config_options": {
+        "mode": "acceptEdits",
+        "effort": "default",
+        "model": "opus"
+      },
+      "type": "registry"
+    }
+  },
+  "buffer_font_family": "Droid Sans Mono Slashed",
+  "icon_theme": {
+    "mode": "light",
+    "light": "Zed (Default)",
+    "dark": "Zed (Default)"
+  },
+  "session": {
+    "trust_all_worktrees": true
+  },
+  "vim_mode": true,
+  "ui_font_size": 16,
+  "buffer_font_size": 14,
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "One Dark",
+  },
 }
