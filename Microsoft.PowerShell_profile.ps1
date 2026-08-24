@@ -1,3 +1,6 @@
+Set-Alias -Name vlc -Value 'C:\Program Files (x86)\VideoLAN\VLC\vlc.exe'
+Set-Alias -Name ytdl -Value 'C:\Users/Vilgot/Executables/yt-dlp.exe'
+
 function prompt {
     $host.UI.RawUI.WindowTitle = Split-Path -Leaf (Get-Location)
     $lastDuration = (Get-History -Count 1).Duration
@@ -37,4 +40,5 @@ $PSStyle.FileInfo.SymbolicLink = "`e[3;38;255;255;255;100m"
 
 Set-PSReadLineKeyHandler -Chord "Ctrl+f" -Function AcceptSuggestion
 Set-PSReadLineKeyHandler -Chord "Alt+f" -Function ForwardWord
+
 

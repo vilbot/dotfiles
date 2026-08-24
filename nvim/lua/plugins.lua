@@ -153,10 +153,14 @@ return {
                         }
                     },
                     pickers = {
-                        -- find_files = {
-                            --     theme = "cursor",
-                            --     previewer = false,
-                            -- },
+                        find_files = {
+                                enable_preview = true,
+                                previewer = false,
+                                theme = "ivy",
+                                layout_config = {
+                                    height = 0.25
+                                }
+                            },
                             live_grep = {
                                 layout_strategy = "flex",
                             },

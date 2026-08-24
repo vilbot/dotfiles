@@ -26,13 +26,13 @@ config.color_scheme = 'Gruber (base16)'
 local current_font = wezterm.font {
     -- family = 'Droid Sans Mono Slashed',
     -- family = 'Consolas',
-    family = 'Liberation Mono',
-    -- family = 'JetBrains Mono',
+    -- family = 'Liberation Mono',
+    family = 'JetBrains Mono',
 }
 
 -- Fonts
 config.font = current_font
-config.font_size = 11.0
+config.font_size = 12.0
 config.adjust_window_size_when_changing_font_size = false
 
 -- Window and tabs
