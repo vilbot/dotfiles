@@ -19,19 +19,49 @@ config.launch_menu = {
 }
 
 -- Colorscheme
-config.color_scheme = 'Gruber (base16)'
+-- config.color_scheme = 'Gruber (base16)'
 -- config.color_scheme = 'Vesper'
 -- config.color_scheme = 'Tender (Gogh)'
 
-local current_font = wezterm.font {
+local nord = wezterm.color.get_builtin_schemes()['nord']
+nord.background = '#242933'
+
+config.color_schemes = { ['nord-custom'] = nord }
+config.color_scheme = 'nord-custom'
+-- config.color_scheme = 'nord'
+
+local current_font = wezterm.font 
+{
     -- family = 'Droid Sans Mono Slashed',
     -- family = 'Consolas',
     -- family = 'Liberation Mono',
     family = 'JetBrains Mono',
+    harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' },
 }
 
 -- Fonts
 config.font = current_font
+config.font_rules = {
+    {
+        italic = true,
+        intensity = 'Normal',
+        font = wezterm.font {
+            family = 'JetBrains Mono',
+            style = 'Normal',
+            harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' },
+        },
+    },
+    {
+        italic = true,
+        intensity = 'Bold',
+        font = wezterm.font {
+            family = 'JetBrains Mono',
+            style = 'Normal',
+            weight = 'Bold',
+            harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' },
+        },
+    },
+}
 config.font_size = 12.0
 config.adjust_window_size_when_changing_font_size = false
 
@@ -41,14 +71,14 @@ config.initial_rows = 40
 config.initial_cols = 120
 config.window_decorations = "RESIZE"
 config.window_frame = {
-    active_titlebar_bg = '#282828',
+    active_titlebar_bg = '#2e3440',
     -- inactive_titlebar_bg = '#282828', -- not needed
     font_size = 10,
     font = current_font
 }
 config.colors = {
     tab_bar = {
-        inactive_tab_edge = '#282828', -- for fancy tab bar
+        inactive_tab_edge = '#2e3440', -- for fancy tab bar
     }
 }
 
@@ -62,11 +92,11 @@ config.tab_max_width = 100
 wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
     local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
 
-    local background = '#282828'
+    local background = '#2e3440'
     local foreground = '#a0a0a0'
 
     if tab.is_active then
-        background = '#181818'
+        background = nord.background
         foreground = '#d0d0d0'
     end
 

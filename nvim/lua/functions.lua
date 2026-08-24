@@ -9,8 +9,8 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd("TextYankPost", {
     desc = "highlights yanking",
     callback = function()
-        vim.hl.on_yank({
-            higroup = 'WildMenu',
+        vim.hl.hl_op({
+            higroup = 'IncSearch',
             timeout = 150
         })
     end,
@@ -37,11 +37,19 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     end,
 })
 
+vim.api.nvim_create_autocmd("ColorScheme", {
+    pattern = "nordic",
+    callback = function()
+        -- local highlight_color = '#abbce5' 
+        vim.api.nvim_set_hl(0, 'Visual', { link = 'IncSearch' })
+    end,
+})
+
 local open_floating_preview = vim.lsp.util.open_floating_preview
 function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-  opts = opts or {}
-  opts.border = "rounded"
-  return open_floating_preview(contents, syntax, opts, ...)
+    opts = opts or {}
+    opts.border = "rounded"
+    return open_floating_preview(contents, syntax, opts, ...)
 end
 
 vim.api.nvim_create_autocmd("VimLeavePre", {
@@ -63,6 +71,7 @@ function M.open_term(split_cmd)
             for _, win in ipairs(vim.api.nvim_list_wins()) do
                 if vim.api.nvim_win_get_buf(win) == buf then
                     vim.api.nvim_set_current_win(win)
+                    vim.autocmd('insertmode')
                     return
                 end
             end
