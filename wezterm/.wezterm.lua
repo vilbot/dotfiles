@@ -4,28 +4,34 @@ local config = wezterm.config_builder()
 
 local current_font = wezterm.font {
     family = 'Droid Sans Mono Slashed',
+    -- family = 'Fira Code',
+    -- family = 'Ac437 PhoenixEGA 8x14',
     -- family = 'Liberation Mono',
     -- family = 'JetBrains Mono',
+    -- family = 'Courier new'
 }
-
--- Colorscheme
-config.color_scheme = 'Gruber (base16)'
--- config.color_scheme = 'Vesper'
--- config.color_scheme = 'Tender (Gogh)'
 
 -- Fonts
 config.font = current_font
 config.font_size = 14.0
 config.adjust_window_size_when_changing_font_size = false
+config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
+
+-- Colorscheme
+config.color_scheme = 'Gruber (base16)'
+-- config.color_scheme = 'Vesper'
+-- config.color_scheme = 'Tender (Gogh)'
+-- config.color_scheme = 'Gruvbox Dark (Gogh)'
+
 
 -- Window and tabs
 config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
-config.initial_rows = 40
-config.initial_cols = 140
+config.initial_rows = 30
+config.initial_cols = 100
 config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
 config.integrated_title_button_style = "MacOsNative"
 config.window_frame = {
-    active_titlebar_bg = '#282828',
+    active_titlebar_bg = '#181818',
     -- inactive_titlebar_bg = '#282828', -- not needed
     font_size = 10,
     font = current_font
@@ -46,18 +52,22 @@ config.tab_max_width = 100
 wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
     local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
 
-    local background = '#282828'
-    local foreground = '#a0a0a0'
+    local background = '#181818'
+    local foreground = '#909090'
+    local tab_opening = "   "
+    local tab_closing = "   "
 
     if tab.is_active then
-        background = '#181818'
-        foreground = '#d0d0d0'
+        -- background = '#282828'
+        foreground = '#f0f0f0'
+        tab_opening = "   "
+        tab_closing = "   "
     end
 
     return {
       { Background = { Color = background } },
       { Foreground = { Color = foreground } },
-      { Text = " " .. title .. " "},
+      { Text = tab_opening .. title .. tab_closing},
     }
 end)
 

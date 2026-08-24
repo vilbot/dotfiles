@@ -21,13 +21,11 @@ map('n', '<leader>co', ':copen<CR>', {desc = "open quickfix"})
 
 local functions = require('functions')
 map('t', '<esc>', '<C-\\><C-n>')
+map('t', '<C-w>', '<C-\\><C-n><C-w>')
 map('n', '<leader>t', function() functions.open_term(nil) end)
 map('n', '<leader>j', function() functions.open_term('split') end)
 map('n', '<leader>k', function() functions.open_term('vsplit') end)
--- map('n', '<leader>t', '<CMD>term<CR>')
--- map('n', '<leader>j', '<CMD>split | term<CR>')
--- map('n', '<leader>k', '<CMD>vsplit | term<CR>')
-
+-- ; vim.cmd('startinsert')
 map('n', '<leader>q', '<cmd>NvimTreeOpen<cr>')
 map('n', '<leader>w', '<CMD>Oil<CR>')
 
