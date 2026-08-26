@@ -30,15 +30,16 @@ config.initial_rows = 30
 config.initial_cols = 100
 config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
 config.integrated_title_button_style = "MacOsNative"
+config.window_decorations = "RESIZE"
 config.window_frame = {
-    active_titlebar_bg = '#181818',
+    active_titlebar_bg = '#302d2b',
     -- inactive_titlebar_bg = '#282828', -- not needed
     font_size = 10,
     font = current_font
 }
 config.colors = {
     tab_bar = {
-        inactive_tab_edge = '#282828', -- for fancy tab bar
+        inactive_tab_edge = '#302d2b', -- for fancy tab bar
     }
 }
 
@@ -52,22 +53,18 @@ config.tab_max_width = 100
 wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
     local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
 
-    local background = '#181818'
-    local foreground = '#909090'
-    local tab_opening = "   "
-    local tab_closing = "   "
+    local background = '#302d2b'
+    local foreground = '#a89984'
 
     if tab.is_active then
-        -- background = '#282828'
-        foreground = '#f0f0f0'
-        tab_opening = "   "
-        tab_closing = "   "
+        background = '#282828'
+        foreground = '#e3dddc'
     end
 
     return {
       { Background = { Color = background } },
       { Foreground = { Color = foreground } },
-      { Text = tab_opening .. title .. tab_closing},
+      { Text = " " .. title .. " "},
     }
 end)
 

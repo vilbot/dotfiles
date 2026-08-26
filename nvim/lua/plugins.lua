@@ -89,7 +89,7 @@ return {
                     },
                 },
                 ghost_text = {
-                    enabled = true -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+                    enabled = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
                 },
             },
             signature = {
@@ -153,10 +153,14 @@ return {
                         }
                     },
                     pickers = {
-                        -- find_files = {
-                            --     theme = "cursor",
-                            --     previewer = false,
-                            -- },
+                        find_files = {
+                                enable_preview = true,
+                                previewer = false,
+                                theme = "ivy",
+                                layout_config = {
+                                    height = 0.25
+                                }
+                            },
                             live_grep = {
                                 layout_strategy = "flex",
                             },
@@ -219,6 +223,25 @@ return {
 
         }
     },
+    {
+        "folke/snacks.nvim",
+        priority = 1000,
+        lazy = false,
+        opts = {
+            terminal = {
+                shell = "C:/Program Files/Git/usr/bin/bash.exe",
+            },
+        },
+    },
+    {
+        "coder/claudecode.nvim",
+        dependencies = { "folke/snacks.nvim" },
+        opts = {
+            terminal = {
+                provider = "native",
+            },
+        },
+    },
     -- COLORSCHEMES --
     {
         "blazkowolf/gruber-darker.nvim",
@@ -234,6 +257,9 @@ return {
                 operators = false
             },
         }
+    },
+    {
+        "https://github.com/luisiacc/handmade-hero-theme"
     },
     {
         "ellisonleao/gruvbox.nvim",
@@ -280,4 +306,9 @@ return {
             bold = false
         }
     },
+	{
+		"srcery-colors/srcery-vim",
+		lazy = false,
+		priority = 1000,
+	},
 }

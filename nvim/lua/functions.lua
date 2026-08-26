@@ -6,16 +6,6 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "highlights yanking",
-    callback = function()
-        vim.hl.on_yank({
-            higroup = 'WildMenu',
-            timeout = 150
-        })
-    end,
-})
-
 vim.api.nvim_create_autocmd("BufReadPost", {
   pattern = "*.pdf",
   callback = function()
@@ -37,11 +27,29 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     end,
 })
 
+vim.api.nvim_create_autocmd("ColorScheme", {
+    pattern = "nordic",
+    callback = function()
+        -- local highlight_color = '#abbce5' 
+        vim.api.nvim_set_hl(0, 'Visual', { bg = '#60728a', fg = '#242933' })
+    end,
+})
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+    desc = "highlights yanking",
+    callback = function()
+        vim.hl.hl_op({
+            higroup = 'IncSearch',
+            timeout = 150
+        })
+    end,
+})
+
 local open_floating_preview = vim.lsp.util.open_floating_preview
 function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
-  opts = opts or {}
-  opts.border = "rounded"
-  return open_floating_preview(contents, syntax, opts, ...)
+    opts = opts or {}
+    opts.border = "rounded"
+    return open_floating_preview(contents, syntax, opts, ...)
 end
 
 vim.api.nvim_create_autocmd("VimLeavePre", {

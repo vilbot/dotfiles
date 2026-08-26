@@ -4,7 +4,7 @@ vim.filetype.add({
 
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "jdtls", "clangd", "lua_ls"},
+    ensure_installed = { "html", "cssls", "jdtls", "clangd", "lua_ls"},
 })
 
 vim.lsp.config['*'] = {
@@ -17,7 +17,7 @@ local cmd = {
     "roslyn",
     "--stdio",
     "--logLevel=Information",
-    "--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.get_log_path()),
+    "--extensionLogDirectory=" .. vim.fs.dirname(vim.lsp.log.get_filename()),
     "--razorSourceGenerator=" .. vim.fs.joinpath(rzls_path, "Microsoft.CodeAnalysis.Razor.Compiler.dll"),
     "--razorDesignTimePath=" .. vim.fs.joinpath(rzls_path, "Targets", "Microsoft.NET.Sdk.Razor.DesignTime.targets"),
     "--extension",
