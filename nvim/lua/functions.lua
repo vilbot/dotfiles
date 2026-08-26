@@ -6,16 +6,6 @@ vim.api.nvim_create_autocmd("FileType", {
     end,
 })
 
-vim.api.nvim_create_autocmd("TextYankPost", {
-    desc = "highlights yanking",
-    callback = function()
-        vim.hl.hl_op({
-            higroup = 'IncSearch',
-            timeout = 150
-        })
-    end,
-})
-
 vim.api.nvim_create_autocmd("BufReadPost", {
   pattern = "*.pdf",
   callback = function()
@@ -41,7 +31,17 @@ vim.api.nvim_create_autocmd("ColorScheme", {
     pattern = "nordic",
     callback = function()
         -- local highlight_color = '#abbce5' 
-        vim.api.nvim_set_hl(0, 'Visual', { link = 'IncSearch' })
+        vim.api.nvim_set_hl(0, 'Visual', { bg = '#60728a', fg = '#242933' })
+    end,
+})
+
+vim.api.nvim_create_autocmd("TextYankPost", {
+    desc = "highlights yanking",
+    callback = function()
+        vim.hl.hl_op({
+            higroup = 'IncSearch',
+            timeout = 150
+        })
     end,
 })
 
@@ -71,19 +71,21 @@ function M.open_term(split_cmd)
             for _, win in ipairs(vim.api.nvim_list_wins()) do
                 if vim.api.nvim_win_get_buf(win) == buf then
                     vim.api.nvim_set_current_win(win)
-                    vim.autocmd('insertmode')
+                    vim.cmd('startinsert')
                     return
                 end
             end
             -- not visible, open it in a split
             if split_cmd then vim.cmd(split_cmd) end
             vim.api.nvim_win_set_buf(0, buf)
+            vim.cmd('startinsert')
             return
         end
     end
     -- no terminal exists, create one
     if split_cmd then vim.cmd(split_cmd) end
     vim.cmd('terminal')
+    vim.cmd('startinsert')
 end
 
 return M

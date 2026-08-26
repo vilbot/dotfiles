@@ -89,7 +89,7 @@ return {
                     },
                 },
                 ghost_text = {
-                    enabled = true -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+                    enabled = function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
                 },
             },
             signature = {
@@ -306,4 +306,9 @@ return {
             bold = false
         }
     },
+	{
+		"srcery-colors/srcery-vim",
+		lazy = false,
+		priority = 1000,
+	},
 }
