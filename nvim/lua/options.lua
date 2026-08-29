@@ -1,6 +1,6 @@
 local opt = vim.opt
 
-opt.foldmethod = 'indent'
+-- opt.foldmethod = 'indent'
 opt.tabstop = 4
 opt.softtabstop = 4
 opt.shiftwidth = 4
@@ -46,5 +46,5 @@ vim.g.nord_italic = false
 vim.g.nord_bold = false
 vim.opt.exrc = true
 vim.opt.secure = true
-vim.opt.shell = 'pwsh -NoLogo'
+--vim.opt.shell = 'pwsh -NoLogo'
 vim.opt.timeoutlen = 200

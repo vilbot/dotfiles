@@ -4,7 +4,7 @@ vim.filetype.add({
 
 require("mason").setup()
 require("mason-lspconfig").setup({
-    ensure_installed = { "html", "cssls", "jdtls", "clangd", "lua_ls"},
+    ensure_installed = { "jdtls", "clangd", "lua_ls"},
 })
 
 vim.lsp.config['*'] = {
@@ -77,5 +77,5 @@ vim.api.nvim_create_autocmd("BufWritePre", {
     end
 })
 
-vim.lsp.enable({ "html", "cssls", "jdtls", "clangd", "lua_ls"})
+vim.lsp.enable({ "jdtls", "clangd", "lua_ls"})
 

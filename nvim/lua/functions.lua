@@ -38,7 +38,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 vim.api.nvim_create_autocmd("TextYankPost", {
     desc = "highlights yanking",
     callback = function()
-        vim.hl.hl_op({
+        vim.highlight.on_yank({
             higroup = 'IncSearch',
             timeout = 150
         })
