@@ -1,10 +1,11 @@
 local wezterm = require 'wezterm'
 local act = wezterm.action
 local config = wezterm.config_builder()
+config.color_scheme_dirs = { '/Users/vilgot/dotfiles/wezterm/colors' }
 
 local current_font = wezterm.font {
-    family = 'Droid Sans Mono Slashed',
-    -- family = 'Fira Code',
+    -- family = 'Droid Sans Mono Slashed',
+     family = 'Fira Code',
     -- family = 'Ac437 PhoenixEGA 8x14',
     -- family = 'Liberation Mono',
     -- family = 'JetBrains Mono',
@@ -18,10 +19,11 @@ config.adjust_window_size_when_changing_font_size = false
 config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
 
 -- Colorscheme
-config.color_scheme = 'Gruber (base16)'
+-- config.color_scheme = 'Gruber (base16)'
 -- config.color_scheme = 'Vesper'
 -- config.color_scheme = 'Tender (Gogh)'
 -- config.color_scheme = 'Gruvbox Dark (Gogh)'
+config.color_scheme = 'gruver16'
 
 
 -- Window and tabs
@@ -30,7 +32,6 @@ config.initial_rows = 30
 config.initial_cols = 100
 config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
 config.integrated_title_button_style = "MacOsNative"
-config.window_decorations = "RESIZE"
 config.window_frame = {
     active_titlebar_bg = '#302d2b',
     -- inactive_titlebar_bg = '#282828', -- not needed
