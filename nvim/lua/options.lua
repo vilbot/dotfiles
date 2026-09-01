@@ -1,6 +1,6 @@
 local opt = vim.opt
 
-opt.foldmethod = 'indent'
+-- opt.foldmethod = 'indent'
 opt.tabstop = 4
 opt.softtabstop = 4
 opt.shiftwidth = 4
@@ -10,7 +10,8 @@ opt.autoindent = true
 opt.cursorline = true
 opt.number = true
 opt.relativenumber = true
-opt.numberwidth = 4
+-- opt.numberwidth = 6
+-- vim.o.statuscolumn = "%l%s"
 opt.ruler = true
 opt.wrap = false
 opt.sidescroll = 5
@@ -21,10 +22,11 @@ opt.updatetime = 50
 opt.mouse = "a"
 opt.clipboard = "unnamedplus"
 opt.showmode = true
-opt.signcolumn = "no"
+opt.signcolumn = "yes"
 opt.splitright = true
-opt.splitbelow = true
+opt.splitbelow = false
 opt.wildmenu = true
+opt.winborder = "rounded"
 opt.title = true
 opt.titlestring = "%{%v:lua.MyTitleString()%}"
 function _G.MyTitleString()
@@ -46,5 +48,17 @@ vim.g.nord_italic = false
 vim.g.nord_bold = false
 vim.opt.exrc = true
 vim.opt.secure = true
-vim.opt.shell = 'pwsh -NoLogo'
-vim.opt.timeoutlen = 200
+-- vim.opt.shell = 'pwsh -NoLogo'
+vim.opt.shell = 'cmd.exe /k cls'
+vim.opt.timeoutlen = 300
+vim.loader.enable()
+
+vim.cmd("compiler gcc")
+vim.opt.errorformat:append("%+G%.%#")
+
+vim.keymap.set("n", "<leader>b", function()
+  vim.cmd("silent !.\\build.bat *> build.log")
+  vim.cmd("cfile build.log")
+  vim.cmd("vert copen " .. math.floor(vim.o.columns / 2))
+end, { desc = "Build" })
+

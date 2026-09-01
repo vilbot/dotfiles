@@ -4,7 +4,10 @@
       "WebSearch",
       "Bash(where claude:*)",
       "Bash(cygpath:*)",
-      "Bash(cmd.exe:*)"
+      "Bash(cmd.exe:*)",
+      "PowerShell(Get-Item *)",
+      "Bash(wezterm --config-file \"/c/Users/Vilgot/dotfiles/wezterm/.wezterm.lua\" ls-fonts --list-system)",
+      "Bash(echo \"EXIT:$?\")"
     ]
   }
 }

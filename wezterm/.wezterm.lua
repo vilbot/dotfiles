@@ -1,4 +1,5 @@
 local wezterm = require 'wezterm'
+local palette = dofile('C:\\Users\\Vilgot\\dotfiles\\nvim\\lua\\palettes\\gruver16.lua')
 local act = wezterm.action
 local config = wezterm.config_builder()
 config.color_scheme_dirs = { 'C:\\Users\\Vilgot\\dotfiles\\wezterm\\colors' }
@@ -19,16 +20,7 @@ config.launch_menu = {
   },
 }
 
--- Colorscheme
--- config.color_scheme = 'Gruber (base16)'
--- config.color_scheme = 'Vesper'
--- config.color_scheme = 'Tender (Gogh)'
 
-local nord = wezterm.color.get_builtin_schemes()['nord']
-nord.background = '#242933'
-
--- config.color_schemes = { ['nord-custom'] = nord }
--- config.color_scheme = 'nord-custom'
 config.color_scheme = 'gruver16'
 
 local current_font = wezterm.font 
@@ -36,6 +28,7 @@ local current_font = wezterm.font
     -- family = 'Droid Sans Mono Slashed',
     -- family = 'Consolas',
     family = 'Liberation Mono',
+    -- family = 'Fira Code',
     -- family = 'JetBrains Mono',
     -- family = 'Comic Mono',
     -- family = 'Source Code Pro',
@@ -44,8 +37,10 @@ local current_font = wezterm.font
 
 -- Fonts
 config.font = current_font
-config.font_size = 11.0
+config.font_size = 12.0
 config.adjust_window_size_when_changing_font_size = false
+config.line_height = 1.35
+-- config.cell_width = 1.0
 
 -- Window and tabs
 config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
@@ -53,14 +48,14 @@ config.initial_rows = 30
 config.initial_cols = 120
 config.window_decorations = "RESIZE"
 config.window_frame = {
-    active_titlebar_bg = '#302d2b',
-    -- inactive_titlebar_bg = '#282828', -- not needed
+    active_titlebar_bg = palette.base01,
+	inactive_titlebar_bg = palette.base00, -- not needed
     font_size = 10,
     font = current_font
 }
 config.colors = {
     tab_bar = {
-        inactive_tab_edge = '#302d2b', -- for fancy tab bar
+		inactive_tab_edge = palette.base01, -- for fancy tab bar
     }
 }
 
@@ -74,12 +69,12 @@ config.tab_max_width = 100
 wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
     local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
 
-    local background = '#302d2b'
-    local foreground = '#a89984'
+    local background = palette.base01
+    local foreground = palette.base04
 
     if tab.is_active then
-        background = '#282828'
-        foreground = '#e3dddc'
+        background = palette.base00
+        foreground = palette.base05
     end
 
     return {
