@@ -1,30 +1,29 @@
 local wezterm = require 'wezterm'
+local palette = dofile('/Users/vilgot/dotfiles/nvim/lua/palettes/gruver16.lua')
 local act = wezterm.action
 local config = wezterm.config_builder()
 config.color_scheme_dirs = { '/Users/vilgot/dotfiles/wezterm/colors' }
 
-local current_font = wezterm.font {
-    -- family = 'Droid Sans Mono Slashed',
-     family = 'Fira Code',
+config.color_scheme = 'gruver16'
+
+local current_font = wezterm.font 
+{
+    family = 'Droid Sans Mono Slashed',
+    -- family = 'Consolas',
+	-- family = 'Liberation Mono',
+    -- family = 'Fira Code',
     -- family = 'Ac437 PhoenixEGA 8x14',
-    -- family = 'Liberation Mono',
     -- family = 'JetBrains Mono',
     -- family = 'Courier new'
+    harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' },
 }
 
 -- Fonts
 config.font = current_font
-config.font_size = 14.0
+config.font_size = 16.0
 config.adjust_window_size_when_changing_font_size = false
-config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
-
--- Colorscheme
--- config.color_scheme = 'Gruber (base16)'
--- config.color_scheme = 'Vesper'
--- config.color_scheme = 'Tender (Gogh)'
--- config.color_scheme = 'Gruvbox Dark (Gogh)'
-config.color_scheme = 'gruver16'
-
+config.line_height = 1.35
+-- config.cell_width = 1.0
 
 -- Window and tabs
 config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
@@ -33,14 +32,14 @@ config.initial_cols = 100
 config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
 config.integrated_title_button_style = "MacOsNative"
 config.window_frame = {
-    active_titlebar_bg = '#302d2b',
-    -- inactive_titlebar_bg = '#282828', -- not needed
+    active_titlebar_bg = palette.base01,
+	inactive_titlebar_bg = palette.base00, -- not needed
     font_size = 10,
     font = current_font
 }
 config.colors = {
     tab_bar = {
-        inactive_tab_edge = '#302d2b', -- for fancy tab bar
+		inactive_tab_edge = palette.base01, -- for fancy tab bar
     }
 }
 
@@ -54,12 +53,12 @@ config.tab_max_width = 100
 wezterm.on('format-tab-title', function(tab, tabs, panes, config, hover, max_width)
     local title = tab.active_pane.title:gsub(" %((.*)%) %- (.*)", "")
 
-    local background = '#302d2b'
-    local foreground = '#a89984'
+    local background = palette.base01
+    local foreground = palette.base04
 
     if tab.is_active then
-        background = '#282828'
-        foreground = '#e3dddc'
+        background = palette.base00
+        foreground = palette.base05
     end
 
     return {

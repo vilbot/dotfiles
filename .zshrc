@@ -48,3 +48,9 @@ ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
 
 # Added by Antigravity IDE
 export PATH="/Users/vilgot/.antigravity-ide/antigravity-ide/bin:$PATH"
+export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
+# The following lines have been added by Docker Desktop to enable Docker CLI completions.
+fpath=(/Users/vilgot/.docker/completions $fpath)
+autoload -Uz compinit
+(( ${+_comps[docker]} )) || compinit
+# End of Docker CLI completions
