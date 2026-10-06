@@ -42,7 +42,8 @@ NEWLINE=$'\n'
 PROMPT='%F{green}%~%f ${vcs_info_msg_0_}${NEWLINE}> '
 RPROMPT='%F{#787878}$_cmd_duration'
 
-ZSH_HIGHLIGHT_STYLES[arg0]='fg=yellow'
+ZSH_HIGHLIGHT_STYLES[arg0]='fg=magenta'
+ZSH_HIGHLIGHT_STYLES[precommand]='fg=magenta,underline'
 ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
 
 # Added by Antigravity IDE
