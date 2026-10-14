@@ -22,11 +22,11 @@ attrs = [
     ("DEFAULT_FUNCTION_DECLARATION", b("0D")), ("DEFAULT_FUNCTION_CALL", b("0D")),
     ("DEFAULT_CLASS_NAME", b("0A")), ("DEFAULT_INTERFACE_NAME", b("0A")),
     ("DEFAULT_CONSTANT", b("0C")), ("DEFAULT_PREDEFINED_SYMBOL", b("0C")),
-    ("DEFAULT_METADATA", b("0A")), ("DEFAULT_OPERATION_SIGN", b("05")),
-    ("DEFAULT_PARENTHS", b("05")), ("DEFAULT_BRACKETS", b("05")), ("DEFAULT_BRACES", b("05")),
-    ("DEFAULT_COMMA", b("05")), ("DEFAULT_DOT", b("05")), ("DEFAULT_SEMICOLON", b("05")),
-    ("DEFAULT_IDENTIFIER", b("05")), ("DEFAULT_LOCAL_VARIABLE", b("05")),
-    ("DEFAULT_PARAMETER", b("05")), ("DEFAULT_INSTANCE_FIELD", b("05")),
+    ("DEFAULT_METADATA", b("0A")), ("DEFAULT_OPERATION_SIGN", b("07")),
+    ("DEFAULT_PARENTHS", b("07")), ("DEFAULT_BRACKETS", b("07")), ("DEFAULT_BRACES", b("07")),
+    ("DEFAULT_COMMA", b("07")), ("DEFAULT_DOT", b("07")), ("DEFAULT_SEMICOLON", b("07")),
+    ("DEFAULT_IDENTIFIER", b("07")), ("DEFAULT_LOCAL_VARIABLE", b("07")),
+    ("DEFAULT_PARAMETER", b("07")), ("DEFAULT_INSTANCE_FIELD", b("07")),
     ("DEFAULT_STATIC_FIELD", b("0C")), ("DEFAULT_INSTANCE_METHOD", b("0D")),
     ("DEFAULT_STATIC_METHOD", b("0D")), ("DEFAULT_LABEL", b("0A")),
     ("DEFAULT_TAG", b("0E")), ("DEFAULT_ATTRIBUTE", b("0A")), ("DEFAULT_ENTITY", b("09")),
@@ -37,19 +37,19 @@ attrs = [
     ("HTML_ENTITY_REFERENCE", b("09")), ("HTML_COMMENT", b("04")),
     ("XML_TAG", b("04")), ("XML_TAG_NAME", b("0E")), ("XML_CUSTOM_TAG_NAME", b("0D")),
     ("XML_NS_PREFIX", b("0C")), ("XML_ATTRIBUTE_NAME", b("0A")), ("XML_ATTRIBUTE_VALUE", b("0B")),
-    ("XML_ENTITY_REFERENCE", b("09")), ("XML_PROLOGUE", b("04")), ("XML_TAG_DATA", b("05")),
+    ("XML_ENTITY_REFERENCE", b("09")), ("XML_PROLOGUE", b("04")), ("XML_TAG_DATA", b("07")),
     ("JSP_ACTION_AND_DIRECTIVE_NAME", b("0D")), ("JSP_ACTION_AND_DIRECTIVE_ATTRIBUTE_NAME", b("0A")),
     ("JSP_ACTION_AND_DIRECTIVE_ATTRIBUTE_VALUE", b("0B")), ("JSP_COMMENT", b("04")),
-    ("EL_BOUNDS", b("0C")), ("EL_IDENTIFIER", b("05")), ("EL_KEYWORD", b("0E")),
-    ("EL_NUMBER", b("09")), ("EL_STRING", b("0B")), ("EL_OPERATION_SIGN", b("05")),
-    ("EL_DOT", b("05")), ("EL_PARENTHS", b("05")), ("EL_BRACKETS", b("05")), ("EL_COMMA", b("05")),
+    ("EL_BOUNDS", b("0C")), ("EL_IDENTIFIER", b("07")), ("EL_KEYWORD", b("0E")),
+    ("EL_NUMBER", b("09")), ("EL_STRING", b("0B")), ("EL_OPERATION_SIGN", b("07")),
+    ("EL_DOT", b("07")), ("EL_PARENTHS", b("07")), ("EL_BRACKETS", b("07")), ("EL_COMMA", b("07")),
     ("CSS.TAG_NAME", b("0E")), ("CSS.CLASS_NAME", b("0A")), ("CSS.ID_SELECTOR", b("0D")),
-    ("CSS.PSEUDO", b("0C")), ("CSS.PROPERTY_NAME", b("0D")), ("CSS.PROPERTY_VALUE", b("05")),
-    ("CSS.IDENT", b("05")), ("CSS.KEYWORD", b("0E")), ("CSS.FUNCTION", b("0D")),
+    ("CSS.PSEUDO", b("0C")), ("CSS.PROPERTY_NAME", b("0D")), ("CSS.PROPERTY_VALUE", b("07")),
+    ("CSS.IDENT", b("07")), ("CSS.KEYWORD", b("0E")), ("CSS.FUNCTION", b("0D")),
     ("CSS.NUMBER", b("09")), ("CSS.COLOR", b("09")), ("CSS.STRING", b("0B")),
     ("CSS.URL", b("0B")), ("CSS.IMPORTANT", b("08")), ("CSS.COMMENT", b("04")),
-    ("JS.GLOBAL_VARIABLE", b("0C")), ("JS.GLOBAL_FUNCTION", b("0D")), ("JS.LOCAL_VARIABLE", b("05")),
-    ("JS.PARAMETER", b("05")), ("JS.INSTANCE_MEMBER_FUNCTION", b("0D")), ("JS.REGEXP", b("0C")),
+    ("JS.GLOBAL_VARIABLE", b("0C")), ("JS.GLOBAL_FUNCTION", b("0D")), ("JS.LOCAL_VARIABLE", b("07")),
+    ("JS.PARAMETER", b("07")), ("JS.INSTANCE_MEMBER_FUNCTION", b("0D")), ("JS.REGEXP", b("0C")),
 ]
 extra = [
     ("BAD_CHARACTER", dict(fg=b("08"), effect=b("08"), etype="2")),
@@ -64,7 +64,7 @@ extra = [
     ("WRITE_SEARCH_RESULT_ATTRIBUTES", dict(fg=b("00"), bg=b("0E"))),
     ("IDENTIFIER_UNDER_CARET_ATTRIBUTES", dict(bg=b("02"))),
     ("WRITE_IDENTIFIER_UNDER_CARET_ATTRIBUTES", dict(bg=b("03"))),
-    ("FOLDED_TEXT_ATTRIBUTES", dict(fg=b("05"), bg=b("01"))),
+    ("FOLDED_TEXT_ATTRIBUTES", dict(fg=b("07"), bg=b("01"))),
     ("INJECTED_LANGUAGE_FRAGMENT", dict(bg=b("01"))),
     # Darcula tints JSP regions; keep scriptlets subtly marked, drop the tint on tags/directives
     ("JSP_SCRIPTING_BACKGROUND", dict(bg=b("01"))),
@@ -76,9 +76,9 @@ extra = [
 
 colors = {
     "BACKGROUND": b("00"), "CARET_ROW_COLOR": b("01"),
-    "CARET_COLOR": b("05"), "CARET_ROW_COLOR": b("01"), "GUTTER_BACKGROUND": b("00"),
-    "LINE_NUMBERS_COLOR": b("04"), "LINE_NUMBER_ON_CARET_ROW_COLOR": b("06"),
-    "SELECTION_BACKGROUND": b("02"), "SELECTION_FOREGROUND": b("05"),
+    "CARET_COLOR": b("07"), "CARET_ROW_COLOR": b("01"), "GUTTER_BACKGROUND": b("00"),
+    "LINE_NUMBERS_COLOR": b("04"), "LINE_NUMBER_ON_CARET_ROW_COLOR": b("07"),
+    "SELECTION_BACKGROUND": b("02"), "SELECTION_FOREGROUND": b("07"),
     "INDENT_GUIDE": b("02"), "SELECTED_INDENT_GUIDE": b("03"), "WHITESPACES": b("03"),
     "RIGHT_MARGIN_COLOR": b("02"), "TEARLINE_COLOR": b("02"), "METHOD_SEPARATORS_COLOR": b("02"),
     "READONLY_BACKGROUND": b("01"), "READONLY_FRAGMENT_BACKGROUND": b("01"),
@@ -93,7 +93,7 @@ x += '  <metaInfo><property name="ide">idea</property><property name="originalSc
 x += '  <option name="FONT_SCALE" value="1.0" />\n  <colors>\n'
 x += "".join(f'    <option name="{k}" value="{v}" />\n' for k, v in colors.items())
 x += "  </colors>\n  <attributes>\n"
-x += opt("TEXT", fg=b("05"), bg=b("00"))
+x += opt("TEXT", fg=b("07"), bg=b("00"))
 for n, fg in attrs: x += opt(n, fg=fg)
 x += opt("DEFAULT_KEYWORD", fg=b("0E")) if False else ""
 for n, kw in extra: x += opt(n, **kw)
@@ -106,7 +106,7 @@ ui = {
     "name": "gruver16", "dark": True, "author": "vilgot", "editorScheme": "/gruver16.icls",
     "colors": {
         "bg": "#" + b("00"), "bg2": "#" + b("01"), "sel": "#" + b("02"), "border": "#" + b("02"),
-        "fg": "#" + b("05"), "dim": "#" + b("04"), "accent": "#" + b("0D"), "hi": "#" + b("03"),
+        "fg": "#" + b("07"), "dim": "#" + b("04"), "accent": "#" + b("0D"), "hi": "#" + b("03"),
     },
     "ui": {
         "*": {
