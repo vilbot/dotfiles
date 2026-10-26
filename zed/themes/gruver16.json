@@ -180,7 +180,7 @@
           "primary": { "color": "#ede9e8ff", "font_style": null, "font_weight": null },
           "property": { "color": "#ede9e8ff", "font_style": null, "font_weight": null },
           "punctuation": { "color": "#ede9e8ff", "font_style": null, "font_weight": null },
-          "punctuation.bracket": { "color": "#565c6aff", "font_style": null, "font_weight": null },
+          "punctuation.bracket": { "color": "#999eacff", "font_style": null, "font_weight": null },
           "punctuation.delimiter": { "color": "#ede9e8ff", "font_style": null, "font_weight": null },
           "punctuation.list_marker": { "color": "#ede9e8ff", "font_style": null, "font_weight": null },
           "punctuation.markup": { "color": "#96a6c8ff", "font_style": null, "font_weight": null },
