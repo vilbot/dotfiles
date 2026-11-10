@@ -1,3 +1,30 @@
-font-family = "Consolas"
+window-width = 120
+window-height = 40
+
+quick-terminal-position = center
+quick-terminal-size = 50%, 50%
+
+macos-titlebar-style = tabs
+
+font-family = "Hack"
+font-thicken = true
+font-thicken-strength = 100
 font-size = 18
+adjust-cell-height = 35%
 theme = /Users/vilgot/dotfiles/ghostty/themes/gruver16
+mouse-hide-while-typing = true
+
+keybind = super+ctrl+v=new_split:right
+keybind = super+ctrl+s=new_split:down
+
+keybind = super+ctrl+h=goto_split:left 
+keybind = super+ctrl+l=goto_split:right 
+keybind = super+ctrl+k=goto_split:up 
+keybind = super+ctrl+j=goto_split:down 
+
+keybind = super+alt+h=resize_split:left,10
+keybind = super+alt+l=resize_split:right,10
+keybind = super+alt+k=resize_split:up,10 
+keybind = super+alt+j=resize_split:down,10 
+
+keybind = super+shift+w=ignore

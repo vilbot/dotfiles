@@ -1,0 +1,3 @@
+
+keybind = cmd+enter=new_window
+keybind = global:cmd+enter=new_window

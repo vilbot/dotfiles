@@ -8,7 +8,9 @@ config.color_scheme = 'gruver16'
 
 local current_font = wezterm.font 
 {
-    family = 'Droid Sans Mono Slashed',
+    family = 'Hack',
+    -- family = 'Source Code Pro',
+    -- family = 'Droid Sans Mono Slashed',
     -- family = 'Consolas',
 	-- family = 'Liberation Mono',
     -- family = 'Fira Code',
@@ -22,8 +24,12 @@ local current_font = wezterm.font
 config.font = current_font
 config.font_size = 16.0
 config.adjust_window_size_when_changing_font_size = false
-config.line_height = 1.35
--- config.cell_width = 1.0
+config.line_height = 1.20
+config.cell_width = 0.90
+-- Heavier text without changing weight: unhinted like macOS, with LCD filtering
+config.freetype_load_flags = 'NO_HINTING'
+config.freetype_load_target = 'HorizontalLcd'
+config.freetype_render_target = 'HorizontalLcd'
 
 -- Window and tabs
 config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }

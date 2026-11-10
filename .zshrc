@@ -54,3 +54,12 @@ fpath=(/Users/vilgot/.docker/completions $fpath)
 autoload -Uz compinit
 (( ${+_comps[docker]} )) || compinit
 # End of Docker CLI completions
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/vilgot/.local/bin:$PATH"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/vilgot/.lmstudio/bin"
+# End of LM Studio CLI section
+
