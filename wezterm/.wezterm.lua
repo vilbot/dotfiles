@@ -1,8 +1,14 @@
 local wezterm = require 'wezterm'
-local palette = dofile('/Users/vilgot/dotfiles/nvim/lua/palettes/gruver16.lua')
 local act = wezterm.action
 local config = wezterm.config_builder()
-config.color_scheme_dirs = { '/Users/vilgot/dotfiles/wezterm/colors' }
+
+local is_win = wezterm.target_triple:find('windows') ~= nil
+local is_mac = wezterm.target_triple:find('apple') ~= nil
+
+-- Repo is expected at ~/dotfiles on every machine. Forward slashes work on Windows too.
+local dotfiles = wezterm.home_dir .. '/dotfiles'
+local palette = dofile(dotfiles .. '/nvim/lua/palettes/gruver16.lua')
+config.color_scheme_dirs = { dotfiles .. '/wezterm/colors' }
 
 config.color_scheme = 'gruver16'
 
@@ -22,7 +28,8 @@ local current_font = wezterm.font
 
 -- Fonts
 config.font = current_font
-config.font_size = 16.0
+-- Windows renders points at 96 dpi vs 72 on macOS, so 12 there looks like 16 here.
+config.font_size = is_win and 12.0 or 16.0
 config.adjust_window_size_when_changing_font_size = false
 config.line_height = 1.20
 config.cell_width = 0.90
@@ -35,8 +42,23 @@ config.freetype_render_target = 'HorizontalLcd'
 config.window_padding = { left = 5, right = 5, top = 10, bottom = 0 }
 config.initial_rows = 30
 config.initial_cols = 100
-config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
-config.integrated_title_button_style = "MacOsNative"
+if is_mac then
+    config.window_decorations = "RESIZE|INTEGRATED_BUTTONS" -- |TITLE"
+    config.integrated_title_button_style = "MacOsNative"
+else
+    config.window_decorations = "RESIZE"
+end
+
+if is_win then
+    config.default_prog = { 'pwsh.exe', '-NoLogo' }
+    config.launch_menu = {
+        {
+            label = 'VS Developer PowerShell',
+            -- Finds the newest Visual Studio install, so no hardcoded version/instance id.
+            args = { 'pwsh.exe', '-NoExit', '-Command', 'devshell' },
+        },
+    }
+end
 config.window_frame = {
     active_titlebar_bg = palette.base01,
 	inactive_titlebar_bg = palette.base00, -- not needed
@@ -90,5 +112,9 @@ config.keys = {
     { mods = "LEADER", key = "k", action = act.ActivatePaneDirection "Up" },
     { mods = "LEADER", key = "j", action = act.ActivatePaneDirection "Down" },
 }
+
+if is_win then
+    table.insert(config.keys, { mods = 'CTRL', key = 'L', action = act.ShowLauncher })
+end
 
 return config

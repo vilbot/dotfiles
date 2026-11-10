@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Base16 Theme Builder</title>
+<style>
+  :root{
+    --ui-bg:#15161b;
+    --ui-panel:#1c1e26;
+    --ui-border:#2c2f3a;
+    --ui-text:#c8ccd8;
+    --ui-muted:#7b8094;
+    --ui-accent:#5fb3ff;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'JetBrains Mono','Consolas',monospace;
+    background:var(--ui-bg);
+    color:var(--ui-text);
+    display:flex;
+    min-height:100vh;
+  }
+  #panel{
+    width:340px;
+    flex-shrink:0;
+    background:var(--ui-panel);
+    border-right:1px solid var(--ui-border);
+    padding:20px;
+    overflow-y:auto;
+  }
+  #panel h1{
+    font-size:15px;
+    letter-spacing:0.03em;
+    text-transform:uppercase;
+    color:var(--ui-muted);
+    margin:0 0 4px 0;
+  }
+  #panel p.sub{
+    font-size:11px;
+    color:var(--ui-muted);
+    margin:0 0 18px 0;
+    line-height:1.5;
+  }
+  #import-row{
+    margin-bottom:6px;
+  }
+  #import-label{
+    display:block;
+    font-size:11px;
+    color:var(--ui-muted);
+    margin-bottom:4px;
+  }
+  #yaml-file{
+    width:100%;
+    font-size:10.5px;
+    color:var(--ui-text);
+  }
+  #import-status{
+    font-size:10.5px;
+    min-height:14px;
+    margin-bottom:12px;
+  }
+  #import-status.ok{ color:#8fbf7f; }
+  #import-status.err{ color:#e0637c; }
+  .slot{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:6px 0;
+    border-bottom:1px solid var(--ui-border);
+  }
+  .slot label{
+    flex:1;
+    font-size:11.5px;
+  }
+  .slot .id{
+    color:var(--ui-muted);
+    font-size:10px;
+    display:block;
+  }
+  .slot input[type=color]{
+    width:30px;
+    height:24px;
+    border:1px solid var(--ui-border);
+    background:none;
+    padding:0;
+    cursor:pointer;
+    border-radius:3px;
+  }
+  .slot input[type=text]{
+    width:70px;
+    background:var(--ui-bg);
+    border:1px solid var(--ui-border);
+    color:var(--ui-text);
+    font-family:inherit;
+    font-size:11px;
+    padding:3px 5px;
+    border-radius:3px;
+  }
+  #buttons{
+    margin-top:16px;
+    display:flex;
+    gap:8px;
+  }
+  button{
+    flex:1;
+    background:var(--ui-bg);
+    border:1px solid var(--ui-border);
+    color:var(--ui-text);
+    padding:8px;
+    font-family:inherit;
+    font-size:11px;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  button:hover{border-color:var(--ui-accent);color:var(--ui-accent);}
+  #yaml-out{
+    width:100%;
+    margin-top:10px;
+    background:var(--ui-bg);
+    border:1px solid var(--ui-border);
+    color:var(--ui-muted);
+    font-family:inherit;
+    font-size:10px;
+    padding:8px;
+    border-radius:4px;
+    display:none;
+    resize:vertical;
+  }
+  #preview-wrap{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+  #tabs{
+    display:flex;
+    gap:2px;
+    padding:10px 10px 0 10px;
+    background:var(--t-bg, #1e1f26);
+  }
+  #tabs div{
+    padding:6px 14px;
+    font-size:11px;
+    border-radius:5px 5px 0 0;
+    color:var(--t-comment);
+  }
+  #tabs div.active{
+    background:var(--t-bg2);
+    color:var(--t-fg6);
+    border-top:2px solid var(--t-bg7);
+    padding-top:4px;
+  }
+  #code-row{
+    flex:1;
+    display:flex;
+    background:var(--t-bg2);
+    overflow:auto;
+  }
+  #gutter{
+    flex-shrink:0;
+    padding:24px 12px 24px 20px;
+    text-align:right;
+    font-size:13px;
+    line-height:1.7;
+    color:var(--t-fg4);
+    background:var(--t-bg2);
+    user-select:none;
+  }
+  #code{
+    flex:1;
+    padding:24px 28px 24px 8px;
+    font-size:13px;
+    line-height:1.7;
+    white-space:pre;
+  }
+  #code .line{
+    padding:0 8px;
+    margin:0 -8px;
+    border-radius:3px;
+  }
+  #code .line.sel{
+    background:var(--t-sel);
+  }
+  #statusbar{
+    flex-shrink:0;
+    display:flex;
+    justify-content:space-between;
+    padding:5px 16px;
+    font-size:11px;
+    background:var(--t-bg);
+    color:var(--t-fg4);
+    border-top:1px solid var(--ui-border);
+  }
+  #statusbar span.accent{
+    color:var(--t-fg);
+  }
+  #swatches{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0;
+    border-top:1px solid var(--ui-border);
+    margin-top:14px;
+  }
+  #swatches div{
+    flex:1 0 25%;
+    height:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:9px;
+  }
+  .kw{color:var(--t-keyword);}
+  .fn{color:var(--t-function);}
+  .str{color:var(--t-string);}
+  .num{color:var(--t-number);}
+  .cls{color:var(--t-class);}
+  .cmt{color:var(--t-comment);font-style:italic;}
+  .var{color:var(--t-variable);}
+  .rgx{color:var(--t-support);}
+  .fg{color:var(--t-fg);}
+  .dep{color:var(--t-deprecated);}
+</style>
+</head>
+<body>
+
+<div id="panel">
+  <h1>Base16 Palette</h1>
+  <p class="sub">Set 16 hex values. The preview on the right updates as you edit. Slot roles follow the standard Base16 spec.</p>
+  <div id="import-row">
+    <label id="import-label" for="yaml-file">Import YAML</label>
+    <input type="file" id="yaml-file" accept=".yaml,.yml,.txt">
+  </div>
+  <div id="import-status"></div>
+  <div id="slots"></div>
+  <div id="buttons">
+    <button id="randomize">Randomize</button>
+    <button id="export">Export YAML</button>
+  </div>
+  <textarea id="yaml-out" rows="10" readonly></textarea>
+  <div id="swatches"></div>
+</div>
+
+<div id="preview-wrap">
+  <div id="tabs"><div class="active">theme_engine.cpp</div></div>
+  <div id="code-row">
+    <div id="gutter"></div>
+    <div id="code"></div>
+  </div>
+  <div id="statusbar">
+    <span>main <span class="accent">*</span></span>
+    <span>Ln 12, Col 9 · <span class="accent">UTF-8</span> · C++</span>
+  </div>
+</div>
+
+<script>
+const roles = [
+  ["base00","Default background"],
+  ["base01","Lighter background"],
+  ["base02","Selection background"],
+  ["base03","Comments, invisibles"],
+  ["base04","Dark foreground"],
+  ["base05","Default foreground"],
+  ["base06","Light foreground"],
+  ["base07","Light background"],
+  ["base08","Variables, tags — red"],
+  ["base09","Numbers — orange"],
+  ["base0A","Classes — yellow"],
+  ["base0B","Strings — green"],
+  ["base0C","Regex, support — cyan"],
+  ["base0D","Functions — blue"],
+  ["base0E","Keywords — magenta"],
+  ["base0F","Deprecated — brown"],
+];
+
+// A reasonable dark default so the tool is useful before any editing
+const defaults = {
+  base00:"#1c1e26", base01:"#232530", base02:"#2f3240", base03:"#585d6d",
+  base04:"#7a7f91", base05:"#c8ccd8", base06:"#e2e4ec", base07:"#f4f5f9",
+  base08:"#e0637c", base09:"#e0996a", base0A:"#e0c568", base0B:"#8fbf7f",
+  base0C:"#6fc4c4", base0D:"#5fb3ff", base0E:"#b58fd8", base0F:"#a5765c",
+};
+
+const slotsEl = document.getElementById('slots');
+roles.forEach(([id,desc])=>{
+  const row = document.createElement('div');
+  row.className = 'slot';
+  row.innerHTML = `
+    <input type="color" id="color-${id}" value="${defaults[id]}">
+    <label>${desc}<span class="id">${id}</span></label>
+    <input type="text" id="text-${id}" value="${defaults[id]}">
+  `;
+  slotsEl.appendChild(row);
+});
+
+function parseBase16Yaml(text){
+  // Handles both flat format (base00: "hex") and the tinted-theming
+  // nested format (palette: \n  base00: "hex"), with or without quotes
+  // or a leading '#'.
+  const result = {};
+  const lines = text.split(/\r?\n/);
+  const idRe = /^\s*(base0[0-9A-Fa-f]):\s*["']?#?([0-9A-Fa-f]{6})["']?\s*(#.*)?$/;
+  for(const line of lines){
+    const m = line.match(idRe);
+    if(m){
+      const id = "base" + m[1].slice(4).toUpperCase();
+      result[id] = "#" + m[2].toLowerCase();
+    }
+  }
+  return result;
+}
+
+function applyImportedPalette(values){
+  const found = Object.keys(values);
+  if(found.length === 0) return 0;
+  found.forEach(id=>{
+    const c = document.getElementById('color-'+id);
+    const t = document.getElementById('text-'+id);
+    if(c && t){
+      c.value = values[id];
+      t.value = values[id];
+    }
+  });
+  applyTheme();
+  renderSwatches();
+  return found.length;
+}
+
+document.getElementById('yaml-file').addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  const status = document.getElementById('import-status');
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const values = parseBase16Yaml(reader.result);
+      const count = applyImportedPalette(values);
+      if(count === 16){
+        status.className = 'ok';
+        status.textContent = `Loaded all 16 colors from ${file.name}.`;
+      } else if(count > 0){
+        status.className = 'ok';
+        status.textContent = `Loaded ${count} of 16 colors from ${file.name}. Remaining slots kept their current value.`;
+      } else {
+        status.className = 'err';
+        status.textContent = `No base00–base0F entries found in ${file.name}. Check the file format.`;
+      }
+    } catch(err){
+      status.className = 'err';
+      status.textContent = `Could not read ${file.name}.`;
+    }
+  };
+  reader.onerror = () => {
+    status.className = 'err';
+    status.textContent = `Could not read ${file.name}.`;
+  };
+  reader.readAsText(file);
+});
+
+function renderSwatches(){
+  const el = document.getElementById('swatches');
+  el.innerHTML = '';
+  roles.forEach(([id])=>{
+    const chip = document.createElement('div');
+    const hex = document.getElementById('color-'+id).value;
+    chip.style.background = hex;
+    chip.style.color = readableTextColor(hex);
+    chip.textContent = id.replace('base','');
+    el.appendChild(chip);
+  });
+}
+function readableTextColor(hex){
+  const r = parseInt(hex.substr(1,2),16), g = parseInt(hex.substr(3,2),16), b = parseInt(hex.substr(5,2),16);
+  const yiq = (r*299 + g*587 + b*114) / 1000;
+  return yiq >= 140 ? '#000000' : '#ffffff';
+}
+
+function applyTheme(){
+  const root = document.documentElement.style;
+  const v = id => document.getElementById('color-'+id).value;
+  root.setProperty('--t-bg', v('base01'));
+  root.setProperty('--t-bg2', v('base00'));
+  root.setProperty('--t-fg', v('base05'));
+  root.setProperty('--t-fg4', v('base04'));
+  root.setProperty('--t-fg6', v('base06'));
+  root.setProperty('--t-bg7', v('base07'));
+  root.setProperty('--t-sel', v('base02'));
+  root.setProperty('--t-comment', v('base03'));
+  root.setProperty('--t-variable', v('base08'));
+  root.setProperty('--t-number', v('base09'));
+  root.setProperty('--t-class', v('base0A'));
+  root.setProperty('--t-string', v('base0B'));
+  root.setProperty('--t-support', v('base0C'));
+  root.setProperty('--t-function', v('base0D'));
+  root.setProperty('--t-keyword', v('base0E'));
+  root.setProperty('--t-deprecated', v('base0F'));
+  document.getElementById('code').style.color = v('base05');
+}
+
+roles.forEach(([id])=>{
+  const c = document.getElementById('color-'+id);
+  const t = document.getElementById('text-'+id);
+  c.addEventListener('input', ()=>{ t.value = c.value; applyTheme(); renderSwatches(); });
+  t.addEventListener('change', ()=>{
+    let val = t.value.trim();
+    if(!val.startsWith('#')) val = '#'+val;
+    if(/^#[0-9a-fA-F]{6}$/.test(val)){ c.value = val; applyTheme(); renderSwatches(); }
+    else { t.value = c.value; }
+  });
+});
+
+document.getElementById('randomize').addEventListener('click', ()=>{
+  const rnd = ()=> '#'+Math.floor(Math.random()*0xffffff).toString(16).padStart(6,'0');
+  // keep a dark/light structure: base00-03 dark ramp, base04-07 light ramp, base08-0F accents
+  const darkRamp = [0.06,0.10,0.16,0.30];
+  const lightRamp = [0.55,0.75,0.85,0.95];
+  const hue = Math.floor(Math.random()*360);
+  function hsl(h,s,l){ return `hsl(${h} ${s}% ${l}%)`; }
+  const order = ["base00","base01","base02","base03","base04","base05","base06","base07"];
+  order.forEach((id,i)=>{
+    const l = i<4 ? darkRamp[i]*100 : lightRamp[i-4]*100;
+    document.getElementById('color-'+id).value = hslToHex(hue, 12, l);
+    document.getElementById('text-'+id).value = document.getElementById('color-'+id).value;
+  });
+  ["base08","base09","base0A","base0B","base0C","base0D","base0E","base0F"].forEach((id,i)=>{
+    const h = (hue + i*47) % 360;
+    document.getElementById('color-'+id).value = hslToHex(h, 55, 62);
+    document.getElementById('text-'+id).value = document.getElementById('color-'+id).value;
+  });
+  applyTheme();
+  renderSwatches();
+});
+
+function hslToHex(h,s,l){
+  s/=100; l/=100;
+  const k = n => (n + h/30) % 12;
+  const a = s * Math.min(l, 1-l);
+  const f = n => l - a*Math.max(-1, Math.min(k(n)-3, Math.min(9-k(n),1)));
+  const toHex = x => Math.round(255*x).toString(16).padStart(2,'0');
+  return `#${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+}
+
+document.getElementById('export').addEventListener('click', ()=>{
+  const out = document.getElementById('yaml-out');
+  let yaml = `scheme: "My Custom Theme"\nauthor: "you"\n`;
+  roles.forEach(([id])=>{
+    yaml += `${id}: "${document.getElementById('color-'+id).value.replace('#','')}"\n`;
+  });
+  out.value = yaml;
+  out.style.display = 'block';
+  out.select();
+});
+
+const codeSample = [
+  ['// Base16 Theme Preview', 'cmt'],
+  ['#include <regex>', 'kw'],
+  ['#include <string>', 'kw'],
+  ['', ''],
+  ['class ThemeEngine {', null, [['class','kw'],[' ThemeEngine',null,'cls'],[' {','']]],
+  ['public:', null, [['public:','kw']]],
+  ['    ThemeEngine(int intensity = 100)', null,
+    [['    ','' ],['ThemeEngine','fn'],['(',null],['int','cls'],[' intensity = ',null],['100','num'],[')','']]],
+  ['        : intensity_(intensity), is_active_(true) {}', null,
+    [['        : ',''],['intensity_','var'],['(',''],['intensity','var'],['), ',''],['is_active_','var'],['(true) {}','']]],
+  ['', ''],
+  ['    std::string name = "Custom Theme";', null,
+    [['    std::string','cls'],[' name = ',null],['"Custom Theme"','str'],[';','']]],
+  ['', ''],
+  ['    bool apply_palette(const std::string& layer) {', null,
+    [['    ','' ],['bool','cls'],[' ','' ],['apply_palette','fn'],['(const ',null],['std::string','cls'],['& ',null],['layer','var'],[') {','']]],
+  ['        // Apply the chosen colour layer', 'cmt'],
+  ['        if (!is_active_) {', null,
+    [['        if',' kw'],[' (!',null],['is_active_','var'],[') {',null]]],
+  ['            return false;', null,
+    [['            return ','kw'],['false','kw'],[';','']]],
+  ['        }', ''],
+  ['', ''],
+  ['        std::regex pattern("^palette_\\\\d+$");', null,
+    [['        std::regex','cls'],[' pattern(',null],['"^palette_\\\\d+$"','rgx'],[');','']]],
+  ['        if (std::regex_match(layer, pattern)) {', null,
+    [['        if ','kw'],['(std::regex_match(',null],['layer','var'],[', pattern)) {',null]]],
+  ['            printf("Applying layer: %s\\n", layer.c_str());', null,
+    [['            printf','fn'],['("Applying layer: %s\\n", ','str'],['layer','var'],['.c_str());','']]],
+  ['            return true;', null,
+    [['            return ','kw'],['true','kw'],[';','']]],
+  ['        }', ''],
+  ['        return false;', null,
+    [['        return ','kw'],['false','kw'],[';','']]],
+  ['    }', ''],
+  ['', ''],
+  ['private:', null, [['private:','kw']]],
+  ['    int intensity_;  // deprecated field', null,
+    [['    ','' ],['int','cls'],[' intensity_;  // deprecated field','dep']]],
+  ['    bool is_active_;', null,
+    [['    ','' ],['bool','cls'],[' ','' ],['is_active_','var'],[';','']]],
+  ['};', ''],
+];
+
+const SELECTED_LINE = 12; // 1-indexed: demonstrates base02 selection background
+
+function render(){
+  const el = document.getElementById('code');
+  const gutter = document.getElementById('gutter');
+  el.innerHTML = '';
+  gutter.innerHTML = '';
+  codeSample.forEach((line, i)=>{
+    const div = document.createElement('div');
+    div.className = 'line' + (i+1===SELECTED_LINE ? ' sel' : '');
+    const [text, cls, spans] = line;
+    if(spans){
+      spans.forEach(([t,c])=>{
+        const s = document.createElement('span');
+        if(c) s.className = c;
+        s.textContent = t;
+        div.appendChild(s);
+      });
+    } else if(cls){
+      const s = document.createElement('span');
+      s.className = cls;
+      s.textContent = text;
+      div.appendChild(s);
+    } else {
+      div.textContent = text || '\u00A0';
+    }
+    el.appendChild(div);
+
+    const num = document.createElement('div');
+    num.textContent = i+1;
+    gutter.appendChild(num);
+  });
+}
+
+render();
+applyTheme();
+renderSwatches();
+</script>
+</body>
+</html>
