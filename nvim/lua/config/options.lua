@@ -1,16 +1,22 @@
+local platform = require("config.platform")
 local opt = vim.opt
+
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
 
 -- opt.foldmethod = 'indent'
 opt.tabstop = 4
 opt.softtabstop = 4
 opt.shiftwidth = 4
-opt.expandtab = false
+opt.expandtab = true
 opt.smartindent = true
 opt.autoindent = true
 opt.cursorline = true
 opt.number = true
 opt.relativenumber = true
--- opt.numberwidth = 6
+opt.numberwidth = 5
 -- vim.o.statuscolumn = "%l%s"
 opt.ruler = true
 opt.wrap = false
@@ -30,9 +36,9 @@ opt.winborder = "rounded"
 opt.title = true
 opt.titlestring = "%{%v:lua.MyTitleString()%}"
 function _G.MyTitleString()
-  local filename = vim.fn.expand('%:t') ~= '' and vim.fn.expand('%:t') or vim.fn.expand('%:F')
-  local modified = vim.bo.modified and '' or ''
-  return modified  .. filename
+	local filename = vim.fn.expand('%:t') ~= '' and vim.fn.expand('%:t') or vim.fn.expand('%:F')
+	local modified = vim.bo.modified and '• ' or ''
+	return modified .. filename
 end
 opt.guicursor = "n-v-c-sm:block,i-ci-ve:ver25,r-cr-o:hor20,t:block"
 opt.laststatus = 3
@@ -44,20 +50,23 @@ opt.termguicolors = true
 opt.inccommand = "split"
 opt.grepformat = "%f:%l:%c:%m"
 opt.swapfile = false
-vim.g.nord_italic = false
-vim.g.nord_bold = false
-vim.opt.exrc = true
-vim.opt.secure = true
+opt.exrc = true
+opt.secure = true
 -- vim.opt.shell = 'pwsh -NoLogo'
-vim.opt.timeoutlen = 300
-vim.loader.enable()
+opt.timeoutlen = 300
 
-vim.cmd("compiler gcc")
-vim.opt.errorformat:append("%+G%.%#")
+vim.cmd("compiler! gcc")
+opt.errorformat:append("%+G%.%#")
 
-vim.keymap.set("n", "<leader>b", function()
-  vim.cmd("silent !.\\build.bat *> build.log")
-  vim.cmd("cfile build.log")
-  vim.cmd("vert copen " .. math.floor(vim.o.columns / 2))
-end, { desc = "Build" })
+vim.filetype.add({
+	extension = { razor = "razor" },
+})
 
+if platform.is_win then
+	opt.shell = "cmd.exe"
+	opt.shellcmdflag = "/s /c"
+	opt.shellredir = ">%s 2>&1"
+	opt.shellpipe = ">%s 2>&1"
+	opt.shellquote = ""
+	opt.shellxquote = '"'
+end
