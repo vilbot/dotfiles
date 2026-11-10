@@ -7,6 +7,18 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "tabs": {
+    "show_diagnostics": "off"
+  },
+  "agent_ui_font_size": 16.0,
+  "agent_buffer_font_size": 14.0,
+  "rounded_selection": true,
+  "selection_highlight": true,
+  "cursor_shape": "bar",
+  "cli_default_open_behavior": "existing_window",
+  "cursor_animation": {
+    "enabled": false
+  },
   "project_panel": {
     "dock": "left"
   },
@@ -17,6 +29,9 @@
     "dock": "left"
   },
   "agent": {
+    "threads_sidebar": {
+      "position": "right"
+    },
     "dock": "right",
     "favorite_models": [],
     "model_parameters": []
@@ -31,10 +46,14 @@
   "cursor_blink": false,
   "multi_cursor_modifier": "alt",
   "terminal": {
+    "font_size": 14.0,
     "dock": "bottom"
   },
-  "diagnostics_max_severity": "off",
+  "diagnostics_max_severity": "all",
   "diagnostics": {
+    "inline": {
+      "enabled": true
+    },
     "lsp_pull_diagnostics": {
       "enabled": true
     },
@@ -50,7 +69,7 @@
       "type": "registry"
     }
   },
-  "buffer_font_family": "Droid Sans Mono Slashed",
+  "buffer_font_family": "Hack",
   "icon_theme": {
     "mode": "light",
     "light": "Zed (Default)",
@@ -60,7 +79,7 @@
     "trust_all_worktrees": true
   },
   "vim_mode": true,
-  "ui_font_size": 16,
+  "ui_font_size": 16.0,
   "buffer_font_size": 14,
   "theme": {
     "mode": "dark",

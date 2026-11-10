@@ -78,5 +78,151 @@
       "ctrl-tab": "pane::ActivateNextItem",
       "ctrl-shift-tab": "pane::ActivatePreviousItem"
     }
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "cmd-w": [
+        "pane::CloseActiveItem",
+        {
+          "close_pinned": false
+        }
+      ]
+    }
+  },
+  {
+    "context": "(VimControl && !menu) || (!Editor)",
+    "bindings": {
+      "ctrl-w k": "workspace::ActivatePaneUp"
+    }
+  },
+  {
+    "context": "(VimControl && !menu) || (!Editor)",
+    "bindings": {
+      "ctrl-w h": "workspace::ActivatePaneLeft"
+    }
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      "alt-cmd-f": "pane::DeploySearch"
+    }
+  },
+  {
+    "context": "Pane",
+    "unbind": {
+      "cmd-shift-f": "pane::DeploySearch"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-cmd-f": "pane::DeploySearch"
+    }
+  },
+  {
+    "context": "Workspace",
+    "unbind": {
+      "cmd-shift-f": "pane::DeploySearch"
+    }
+  },
+  {
+    "context": "ProjectSearchBar",
+    "bindings": {
+      "alt-cmd-f": "search::FocusSearch"
+    }
+  },
+  {
+    "context": "ProjectSearchBar",
+    "unbind": {
+      "cmd-shift-f": "search::FocusSearch"
+    }
+  },
+  {
+    "context": "ProjectSearchBar",
+    "unbind": {
+      "alt-cmd-f": "project_search::OpenTextFinder"
+    }
+  },
+  {
+    "context": "ProjectSearchView",
+    "unbind": {
+      "alt-cmd-f": "project_search::OpenTextFinder"
+    }
+  },
+  {
+    "context": "TextFinder || TextFinder > Picker > Editor || TextFinder > Picker > menu",
+    "unbind": {
+      "alt-cmd-f": "text_finder::ToProjectSearch"
+    }
+  },
+  {
+    "bindings": {
+      "cmd-shift-f": "text_finder::Toggle"
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "cmd-shift-f": "text_finder::Toggle"
+    }
+  },
+  {
+    "context": "Pane",
+    "bindings": {
+      "cmd-shift-f": "text_finder::Toggle"
+    }
+  },
+  {
+    "context": "TextFinder || TextFinder > Picker > Editor || TextFinder > Picker > menu",
+    "bindings": {
+      "cmd-shift-f": "text_finder::ToProjectSearch"
+    }
+  },
+  {
+    "context": "TextFinder || TextFinder > Picker > Editor || TextFinder > Picker > menu",
+    "unbind": {
+      "alt-cmd-f": "text_finder::ToProjectSearch"
+    }
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "alt-k": "editor::MoveLineUp"
+    }
+  },
+  {
+    "context": "Editor",
+    "unbind": {
+      "alt-up": "editor::MoveLineUp"
+    }
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "alt-j": "editor::MoveLineDown"
+    }
+  },
+  {
+    "context": "Editor",
+    "unbind": {
+      "alt-down": "editor::MoveLineDown"
+    }
+  },
+  {
+    "unbind": {
+      "cmd-+": [
+        "zed::IncreaseBufferFontSize",
+        {
+          "persist": false
+        }
+      ]
+    }
+  },
+  {
+    "context": "(VimControl && !menu) || (!Editor)",
+    "bindings": {
+      "ctrl-w l": "workspace::ActivatePaneRight"
+    }
   }
 ]

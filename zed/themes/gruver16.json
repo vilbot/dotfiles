@@ -156,6 +156,7 @@
         ],
         "syntax": {
           "attribute": { "color": "#96a6c8ff", "font_style": null, "font_weight": null },
+          "attribute.annotation": { "color": "#b3ccc0ff", "font_style": null, "font_weight": null },
           "boolean": { "color": "#9e95c7ff", "font_style": null, "font_weight": null },
           "comment": { "color": "#4a4f59ff", "font_style": null, "font_weight": null },
           "comment.doc": { "color": "#565c6aff", "font_style": null, "font_weight": null },
