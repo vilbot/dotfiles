@@ -7,6 +7,13 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "language_models": {
+    "llama.cpp": {
+      "api_url": "http://localhost:9931",
+      "context-window": 0,
+      "auto-discover": true,
+    }
+  },
   "tabs": {
     "show_diagnostics": "off"
   },
@@ -29,6 +36,11 @@
     "dock": "left"
   },
   "agent": {
+    "default_model": {
+      "provider": "llama.cpp",
+      "model": "C:\\Users\\Vilgot\\dev\\models\\Qwen2.5-Coder-14B-Instruct-GGUF\\Qwen2.5-Coder-14B-Instruct-Q4_K_M.gguf",
+      "enable_thinking": false
+    },
     "threads_sidebar": {
       "position": "right"
     },
