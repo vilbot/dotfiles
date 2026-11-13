@@ -47,6 +47,21 @@ for entry in "${LINKS[@]}"; do
   run ln -s "$src" "$target"
 done
 
+# Toshy (mac-style keys on Linux) is installed separately; its config is regenerated on upgrade,
+# so only our customizations are kept here and written in, not linked.
+if [[ $OS == linux ]]; then
+  if [[ -f "$HOME/.config/toshy/toshy_config.py" ]]; then
+    run python3 "$DOT/toshy/apply.py"
+  else
+    echo "note    Toshy not installed (https://github.com/RedBearAK/toshy); then re-run to apply toshy/"
+  fi
+fi
+
+# KDE shortcuts from keys/keymap.toml (KDE rewrites its config, so it's applied, not linked).
+if [[ $OS == linux ]] && command -v kwriteconfig6 >/dev/null; then
+  run python3 "$DOT/keys/build.py" --apply
+fi
+
 # Login shell should be zsh. chsh asks for a password, so only print the command.
 if [[ $OS == linux ]]; then
   login_shell="$(getent passwd "$USER" | cut -d: -f7)"

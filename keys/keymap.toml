@@ -1,0 +1,22 @@
+# Keyboard shortcuts: the ONE source of truth for desktop / window-manager keybinds.
+# Edit here, then run:
+#   python3 keys/build.py           regenerate keys/generated/*
+#   python3 keys/build.py --apply   ...and write them into KDE (log out and back in afterwards)
+#
+# Keys are the PHYSICAL keys on a Mac-layout keyboard: cmd, opt, ctrl, shift + one key,
+# e.g. "opt+1", "cmd+space", "opt+shift+w". build.py translates them per platform.
+# On Linux Toshy sits in between and sends:  cmd -> Ctrl,  opt -> Alt,  ctrl -> Super
+# (ctrl stays Ctrl in terminals, so global binds using physical ctrl don't fire while
+# a terminal is focused; prefer opt-based binds).
+#
+# "{n}" expands to 1..desktops. A list binds several keys to one action; [] = unbound.
+
+desktops = 5
+
+[binds]
+"desktop.goto.{n}" = "opt+{n}"
+"desktop.move.{n}" = []                          # move window to desktop n: not decided yet
+"desktop.prev"     = "opt+w"
+"desktop.next"     = "opt+e"
+"layout.next"      = ["opt+space", "ctrl+space"] # ctrl+space is Toshy's Mac-style default
+"launcher"         = "cmd+space"

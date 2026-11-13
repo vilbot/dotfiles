@@ -14,6 +14,8 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `powershell/` | pwsh 7 (windows) | `$PROFILE` |
 | `jetbrains/` | JetBrains theme plugin | installed manually from `jetbrains/gruver16/gruver16-plugin.zip` |
 | `theme/` | gruver16 color source + generator | — |
+| `keys/` | desktop/WM keybind source + generator (KDE now, Hyprland later) | applied into KDE by `keys/build.py --apply` |
+| `toshy/` | Toshy (linux) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
 `install.sh` (mac and linux) and `install.ps1` (windows) create all links. When adding a new app config, add it to both scripts if it applies.
@@ -33,5 +35,21 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 
 Do not hand-edit generated files (`nvim/lua/palettes/gruver16.lua`, `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `zed/themes/gruver16.json`, `jetbrains/gruver16/*`).
 `nvim/colors/custom.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit.
+
+## Keybinds
+`keys/keymap.toml` is the single source of truth for desktop / window-manager shortcuts (desktops, launcher, layout switching).
+Keys are written as physical Mac-keyboard keys (`cmd`, `opt`, `ctrl`, `shift`); `keys/build.py` translates them per platform.
+On Linux, Toshy remaps keys first: cmd → Ctrl, opt → Alt, ctrl → Super (Ctrl in terminals).
+1. Edit `keys/keymap.toml`.
+2. Run `python3 keys/build.py --apply` (regenerates `keys/generated/*` and writes KDE's config; log out/in after). `--check` verifies nothing is stale.
+
+Do not hand-edit `keys/generated/*`. To support a new action or platform, extend `KDE_ACTIONS` / `targets` in `keys/build.py`.
+
+## Toshy (linux)
+Installed separately; its installer regenerates `~/.config/toshy/toshy_config.py` on upgrade, keeping only the `SLICE_MARK_START/END` sections. So never link or copy the whole file:
+- `toshy/slices/<slice>.py` is the body of that slice; `toshy/preferences.toml` holds tray-menu settings (sqlite prefs).
+- `python3 toshy/apply.py` writes both in and restarts Toshy; `--check` reports differences.
+- Changed something in the tray or the live config? Copy it back into `toshy/` so the repo stays the source.
+- keyd is not used: it conflicts with Toshy (both grab keyboards). Caps → Esc/Ctrl is Toshy's `capslock_mode`.
 
 Terminal quirk: the ANSI "yellow" slot is sage (`base0A`) and ANSI "magenta" is the real yellow (`base0E`). Shells color commands with **magenta** so they show yellow (zsh `fg=magenta`, pwsh `` `e[35m ``).

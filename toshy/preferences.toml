@@ -1,0 +1,10 @@
+# Toshy settings that differ from its defaults (normally set from the tray menu / toshy-gui).
+# Written into ~/.config/toshy/toshy_user_preferences.sqlite by toshy/apply.py.
+# Values are stored as strings, exactly as Toshy writes them.
+
+# Caps lock: tap = Esc, hold = Ctrl, everywhere.
+capslock_mode = "caps_is_esc_and_lctrl"
+
+# Feature overlays bitmask. Default 255 = all on; 127 turns off LEVEL3_LEFT_ALT (bit 128),
+# so Opt+key reaches the desktop as plain Alt+key (needed for the opt-based binds in keys/).
+overlay_mask = "127"
