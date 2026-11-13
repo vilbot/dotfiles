@@ -19,10 +19,10 @@ desktops = 5
 # desktops
 "desktop.goto.{n}" = "opt+{n}"
 "desktop.move.{n}" = "opt+shift+{n}"             # move focused window there (you stay)
-"desktop.prev"     = "opt+w"
-"desktop.next"     = "opt+e"
-"desktop.move.prev" = "opt+shift+w"
-"desktop.move.next" = "opt+shift+e"
+"desktop.prev"     = "opt+p"
+"desktop.next"     = "opt+n"
+"desktop.move.prev" = "opt+shift+p"
+"desktop.move.next" = "opt+shift+n"
 
 # input / launching
 "layout.next"      = ["opt+space", "ctrl+space"] # ctrl+space is Toshy's Mac-style default

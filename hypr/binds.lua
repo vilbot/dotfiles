@@ -11,10 +11,10 @@ return function(P)
   hl.bind("ALT + SHIFT + 3", hl.dsp.window.move({ workspace = 3, follow = false })) -- desktop.move.3
   hl.bind("ALT + SHIFT + 4", hl.dsp.window.move({ workspace = 4, follow = false })) -- desktop.move.4
   hl.bind("ALT + SHIFT + 5", hl.dsp.window.move({ workspace = 5, follow = false })) -- desktop.move.5
-  hl.bind("ALT + W", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 - 1) % 5 + 1 })) end) -- desktop.prev
-  hl.bind("ALT + E", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 + 1) % 5 + 1 })) end) -- desktop.next
-  hl.bind("ALT + SHIFT + W", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.window.move({ workspace = (id - 1 - 1) % 5 + 1, follow = false })) end) -- desktop.move.prev
-  hl.bind("ALT + SHIFT + E", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.window.move({ workspace = (id - 1 + 1) % 5 + 1, follow = false })) end) -- desktop.move.next
+  hl.bind("ALT + P", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 - 1) % 5 + 1 })) end) -- desktop.prev
+  hl.bind("ALT + N", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 + 1) % 5 + 1 })) end) -- desktop.next
+  hl.bind("ALT + SHIFT + P", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.window.move({ workspace = (id - 1 - 1) % 5 + 1, follow = false })) end) -- desktop.move.prev
+  hl.bind("ALT + SHIFT + N", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.window.move({ workspace = (id - 1 + 1) % 5 + 1, follow = false })) end) -- desktop.move.next
   hl.bind("ALT + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
   hl.bind("SUPER + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
   hl.bind("SUPER + code:191", hl.dsp.exec_cmd(P.launcher)) -- launcher
