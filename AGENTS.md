@@ -18,7 +18,7 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `toshy/` | Toshy (linux) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`binds.lua`, `colors.lua` generated), `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
-| `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, Opt+? keybind sheet; `Colors.qml` and `KeybindsData.qml` generated | `~/.config/quickshell` (linux) |
+| `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, notifications, Opt+? keybind sheet; `Colors.qml` and `KeybindsData.qml` generated | `~/.config/quickshell` (linux) |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 

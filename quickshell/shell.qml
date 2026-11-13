@@ -17,4 +17,7 @@ ShellRoot {
 
     // Opt+? keybind cheat sheet (hidden until toggled)
     Keybinds {}
+
+    // notification server + popups
+    Notifications {}
 }

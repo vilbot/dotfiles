@@ -144,3 +144,10 @@ hl.layer_rule({
     match = { namespace = "^quickshell-keybinds$" },
     blur  = true,
 })
+
+hl.layer_rule({
+    -- Notification cards are slightly translucent; blur what's behind them.
+    name  = "blur-quickshell-notifications",
+    match = { namespace = "^quickshell-notifications$" },
+    blur  = true,
+})
