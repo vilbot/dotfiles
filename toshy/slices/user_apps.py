@@ -66,3 +66,15 @@ keymap("User: Opt+Tab switches desktops", {
     cnfg.screen_has_focus and
     not ctx_app_is_remote
 )
+
+# Quickshell command palette (dotfiles/quickshell/CommandPalette.qml): physical Ctrl+N/P/J/K move
+# through the results. The palette is a layer, not a window, so Toshy sees the app underneath and
+# would turn Ctrl+K into "delete to end of line" there. While the palette is open it creates this
+# flag file; pass the keys through untouched (the palette handles Super and Ctrl versions).
+_palette_flag = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "quickshell-palette-open")
+keymap("User: Quickshell palette navigation", {
+    C("Super-n"):               C("Super-n"),
+    C("Super-p"):               C("Super-p"),
+    C("Super-j"):               C("Super-j"),
+    C("Super-k"):               C("Super-k"),
+}, when = lambda ctx: os.path.exists(_palette_flag))

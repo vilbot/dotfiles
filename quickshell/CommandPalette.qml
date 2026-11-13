@@ -2,7 +2,7 @@
 // Command palette: one search box for apps (and their actions like "New window"), open
 // windows, settings pages and system commands, plus a calculator ("12*7" -> Enter copies 84).
 // Cmd+Space (hypr/hyprland.lua: programs.launcher) or `qs ipc call palette toggle`.
-// Up/Down choose, Enter runs, Esc closes. Things you run often rank higher (counts kept in
+// Up/Down (or Ctrl+N/P, Ctrl+J/K) choose, Enter runs, Esc closes. Things you run often rank higher (counts kept in
 // ~/.local/state/quickshell/palette.json). Log out / restart / shut down ask for a second Enter.
 import QtQuick
 import QtQuick.Layouts
@@ -26,6 +26,11 @@ Scope {
     function toggle() { if (showing) close(); else show() }
     function show() { query = ""; current = 0; confirming = ""; showing = true }
     function close() { showing = false }
+
+    // Toshy passes Ctrl+N/P/J/K through while this file exists (toshy/slices/user_apps.py)
+    readonly property string toshyFlag: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-palette-open"
+    onShowingChanged: Quickshell.execDetached(showing ? ["touch", toshyFlag] : ["rm", "-f", toshyFlag])
+    function move(d) { current = Math.max(0, Math.min(results.length - 1, current + d)) }
 
     IpcHandler {
         target: "palette"
@@ -199,8 +204,15 @@ Scope {
                     Keys.onEscapePressed: root.close()
                     Keys.onReturnPressed: root.run(root.current)
                     Keys.onEnterPressed: root.run(root.current)
-                    Keys.onUpPressed: root.current = Math.max(0, root.current - 1)
-                    Keys.onDownPressed: root.current = Math.min(root.results.length - 1, root.current + 1)
+                    Keys.onUpPressed: root.move(-1)
+                    Keys.onDownPressed: root.move(1)
+                    // Ctrl+N/J down, Ctrl+P/K up. Physical Ctrl arrives as Super (Meta) after
+                    // Toshy in most apps, as Ctrl over terminals.
+                    Keys.onPressed: event => {
+                        if (!(event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) return
+                        if (event.key === Qt.Key_N || event.key === Qt.Key_J) { root.move(1); event.accepted = true }
+                        else if (event.key === Qt.Key_P || event.key === Qt.Key_K) { root.move(-1); event.accepted = true }
+                    }
                     Keys.onTabPressed: root.current = (root.current + 1) % Math.max(1, root.results.length)
 
                     Text {
