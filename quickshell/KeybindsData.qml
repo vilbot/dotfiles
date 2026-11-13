@@ -17,31 +17,19 @@ Singleton {
                 {
                     "label": "Previous desktop",
                     "keys": [
-                        "⌥ P"
+                        "⌥ ⇧ ⇥"
                     ]
                 },
                 {
                     "label": "Next desktop",
                     "keys": [
-                        "⌥ N"
+                        "⌥ ⇥"
                     ]
                 },
                 {
                     "label": "Send window to desktop",
                     "keys": [
                         "⌥ ⇧ 1–5"
-                    ]
-                },
-                {
-                    "label": "Send window to previous desktop",
-                    "keys": [
-                        "⌥ ⇧ P"
-                    ]
-                },
-                {
-                    "label": "Send window to next desktop",
-                    "keys": [
-                        "⌥ ⇧ N"
                     ]
                 }
             ]

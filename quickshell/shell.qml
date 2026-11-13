@@ -20,4 +20,8 @@ ShellRoot {
 
     // notification server + popups
     Notifications {}
+
+    // control center (click the volume in the bar) and the settings window
+    ControlCenter {}
+    Settings {}
 }

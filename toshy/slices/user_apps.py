@@ -55,3 +55,14 @@ if DESKTOP_ENV == 'hyprland':
         not ctx_app_is_remote
     )
 
+# Opt+Tab / Opt+Shift+Tab switch desktops (dotfiles/keys/keymap.toml). Toshy ignores the physical
+# Opt+Tab (it turns Cmd+Tab into Alt+Tab for app switching), and passing Alt+Tab through would
+# make Cmd+Tab switch desktops too. Send Super+F14 instead, a combo no key produces; KDE and
+# Hyprland bind it (dotfiles/keys/build.py: TOSHY_SPECIAL).
+keymap("User: Opt+Tab switches desktops", {
+    C("Alt-Tab"):               C("Super-F14"),
+    C("Shift-Alt-Tab"):         C("Shift-Super-F14"),
+}, when = lambda ctx:
+    cnfg.screen_has_focus and
+    not ctx_app_is_remote
+)

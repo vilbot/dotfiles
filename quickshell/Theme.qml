@@ -15,6 +15,8 @@ Singleton {
     readonly property color inkFaint:  "#a39d92"   // empty / inactive
     readonly property color hover:     Qt.rgba(0.165, 0.153, 0.137, 0.07)
     readonly property color urgent:    "#a2462e"   // muted vermilion
+    readonly property color paper:     "#f3efe6"   // opaque wall: windows, slider handles
+    readonly property color panel:     Qt.rgba(0.953, 0.937, 0.902, 0.94)   // pop-over panels
 
     // type: Liberation Serif (Times-like, comes with the system).
     // Use `font: Theme.text` / textItalic / textCaps; don't set family/size per component.
@@ -24,6 +26,8 @@ Singleton {
     readonly property font textItalic: Qt.font({ family: fontFamily, pixelSize: fontSize, italic: true })
     // letter-spaced capitals, like a museum label (numerals, "US")
     readonly property font textCaps:   Qt.font({ family: fontFamily, pixelSize: fontSize - 1, letterSpacing: 1.5 })
+    readonly property font textSmall:  Qt.font({ family: fontFamily, pixelSize: fontSize - 2, italic: true })
+    readonly property font heading:    Qt.font({ family: fontFamily, pixelSize: 24, italic: true })
 
     // wallpaper (not in the repo; drop any painting there)
     readonly property string wallpaper: "file://" + Quickshell.env("HOME") + "/Pictures/wallpaper.jpg"

@@ -1,4 +1,4 @@
-// Default output volume. Scroll to change, click to mute.
+// Default output volume. Click: control center. Scroll: change volume. Middle-click: mute.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -38,8 +38,12 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
         cursorShape: Qt.PointingHandCursor
-        onClicked: if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted
+        onClicked: mouse => {
+            if (mouse.button === Qt.MiddleButton) { if (root.sink?.audio) root.sink.audio.muted = !root.sink.audio.muted }
+            else Panels.toggleControl()
+        }
         onWheel: wheel => {
             if (!root.sink?.audio) return
             const step = wheel.angleDelta.y > 0 ? 0.05 : -0.05
