@@ -1,27 +1,29 @@
 # dotfiles
 
-Personal configs for macOS and Windows. **One branch (`main`) for every OS.**
+Personal configs for macOS, Linux (CachyOS) and Windows. **One branch (`main`) for every OS.**
 Never create per-OS branches or per-OS copies of a config. Put OS differences inside the file.
 
 ## Layout
-| Path | App | Linked to (mac / windows) |
+| Path | App | Linked to (mac + linux / windows) |
 |---|---|---|
 | `nvim/` | Neovim | `~/.config/nvim` / `%LOCALAPPDATA%\nvim` |
-| `wezterm/.wezterm.lua` | WezTerm | `~/.wezterm.lua` (both) |
+| `wezterm/.wezterm.lua` | WezTerm (mac, windows) | `~/.wezterm.lua` |
 | `zed/` | Zed | `~/.config/zed/*` / `%APPDATA%\Zed\*` |
-| `ghostty/` | Ghostty (mac) | `~/.config/ghostty` |
-| `.zshrc` | zsh (mac) | `~/.zshrc` |
+| `ghostty/` | Ghostty (mac, linux) | `~/.config/ghostty` |
+| `.zshrc` | zsh (mac, linux) | `~/.zshrc` |
 | `powershell/` | pwsh 7 (windows) | `$PROFILE` |
 | `jetbrains/` | JetBrains theme plugin | installed manually from `jetbrains/gruver16/gruver16-plugin.zip` |
 | `theme/` | gruver16 color source + generator | — |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
-`install.sh` (mac) and `install.ps1` (windows) create all links. When adding a new app config, add it to both scripts if it applies.
+`install.sh` (mac and linux) and `install.ps1` (windows) create all links. When adding a new app config, add it to both scripts if it applies.
 
 ## OS-specific code
 - **nvim:** use `require("config.platform")` (`is_win`, `is_mac`, `is_linux`), never `has("win32")` directly. See `nvim/README.md`.
+- **zsh:** branch on `is_mac` at the top of `.zshrc`. Linux plugins come from `/usr/share/zsh/plugins` (pacman), mac ones from brew.
+- **ghostty:** reference themes by name (`theme = gruver16`), never by absolute path.
 - **wezterm:** use the `is_win` / `is_mac` locals at the top. Paths go through `dotfiles` (`~/dotfiles`); never hardcode `/Users/...` or `C:\...`.
-- **zed:** `settings.json` is shared. Keymaps are split during a transition: `keymap.json` (mac, `cmd-*`) and `keymap.windows.json`. Zed has no per-OS conditionals in keymaps.
+- **zed:** `settings.json` is shared. Keymaps are split during a transition: `keymap.json` (mac, `cmd-*`) and `keymap.windows.json` (ctrl-based, also linked on linux). Zed has no per-OS conditionals in keymaps.
 
 ## Colors: gruver16
 `theme/gruver16.yaml` is the single source of truth. To change a color:

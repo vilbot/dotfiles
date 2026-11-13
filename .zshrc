@@ -1,6 +1,25 @@
 zmodload zsh/datetime
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$HOME/.local/share/bob/nvim-bin:$PATH"
 export EDITOR=nvim
+export SUDO_EDITOR="$HOME/.local/share/bob/nvim-bin/nvim"
+
+[[ $OSTYPE == darwin* ]] && is_mac=1 || is_mac=0
+
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
+setopt SHARE_HISTORY HIST_IGNORE_DUPS HIST_IGNORE_SPACE
+
+if (( is_mac )); then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    # Docker Desktop CLI completions
+    fpath=("$HOME/.docker/completions" $fpath)
+    export PATH="$HOME/.antigravity-ide/antigravity-ide/bin:$PATH"
+    export PATH="$PATH:$HOME/.lmstudio/bin"
+    zsh_plugins="$(brew --prefix)/share"
+else
+    zsh_plugins=/usr/share/zsh/plugins
+fi
 
 autoload -Uz compinit && compinit -C
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -8,12 +27,7 @@ zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 bindkey -e
 bindkey '^[f' vi-forward-word
 
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
-source $(brew --prefix)/share/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $(brew --prefix)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-if [ -f "$(brew --prefix)/etc/profile.d/z.sh" ]; then
+if (( is_mac )) && [[ -f "$(brew --prefix)/etc/profile.d/z.sh" ]]; then
     source "$(brew --prefix)/etc/profile.d/z.sh"
 fi
 
@@ -42,24 +56,13 @@ NEWLINE=$'\n'
 PROMPT='%F{green}%~%f ${vcs_info_msg_0_}${NEWLINE}> '
 RPROMPT='%F{#787878}$_cmd_duration'
 
-ZSH_HIGHLIGHT_STYLES[arg0]='fg=magenta'
-ZSH_HIGHLIGHT_STYLES[precommand]='fg=magenta,underline'
-ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
-
-# Added by Antigravity IDE
-export PATH="/Users/vilgot/.antigravity-ide/antigravity-ide/bin:$PATH"
-export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
-# The following lines have been added by Docker Desktop to enable Docker CLI completions.
-fpath=(/Users/vilgot/.docker/completions $fpath)
-autoload -Uz compinit
-(( ${+_comps[docker]} )) || compinit
-# End of Docker CLI completions
-
-
-# Added by Antigravity CLI installer
-export PATH="/Users/vilgot/.local/bin:$PATH"
-
-# Added by LM Studio CLI (lms)
-export PATH="$PATH:/Users/vilgot/.lmstudio/bin"
-# End of LM Studio CLI section
-
+# Plugins last: syntax highlighting has to be sourced after everything else.
+[[ -f $zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ]] &&
+    source $zsh_plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+if [[ -f $zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; then
+    source $zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    ZSH_HIGHLIGHT_STYLES[arg0]='fg=magenta'
+    ZSH_HIGHLIGHT_STYLES[precommand]='fg=magenta,underline'
+    ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
+fi
+unset zsh_plugins

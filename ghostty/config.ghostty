@@ -11,7 +11,8 @@ font-thicken = true
 font-thicken-strength = 100
 font-size = 18
 adjust-cell-height = 35%
-theme = /Users/vilgot/dotfiles/ghostty/themes/gruver16
+# Resolved from ~/.config/ghostty/themes/ (this repo's ghostty/themes via the symlink)
+theme = gruver16
 mouse-hide-while-typing = true
 
 keybind = super+ctrl+v=new_split:right
