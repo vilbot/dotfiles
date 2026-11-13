@@ -2,6 +2,10 @@
 -- them last, over its own values. The app rewrites this file: keep one entry per line.
 return {
     options = {
+        ["decoration:inactive_opacity"] = 0.9,
+    },
+    animations = {
+        ["workspaces"] = { enabled = true, speed = 5, curve = "quick", style = "" },
     },
     monitors = {
         ["desc:Samsung Electric Company LS27FG53x"] = { mode = "2560x1440@200.00", scale = 1 },

@@ -85,13 +85,13 @@ Singleton {
             "title": "Launch & type",
             "rows": [
                 {
-                    "label": "Launcher",
+                    "label": "Command palette",
                     "keys": [
                         "⌘ Space"
                     ]
                 },
                 {
-                    "label": "Other launcher",
+                    "label": "Vicinae",
                     "keys": [
                         "⌥ ⌘ Space"
                     ]

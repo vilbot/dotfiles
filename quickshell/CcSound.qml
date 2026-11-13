@@ -36,7 +36,7 @@ ColumnLayout {
         }
         Slider {
             Layout.fillWidth: true
-            enabled: root.sink?.audio && !root.sink.audio.muted
+            enabled: !!(root.sink?.audio && !root.sink.audio.muted)
             value: root.sink?.audio?.volume ?? 0
             onMoved: v => { if (root.sink?.audio) root.sink.audio.volume = v }
         }
@@ -75,7 +75,7 @@ ColumnLayout {
         }
         Slider {
             Layout.fillWidth: true
-            enabled: root.source?.audio && !root.source.audio.muted
+            enabled: !!(root.source?.audio && !root.source.audio.muted)
             value: root.source?.audio?.volume ?? 0
             onMoved: v => { if (root.source?.audio) root.source.audio.volume = v }
         }

@@ -1,5 +1,5 @@
 // Control center (like the Mac's): sound, display, network, Bluetooth, and links to the full
-// settings. Opens from the volume in the bar, or `qs ipc call controlcenter toggle`.
+// settings. Opens from the switches icon in the bar, or `qs ipc call controlcenter toggle`.
 // Click outside or press Esc to close.
 import QtQuick
 import QtQuick.Layouts
@@ -56,7 +56,7 @@ Scope {
 
                 CcSound { Layout.fillWidth: true }
                 Rule {}
-                CcDisplay { id: display; Layout.fillWidth: true; open: Panels.controlOpen }
+                CcDisplay { id: display; Layout.fillWidth: true }
                 Rule { visible: display.visible }
                 CcNetwork { Layout.fillWidth: true; open: Panels.controlOpen }
                 Rule {}

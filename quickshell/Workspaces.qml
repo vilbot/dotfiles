@@ -1,5 +1,4 @@
-// Desktops I..IV, plus V while the TV is plugged in (V is the TV; see hypr/desktops.lua).
-// Click or scroll to switch; both go through desktops.lua so they behave like Opt+1..5 / Opt+P/N.
+// Desktops I..V, always shown (like KDE's fixed desktops). Click or scroll to switch.
 // Focused: ink with a thin underline. Has windows: dim ink. Empty: faint.
 import QtQuick
 import QtQuick.Layouts
@@ -9,14 +8,8 @@ import Quickshell.Hyprland
 RowLayout {
     id: root
     property var screen
-    // keep in sync with hypr/desktops.lua (M.tv, M.tv_desktop)
-    readonly property bool tvPresent: Hyprland.monitors.values.some(m => (m.description ?? "").startsWith("Sony SONY TV"))
-    readonly property int count: tvPresent ? 5 : 4
+    property int count: 5   // keep in sync with `desktops` in keys/keymap.toml
     spacing: 2
-
-    function desktops(call) {
-        Quickshell.execDetached(["hyprctl", "eval", `require("desktops").${call}`])
-    }
 
     function roman(n) {
         return ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][n - 1] ?? String(n)
@@ -67,12 +60,16 @@ RowLayout {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.desktops(`go(${cell.wsId})`)
+                onClicked: Hyprland.dispatch(`hl.dsp.focus({ workspace = ${cell.wsId} })`)
             }
         }
     }
 
     WheelHandler {
-        onWheel: event => root.desktops(event.angleDelta.y < 0 ? "step(1)" : "step(-1)")
+        onWheel: event => {
+            const cur = Hyprland.focusedWorkspace?.id ?? 1
+            const next = event.angleDelta.y < 0 ? cur % root.count + 1 : (cur + root.count - 2) % root.count + 1
+            Hyprland.dispatch(`hl.dsp.focus({ workspace = ${next} })`)
+        }
     }
 }

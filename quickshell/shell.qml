@@ -1,4 +1,5 @@
 //@ pragma IconTheme breeze
+//@ pragma UseQApplication
 // Quickshell entry point (linked to ~/.config/quickshell, started from hypr/hyprland.lua).
 // Run by hand to see errors:  qs   (or: qs -p ~/dotfiles/quickshell)
 import QtQuick
@@ -24,4 +25,7 @@ ShellRoot {
     // control center (click the volume in the bar) and the settings window
     ControlCenter {}
     Settings {}
+
+    // command palette (Cmd+Space)
+    CommandPalette {}
 }

@@ -1,7 +1,6 @@
-// Control center: monitor brightness (DDC/CI via ddcutil), night light (hyprsunset) and the TV
-// output (hypr/desktops.lua; the TV can't report being switched off, so it's a switch here).
+// Control center: monitor brightness (DDC/CI via ddcutil) and night light (hyprsunset).
 // Each row hides itself when it can't work: brightness needs DDC/CI turned on in the monitor's
-// own menu, night light needs the hyprsunset package, the TV row needs the TV's cable in.
+// own menu, night light needs the hyprsunset package.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -11,17 +10,13 @@ import Quickshell.Widgets
 ColumnLayout {
     id: root
     spacing: 8
-    visible: brightness >= 0 || hasSunset || tvConnected
-    property bool open: false             // panel visible: re-read the TV state then
+    visible: brightness >= 0 || hasSunset
 
     property int brightness: -1          // 0..100, -1 = no DDC
     property int pending: -1             // value waiting to be sent
     property bool hasSunset: false
     property bool nightLight: false
     readonly property int nightTemperature: 4000   // Kelvin
-    property bool tvConnected: false
-    property bool tvOn: false
-    readonly property string tvName: "Sony SONY TV"   // keep in sync with hypr/desktops.lua (M.tv)
 
     Text { text: "DISPLAY"; color: Theme.inkFaint; font: Theme.textCaps }
 
@@ -90,37 +85,5 @@ ColumnLayout {
         IconImage { implicitSize: 16; source: Quickshell.iconPath("redshift-status-on", "weather-clear-night-symbolic") }
         Text { Layout.fillWidth: true; text: "Night light"; color: Theme.ink; font: Theme.text }
         Toggle { checked: root.nightLight; onToggled: v => root.nightLight = v }
-    }
-
-    // ---- TV -------------------------------------------------------------------------------
-    onOpenChanged: if (open) tvReader.running = true
-    Component.onCompleted: tvReader.running = true
-    Process {
-        id: tvReader
-        command: ["hyprctl", "monitors", "all", "-j"]
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const tv = JSON.parse(text).find(m => m.description.startsWith(root.tvName))
-                root.tvConnected = tv !== undefined
-                root.tvOn = tv !== undefined && !tv.disabled
-            }
-        }
-    }
-    Timer { id: tvReread; interval: 2500; onTriggered: tvReader.running = true }
-
-    RowLayout {
-        Layout.fillWidth: true
-        visible: root.tvConnected
-        spacing: 10
-        IconImage { implicitSize: 16; source: Quickshell.iconPath("video-television-symbolic", "video-display-symbolic") }
-        Text { Layout.fillWidth: true; text: "TV (desktop V)"; color: Theme.ink; font: Theme.text }
-        Toggle {
-            checked: root.tvOn
-            onToggled: v => {
-                root.tvOn = v
-                Quickshell.execDetached(["hyprctl", "eval", `require("desktops").set_tv(${v})`])
-                tvReread.restart()
-            }
-        }
     }
 }

@@ -1,5 +1,5 @@
-// "3 NOTICES   Friday, 13 November   17:20". Click to open the notification history
-// (like the Mac's clock / notification center). The count shows only when there are any.
+// "3 NOTICES   Friday, 13 November   17:20". When there are notifications, click to open the
+// history (like the Mac's clock / notification center); with none, the clock isn't clickable.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -35,6 +35,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        enabled: NotifState.count > 0 || NotifState.historyOpen
         cursorShape: Qt.PointingHandCursor
         onClicked: NotifState.historyOpen = !NotifState.historyOpen
     }

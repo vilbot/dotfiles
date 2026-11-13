@@ -1,4 +1,5 @@
 // System tray (Toshy, KDE Connect, Discord, ...). Left click activates, right click opens the menu.
+// Items listed in `hidden` (tray item ids) aren't shown: Vicinae (Cmd+Space opens it), Steam.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -9,9 +10,12 @@ RowLayout {
     id: root
     required property var barWindow
     spacing: 8
+    readonly property var hidden: ["vicinae", "steam"]
+    visible: items.count > 0     // no empty gap in the bar
 
     Repeater {
-        model: SystemTray.items
+        id: items
+        model: SystemTray.items.values.filter(i => !root.hidden.includes(i.id))
 
         IconImage {
             id: icon

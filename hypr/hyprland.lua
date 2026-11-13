@@ -15,10 +15,10 @@ local rgb = function(hex, alpha) return "rgba(" .. hex .. (alpha or "ff") .. ")"
 
 local programs = {
     terminal     = "ghostty",
-    -- Cmd+Space. Vicinae until the Quickshell launcher is ready, then swap these two.
-    launcher     = "vicinae toggle",
-    -- Cmd+Opt+Space: the other launcher.
-    launcher_alt = "hyprctl notify 1 3000 0 'Quickshell launcher not built yet'",
+    -- Cmd+Space: the Quickshell command palette (quickshell/CommandPalette.qml).
+    -- Cmd+Opt+Space: Vicinae, the backup.
+    launcher     = "qs ipc call palette toggle",
+    launcher_alt = "vicinae toggle",
 }
 
 ------------------
@@ -28,6 +28,8 @@ local programs = {
 -- Fallback for any monitor. Per-monitor modes are set in the settings app (settings.lua, applied
 -- at the end of this file).
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
+-- The TV mirrors the Samsung (one set of desktops, shown on both).
+hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto", scale = 1, mirror = "DP-4" })
 
 -------------------
 ---- AUTOSTART ----
@@ -81,6 +83,17 @@ hl.config({
     -- modeset (black for seconds) and SDR content looks dimmer in HDR mode.
     render = { cm_auto_hdr = 0 },
 })
+
+-- Animation curves the settings app can pick from (quickshell/Settings.qml: `curves`, keep in
+-- sync). Defining them changes nothing until an animation uses one.
+hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1} } })
+hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1} } })
+hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1} } })
+hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1} } })
+hl.curve("overshoot",      { type = "bezier", points = { {0.05, 0.9},  {0.1, 1.1} } })
+hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, damping = 24.21279333 })
+hl.curve("bouncy",         { type = "spring", mass = 1, stiffness = 200, damping = 10 })
+local springs = { easy = true, bouncy = true }
 
 ---------------
 ---- INPUT ----
@@ -159,6 +172,12 @@ hl.layer_rule({
 })
 
 hl.layer_rule({
+    name  = "blur-quickshell-palette",
+    match = { namespace = "^quickshell-palette$" },
+    blur  = true,
+})
+
+hl.layer_rule({
     name  = "blur-quickshell-controlcenter",
     match = { namespace = "^quickshell-controlcenter$" },
     blur  = true,
@@ -190,6 +209,13 @@ for key, value in pairs(settings.options or {}) do
     end
     node[parts[#parts]] = value
     hl.config(root)
+end
+-- animations: { ["windowsIn"] = { enabled = true, speed = 4, curve = "easy", style = "popin 80%" } }
+for leaf, a in pairs(settings.animations or {}) do
+    local spec = { leaf = leaf, enabled = a.enabled, speed = a.speed }
+    if a.style and a.style ~= "" then spec.style = a.style end
+    if springs[a.curve] then spec.spring = a.curve else spec.bezier = a.curve or "default" end
+    hl.animation(spec)
 end
 for output, m in pairs(settings.monitors or {}) do
     hl.monitor({ output = output, mode = m.mode, position = m.position or "auto", scale = m.scale or "auto" })

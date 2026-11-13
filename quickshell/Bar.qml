@@ -25,12 +25,17 @@ PanelWindow {
         anchors { fill: parent; leftMargin: Theme.barPadding; rightMargin: Theme.barPadding }
         spacing: Theme.gap
 
-        Workspaces { screen: bar.screen }
-        WindowTitle { Layout.fillWidth: true }
+        // Nested layouts (Workspaces, Tray) fill width by default in Qt; keep them at their size so
+        // only the window title takes the free space.
+        Workspaces { screen: bar.screen; Layout.fillWidth: false }
+        // preferredWidth 0: a long title takes only the leftover space (and elides) instead of
+        // squeezing the items on the right
+        WindowTitle { Layout.fillWidth: true; Layout.preferredWidth: 0 }
 
         KeyboardLayout {}
         Volume {}
-        Tray { barWindow: bar }
+        Tray { barWindow: bar; Layout.fillWidth: false }
+        ControlButton {}
         Clock {}
     }
 }
