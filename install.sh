@@ -28,6 +28,10 @@ LINKS=(
   "zed/themes             $HOME/.config/zed/themes"
 )
 [[ $OS == mac ]] && LINKS+=("wezterm/.wezterm.lua   $HOME/.wezterm.lua")
+[[ $OS == linux ]] && LINKS+=(
+  "hypr                                       $HOME/.config/hypr"
+  "xdg-desktop-portal/hyprland-portals.conf   $HOME/.config/xdg-desktop-portal/hyprland-portals.conf"
+)
 
 run() { if (( DRY )); then echo "  would: $*"; else "$@"; fi; }
 
@@ -56,6 +60,9 @@ if [[ $OS == linux ]]; then
     echo "note    Toshy not installed (https://github.com/RedBearAK/toshy); then re-run to apply toshy/"
   fi
 fi
+
+# Hide apps listed in hypr/hidden-apps.txt on Hyprland (overrides in ~/.local/share/applications).
+[[ $OS == linux ]] && run python3 "$DOT/hypr/hide-apps.py"
 
 # KDE shortcuts from keys/keymap.toml (KDE rewrites its config, so it's applied, not linked).
 if [[ $OS == linux ]] && command -v kwriteconfig6 >/dev/null; then

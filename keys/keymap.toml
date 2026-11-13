@@ -1,22 +1,37 @@
 # Keyboard shortcuts: the ONE source of truth for desktop / window-manager keybinds.
 # Edit here, then run:
-#   python3 keys/build.py           regenerate keys/generated/*
-#   python3 keys/build.py --apply   ...and write them into KDE (log out and back in afterwards)
+#   python3 keys/build.py           regenerate keys/generated/kde.tsv and hypr/binds.lua
+#   python3 keys/build.py --apply   ...and write the KDE ones into KDE (log out and back in afterwards)
 #
 # Keys are the PHYSICAL keys on a Mac-layout keyboard: cmd, opt, ctrl, shift + one key,
 # e.g. "opt+1", "cmd+space", "opt+shift+w". build.py translates them per platform.
 # On Linux Toshy sits in between and sends:  cmd -> Ctrl,  opt -> Alt,  ctrl -> Super
 # (ctrl stays Ctrl in terminals, so global binds using physical ctrl don't fire while
-# a terminal is focused; prefer opt-based binds).
+# a terminal is focused; prefer opt-based binds). Opt is the window-management key.
 #
-# "{n}" expands to 1..desktops. A list binds several keys to one action; [] = unbound.
+# "{n}" expands to 1..desktops, "{dir}" to left/down/up/right with the key h/j/k/l.
+# A list binds several keys to one action; [] = unbound.
+# Platforms without a mapping for an action (see keys/build.py) just skip it.
 
 desktops = 5
 
 [binds]
+# desktops
 "desktop.goto.{n}" = "opt+{n}"
 "desktop.move.{n}" = []                          # move window to desktop n: not decided yet
 "desktop.prev"     = "opt+w"
 "desktop.next"     = "opt+e"
+
+# input / launching
 "layout.next"      = ["opt+space", "ctrl+space"] # ctrl+space is Toshy's Mac-style default
-"launcher"         = "cmd+space"
+"launcher"         = "cmd+space"                 # Hyprland: programs.launcher in hypr/hyprland.lua
+"launcher.alt"     = "cmd+opt+space"             # Hyprland: the other launcher
+"terminal"         = "opt+enter"                 # Hyprland only
+
+# windows (Hyprland only for now)
+"window.focus.{dir}" = "opt+{dir}"
+"window.move.{dir}"  = "opt+shift+{dir}"
+"window.close"       = "opt+q"
+"window.fullscreen"  = "opt+f"
+"window.float"       = "opt+shift+f"
+"session.exit"       = "opt+shift+escape"

@@ -1,0 +1,21 @@
+# Apps hidden from app launchers on Hyprland only (they stay visible in KDE).
+# One .desktop ID per line (file name without .desktop). Then run:  python3 hypr/hide-apps.py
+#
+# Installed KDE apps that would show up on Hyprland. Uncomment to hide:
+# kdesystemsettings              # KDE System Settings
+# org.kde.ark                    # Ark (archives)
+# org.kde.dolphin                # Dolphin (files)
+# org.kde.filelight              # Filelight (disk usage)
+# org.kde.gwenview               # Gwenview (images)
+# org.kde.haruna                 # Haruna (video)
+# org.kde.kate                   # Kate
+# org.kde.kcalc                  # KCalc
+# org.kde.kdeconnect.app         # KDE Connect
+# org.kde.kdeconnect.nonplasma   # KDE Connect Indicator
+# org.kde.kdeconnect.sms         # KDE Connect SMS
+# org.kde.konsole                # Konsole
+# org.kde.kwalletmanager         # KWalletManager
+# org.kde.kwrite                 # KWrite
+# org.kde.partitionmanager       # KDE Partition Manager
+# org.kde.plasma-systemmonitor   # System Monitor
+# org.kde.spectacle              # Spectacle (screenshots)
