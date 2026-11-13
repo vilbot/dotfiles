@@ -32,4 +32,5 @@ return function(P)
   hl.bind("ALT + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })) -- window.fullscreen
   hl.bind("ALT + SHIFT + F", hl.dsp.window.float({ action = "toggle" })) -- window.float
   hl.bind("ALT + SHIFT + Escape", hl.dsp.exit()) -- session.exit
+  hl.bind("ALT + SHIFT + slash", hl.dsp.exec_cmd("qs ipc call keybinds toggle")) -- help.keys
 end

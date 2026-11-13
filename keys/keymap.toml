@@ -37,3 +37,4 @@ desktops = 5
 "window.fullscreen"  = "opt+f"
 "window.float"       = "opt+shift+f"
 "session.exit"       = "opt+shift+escape"
+"help.keys"          = "opt+shift+slash"           # Opt+? : cheat sheet of these binds (Hyprland)

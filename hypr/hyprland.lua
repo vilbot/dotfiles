@@ -137,3 +137,10 @@ hl.layer_rule({
     match = { namespace = "^quickshell-bar$" },
     blur  = true,
 })
+
+hl.layer_rule({
+    -- Opt+? cheat sheet: blur the desktop behind it.
+    name  = "blur-quickshell-keybinds",
+    match = { namespace = "^quickshell-keybinds$" },
+    blur  = true,
+})

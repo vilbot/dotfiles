@@ -14,4 +14,7 @@ ShellRoot {
         model: Quickshell.screens
         Bar {}
     }
+
+    // Opt+? keybind cheat sheet (hidden until toggled)
+    Keybinds {}
 }
