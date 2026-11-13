@@ -15,8 +15,9 @@ case "$(uname -s)" in
   *) echo "unsupported OS: $(uname -s)" >&2; exit 1 ;;
 esac
 
-# Zed keymaps: keymap.json is mac (cmd-*). Linux uses the same ctrl-based keymap as Windows.
-if [[ $OS == mac ]]; then ZED_KEYMAP=zed/keymap.json; else ZED_KEYMAP=zed/keymap.windows.json; fi
+# Zed keymaps: keymap.json is mac (cmd-*). Linux gets keymap.linux.json, generated from it by
+# zed/build.py for Toshy's key swaps (Cmd->Ctrl, Ctrl->Super) so Zed behaves like on the Mac.
+if [[ $OS == mac ]]; then ZED_KEYMAP=zed/keymap.json; else ZED_KEYMAP=zed/keymap.linux.json; fi
 
 # source (relative to repo)  ->  target
 LINKS=(
@@ -30,6 +31,8 @@ LINKS=(
 [[ $OS == mac ]] && LINKS+=("wezterm/.wezterm.lua   $HOME/.wezterm.lua")
 [[ $OS == linux ]] && LINKS+=(
   "hypr                                       $HOME/.config/hypr"
+  "quickshell                                 $HOME/.config/quickshell"
+  "kde/env/ghostty-session.sh                 $HOME/.config/plasma-workspace/env/ghostty-session.sh"
   "xdg-desktop-portal/hyprland-portals.conf   $HOME/.config/xdg-desktop-portal/hyprland-portals.conf"
 )
 

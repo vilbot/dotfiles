@@ -6,11 +6,18 @@ return function(P)
   hl.bind("ALT + 3", hl.dsp.focus({ workspace = 3 })) -- desktop.goto.3
   hl.bind("ALT + 4", hl.dsp.focus({ workspace = 4 })) -- desktop.goto.4
   hl.bind("ALT + 5", hl.dsp.focus({ workspace = 5 })) -- desktop.goto.5
+  hl.bind("ALT + SHIFT + 1", hl.dsp.window.move({ workspace = 1, follow = false })) -- desktop.move.1
+  hl.bind("ALT + SHIFT + 2", hl.dsp.window.move({ workspace = 2, follow = false })) -- desktop.move.2
+  hl.bind("ALT + SHIFT + 3", hl.dsp.window.move({ workspace = 3, follow = false })) -- desktop.move.3
+  hl.bind("ALT + SHIFT + 4", hl.dsp.window.move({ workspace = 4, follow = false })) -- desktop.move.4
+  hl.bind("ALT + SHIFT + 5", hl.dsp.window.move({ workspace = 5, follow = false })) -- desktop.move.5
   hl.bind("ALT + W", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 - 1) % 5 + 1 })) end) -- desktop.prev
   hl.bind("ALT + E", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 + 1) % 5 + 1 })) end) -- desktop.next
+  hl.bind("ALT + SHIFT + W", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.window.move({ workspace = (id - 1 - 1) % 5 + 1, follow = false })) end) -- desktop.move.prev
+  hl.bind("ALT + SHIFT + E", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.window.move({ workspace = (id - 1 + 1) % 5 + 1, follow = false })) end) -- desktop.move.next
   hl.bind("ALT + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
   hl.bind("SUPER + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
-  hl.bind("SUPER + D", hl.dsp.exec_cmd(P.launcher)) -- launcher
+  hl.bind("SUPER + code:191", hl.dsp.exec_cmd(P.launcher)) -- launcher
   hl.bind("CTRL + ALT + space", hl.dsp.exec_cmd(P.launcher_alt)) -- launcher.alt
   hl.bind("ALT + Return", hl.dsp.exec_cmd(P.terminal)) -- terminal
   hl.bind("ALT + H", hl.dsp.focus({ direction = "left" })) -- window.focus.left
@@ -21,7 +28,7 @@ return function(P)
   hl.bind("ALT + SHIFT + J", hl.dsp.window.move({ direction = "down" })) -- window.move.down
   hl.bind("ALT + SHIFT + K", hl.dsp.window.move({ direction = "up" })) -- window.move.up
   hl.bind("ALT + SHIFT + L", hl.dsp.window.move({ direction = "right" })) -- window.move.right
-  hl.bind("ALT + Q", hl.dsp.window.close()) -- window.close
+  hl.bind("ALT + F4", hl.dsp.window.close()) -- window.close
   hl.bind("ALT + F", hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })) -- window.fullscreen
   hl.bind("ALT + SHIFT + F", hl.dsp.window.float({ action = "toggle" })) -- window.float
   hl.bind("ALT + SHIFT + Escape", hl.dsp.exit()) -- session.exit

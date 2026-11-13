@@ -18,9 +18,11 @@ desktops = 5
 [binds]
 # desktops
 "desktop.goto.{n}" = "opt+{n}"
-"desktop.move.{n}" = []                          # move window to desktop n: not decided yet
+"desktop.move.{n}" = "opt+shift+{n}"             # move focused window there (you stay)
 "desktop.prev"     = "opt+w"
 "desktop.next"     = "opt+e"
+"desktop.move.prev" = "opt+shift+w"
+"desktop.move.next" = "opt+shift+e"
 
 # input / launching
 "layout.next"      = ["opt+space", "ctrl+space"] # ctrl+space is Toshy's Mac-style default
@@ -31,7 +33,7 @@ desktops = 5
 # windows (Hyprland only for now)
 "window.focus.{dir}" = "opt+{dir}"
 "window.move.{dir}"  = "opt+shift+{dir}"
-"window.close"       = "opt+q"
+"window.close"       = "cmd+q"                 # KDE + Hyprland; Toshy sends Alt+F4 (toshy/slices/user_apps.py)
 "window.fullscreen"  = "opt+f"
 "window.float"       = "opt+shift+f"
 "session.exit"       = "opt+shift+escape"

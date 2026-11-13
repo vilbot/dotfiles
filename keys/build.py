@@ -63,8 +63,13 @@ for action, combos in binds.items():
 TOSHY_MOD = {"ctrl": "super", "cmd": "ctrl", "opt": "alt", "shift": "shift"}  # dict order = output order
 # Combos Toshy swallows and replaces with a desktop-specific shortcut, per desktop.
 TOSHY_SPECIAL = {
-    "kde":  {(frozenset({"cmd"}), "space"): "Alt+F2"},     # KRunner's first shortcut
-    "hypr": {(frozenset({"cmd"}), "space"): "SUPER + D"},  # Toshy's Hyprland launcher default
+    "kde":  {(frozenset({"cmd"}), "space"): "Alt+F2",      # KRunner's first shortcut
+             (frozenset({"cmd"}), "q"): "Alt+F4"},         # toshy/slices/user_apps.py
+    # Toshy's default is Super+D, but physical Ctrl+D sends that too (e.g. vim's Ctrl+D in Zed);
+    # toshy/slices/user_apps.py makes Cmd+Space send Super+F13 on Hyprland instead. F13's keysym
+    # is XF86Tools on Linux, so bind the raw keycode (evdev 183 + 8).
+    "hypr": {(frozenset({"cmd"}), "space"): "SUPER + code:191",
+             (frozenset({"cmd"}), "q"): "ALT + F4"},       # toshy/slices/user_apps.py
 }
 
 # ---- KDE ----------------------------------------------------------------------------------
@@ -87,8 +92,11 @@ KDE_ACTIONS = {  # action -> (file, groups, key, extra fixed keys)
     **{f"desktop.move.{n}": (SC, ["kwin"], f"Window to Desktop {n}", []) for n in range(1, N + 1)},
     "desktop.prev": (SC, ["kwin"], "Switch to Previous Desktop", []),
     "desktop.next": (SC, ["kwin"], "Switch to Next Desktop", []),
+    "desktop.move.prev": (SC, ["kwin"], "Window to Previous Desktop", []),
+    "desktop.move.next": (SC, ["kwin"], "Window to Next Desktop", []),
     "layout.next":  (SC, ["KDE Keyboard Layout Switcher"], "Switch to Next Keyboard Layout", []),
     "launcher":     (SC, ["services", "org.kde.krunner.desktop"], "_launch", ["Search"]),
+    "window.close": (SC, ["kwin"], "Window Close", []),
 }
 
 
@@ -137,13 +145,18 @@ def hypr_combo(c):
 
 
 # Desktops wrap around 1..N like KDE (Hyprland's own relative workspaces don't stop at N).
-_step = lambda d: (f"function() local id = (hl.get_active_workspace() or {{}}).id or 1; "
-                   f"hl.dispatch(hl.dsp.focus({{ workspace = (id - 1 {d}) % {N} + 1 }})) end")
+_step = lambda d, dsp="hl.dsp.focus({{ workspace = {} }})": (
+    f"function() local id = (hl.get_active_workspace() or {{}}).id or 1; "
+    f"hl.dispatch({dsp.format(f'(id - 1 {d}) % {N} + 1')}) end")
+# Moving a window doesn't switch desktop (like KDE's "Window to Desktop N").
+_move = "hl.dsp.window.move({{ workspace = {}, follow = false }})"
 HYPR_ACTIONS = {  # action -> Lua dispatcher (P = programs table from hyprland.lua)
     **{f"desktop.goto.{n}": f"hl.dsp.focus({{ workspace = {n} }})" for n in range(1, N + 1)},
-    **{f"desktop.move.{n}": f"hl.dsp.window.move({{ workspace = {n} }})" for n in range(1, N + 1)},
+    **{f"desktop.move.{n}": _move.format(n) for n in range(1, N + 1)},
     "desktop.prev": _step("- 1"),
     "desktop.next": _step("+ 1"),
+    "desktop.move.prev": _step("- 1", _move),
+    "desktop.move.next": _step("+ 1", _move),
     "layout.next": 'hl.dsp.exec_cmd("hyprctl switchxkblayout all next")',
     "launcher": "hl.dsp.exec_cmd(P.launcher)",
     "launcher.alt": "hl.dsp.exec_cmd(P.launcher_alt)",

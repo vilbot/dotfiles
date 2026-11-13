@@ -20,3 +20,8 @@ theme = gruver16
 mouse-hide-while-typing = true
 
 keybind = super+shift+w=ignore
+
+# Per-desktop overrides. Ghostty can't tell which desktop it runs on, so the session picks:
+# Hyprland links session.ghostty -> hyprland.ghostty at startup (hypr/hyprland.lua) and KDE
+# removes the link at login (kde/env/ghostty-session.sh). The link is gitignored.
+config-file = ?session.ghostty

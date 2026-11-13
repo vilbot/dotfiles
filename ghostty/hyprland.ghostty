@@ -1,0 +1,7 @@
+# Ghostty on Hyprland only (loaded via session.ghostty, see the end of config.ghostty).
+# Clean look: no titlebar, only the tab strip, colored like the terminal, same height with 1 tab.
+gtk-titlebar = false
+# config.ghostty's "tabs" style puts the tabs inside the titlebar, which keeps the titlebar.
+gtk-titlebar-style = native
+window-show-tab-bar = always
+window-theme = ghostty

@@ -38,7 +38,10 @@ hl.on("hyprland.start", function()
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX "
         .. "&& systemctl --user restart toshy-config.service")
+    -- Hyprland-only Ghostty look (see the end of ghostty/config.ghostty).
+    hl.exec_cmd("ln -sfn hyprland.ghostty ~/.config/ghostty/session.ghostty")
     hl.exec_cmd("vicinae server")
+    hl.exec_cmd("qs") -- Quickshell: bar (quickshell/ in dotfiles)
 end)
 
 require("kde")
@@ -122,4 +125,15 @@ hl.window_rule({
     name  = "fix-xwayland-drags",
     match = { class = "^$", title = "^$", xwayland = true, float = true, fullscreen = false, pin = false },
     no_focus = true,
+})
+
+----------------
+---- LAYERS ----
+----------------
+
+hl.layer_rule({
+    -- Quickshell bar is translucent; blur the painting behind it (frosted wall label).
+    name  = "blur-quickshell-bar",
+    match = { namespace = "^quickshell-bar$" },
+    blur  = true,
 })
