@@ -7,6 +7,9 @@ import Quickshell
 Singleton {
     property bool controlOpen: false     // ControlCenter.qml
     property bool settingsOpen: false    // Settings.qml (a normal window, can stay open)
+    property string settingsPage: ""     // set by openSettings(); Settings.qml switches to it
+
+    function openSettings(page) { settingsPage = page; settingsOpen = true }
 
     function toggleControl() {
         controlOpen = !controlOpen

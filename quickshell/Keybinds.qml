@@ -1,5 +1,6 @@
 // Opt+? cheat sheet: every keymap bind on a gallery-style card over the dimmed desktop.
-// Rows come from KeybindsData.qml, generated from keys/keymap.toml by keys/build.py.
+// Rows come from Keymap.qml (keys/keymap.toml through keys/build.py): only actions with a key.
+// "edit" opens the settings window's Shortcuts page.
 // Toggle: `qs ipc call keybinds toggle` (bound to Opt+? in hypr/binds.lua). Esc or a click closes.
 import QtQuick
 import QtQuick.Layouts
@@ -69,10 +70,17 @@ PanelWindow {
                         color: Theme.ink
                         font: Qt.font({ family: Theme.fontFamily, pixelSize: 30, italic: true })
                     }
-                    Text {
-                        text: "HYPRLAND  ·  ⌥ IS THE WINDOW KEY"
-                        color: Theme.inkFaint
-                        font: Theme.textCaps
+                    RowLayout {
+                        spacing: 18
+                        Text {
+                            text: "HYPRLAND  ·  ⌥ IS THE WINDOW KEY"
+                            color: Theme.inkFaint
+                            font: Theme.textCaps
+                        }
+                        LinkText {
+                            text: "edit"
+                            onClicked: { root.shown = false; Panels.openSettings("Shortcuts") }
+                        }
                     }
                 }
 
@@ -82,7 +90,7 @@ PanelWindow {
                     rowSpacing: 26
 
                     Repeater {
-                        model: KeybindsData.groups
+                        model: Keymap.boundGroups
 
                         ColumnLayout {
                             id: group
@@ -114,7 +122,7 @@ PanelWindow {
                                         font: Theme.text
                                     }
                                     Text {
-                                        text: row.modelData.keys.join("   or   ")
+                                        text: row.modelData.hyprLabel.join("   or   ")
                                         color: Theme.inkDim
                                         font: Theme.text
                                     }

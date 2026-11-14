@@ -18,7 +18,7 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `toshy/` | Toshy (linux) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`binds.lua`, `colors.lua` generated; `settings.lua` written by the settings app), `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
-| `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, notifications, control center, settings window, command palette, Cmd+Tab app switcher, Opt+? keybind sheet; `Colors.qml` and `KeybindsData.qml` generated | `~/.config/quickshell` (linux) |
+| `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, notifications, control center, settings window, command palette, Cmd+Tab app switcher, Opt+? keybind sheet; `Colors.qml` and `keymap.json` generated | `~/.config/quickshell` (linux) |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
@@ -47,7 +47,9 @@ On Linux, Toshy remaps keys first: cmd → Ctrl, opt → Alt, ctrl → Super (Ct
 1. Edit `keys/keymap.toml`.
 2. Run `python3 keys/build.py --apply` (regenerates `keys/generated/*` and writes KDE's config; log out/in after). `--check` verifies nothing is stale.
 
-Do not hand-edit `keys/generated/*`, `hypr/binds.lua` or `quickshell/KeybindsData.qml`. A new action needs an entry in `HYPR_ACTIONS` and/or `KDE_ACTIONS` and a label in `SHEET` (the Opt+? cheat sheet; the build fails without one).
+Do not hand-edit `keys/generated/*`, `hypr/binds.lua` or `quickshell/keymap.json`. `keymap.toml` lists every action in `HYPR_ACTIONS` (unbound ones as `[]`); a new action needs an entry in `HYPR_ACTIONS` (plus `KDE_ACTIONS` if KDE has an equivalent), a line in `keymap.toml` and a label in `SHEET` (sections for the Opt+? sheet and the settings window; the build fails without them).
+A key can differ per desktop: `{ hypr = "...", kde = "..." }`; without `kde`, KDE uses the Hyprland key.
+The settings window's Shortcuts page (`quickshell/ShortcutsPage.qml`, model `quickshell/Keymap.qml`) edits keymap.toml through `keys/build.py --set <json> --apply`, which keeps comments and puts the file back if the build fails.
 
 ## Toshy (linux)
 Installed separately; its installer regenerates `~/.config/toshy/toshy_config.py` on upgrade, keeping only the `SLICE_MARK_START/END` sections. So never link or copy the whole file:

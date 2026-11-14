@@ -4,35 +4,85 @@
     python3 keys/build.py           # write all targets
     python3 keys/build.py --check   # exit 1 if any target is out of date (writes nothing)
     python3 keys/build.py --apply   # write targets, then apply the KDE one with kwriteconfig6
+    python3 keys/build.py --set '{"window.pin": {"hypr": ["opt+p"], "kde": null}}' [--apply]
+        # change binds in keymap.toml (comments kept), then build; puts the file back if the
+        # build fails. Used by the settings window's Shortcuts page. kde: null = same as Hyprland.
 
 Generated files (do NOT hand-edit, edit keymap.toml instead):
     keys/generated/kde.tsv          <- KDE shortcut values; --apply writes them into ~/.config
     hypr/binds.lua                  <- Hyprland binds; hyprland.lua does require("binds")(programs)
-    quickshell/KeybindsData.qml     <- rows for the Opt+? cheat sheet (labels in SHEET below)
+    quickshell/keymap.json          <- every action with its keys and label, for the Opt+? sheet
+                                       (quickshell/Keybinds.qml) and the settings window's
+                                       Shortcuts page (quickshell/ShortcutsPage.qml)
 
 KDE rewrites kglobalshortcutsrc itself, so it can't be symlinked. --apply only touches the
 entries listed in kde.tsv and keeps each entry's default/friendly name. Log out and back in
 afterwards: KDE only reads the file at login.
 
-Each platform has an action table below (KDE_ACTIONS, HYPR_ACTIONS). An action a platform
-doesn't map is skipped there; an action no platform maps is an error.
+keymap.toml lists every action HYPR_ACTIONS knows (unbound ones as []), so it's a complete
+list of what can be bound. KDE_ACTIONS maps the actions that have a KDE equivalent.
 """
 import json, pathlib, re, shutil, subprocess, sys, tomllib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-cfg = tomllib.loads((ROOT / "keys/keymap.toml").read_text())
+KEYMAP = ROOT / "keys/keymap.toml"
+
+
+# ---- --set: edit keymap.toml in place --------------------------------------------------------
+def toml_keys(keys):
+    keys = list(keys)
+    return json.dumps(keys[0]) if len(keys) == 1 else "[" + ", ".join(json.dumps(k) for k in keys) + "]"
+
+
+def set_binds(changes, apply):
+    old = KEYMAP.read_text()
+    lines = old.split("\n")
+    for action, ch in changes.items():
+        value = toml_keys(ch["hypr"])
+        if ch.get("kde") is not None:
+            value = f"{{ hypr = {value}, kde = {toml_keys(ch['kde'])} }}"
+        pat = re.compile(r'^("' + re.escape(action) + r'"\s*=\s*)(.*?)(\s+#.*)?$')
+        hits = [i for i, l in enumerate(lines) if pat.match(l)]
+        if len(hits) != 1:
+            sys.exit(f"{action} is not in keymap.toml")
+        m = pat.match(lines[hits[0]])
+        line = m.group(1) + value
+        if m.group(3):   # keep the comment in its column
+            col = len(m.group(1) + m.group(2)) + len(m.group(3)) - len(m.group(3).lstrip())
+            line += " " * max(1, col - len(line)) + m.group(3).lstrip()
+        lines[hits[0]] = line
+    KEYMAP.write_text("\n".join(lines))
+    r = subprocess.run([sys.executable, __file__] + (["--apply"] if apply else []), capture_output=True, text=True)
+    if r.returncode:
+        KEYMAP.write_text(old)
+        subprocess.run([sys.executable, __file__], capture_output=True)   # regenerate from the old file
+        err = (r.stderr.strip().splitlines() or ["build failed"])[-1]
+        sys.exit(re.sub(r"^\w+Error: ", "", err))
+    print(r.stdout, end="")
+    sys.exit(0)
+
+
+if "--set" in sys.argv:
+    set_binds(json.loads(sys.argv[sys.argv.index("--set") + 1]), "--apply" in sys.argv)
+
+cfg = tomllib.loads(KEYMAP.read_text())
 N = cfg["desktops"]
 DIRS = {"left": "h", "down": "j", "up": "k", "right": "l"}
 
 # ---- parse keymap -------------------------------------------------------------------------
 MODS = ("cmd", "opt", "ctrl", "shift")
+KEYS = ({chr(c) for c in range(ord("a"), ord("z") + 1)} | {str(d) for d in range(10)} | {f"f{i}" for i in range(1, 25)}
+        | {"space", "tab", "enter", "escape", "backspace", "delete", "left", "right", "up", "down", "home", "end",
+           "pageup", "pagedown", "print", "grave", "minus", "equal", "period", "slash", "semicolon", "apostrophe",
+           "bracketleft", "bracketright", "backslash"})
 
 
 def parse(combo):
     """'opt+shift+w' -> (frozenset({'opt','shift'}), 'w')"""
-    *mods, key = combo.lower().split("+")
+    *mods, key = combo.lower().replace(" ", "").split("+")
     bad = [m for m in mods if m not in MODS]
-    assert not bad, f"unknown modifier {bad} in {combo!r} (use {', '.join(MODS)})"
+    assert not bad, f"unknown modifier {'+'.join(bad)} in {combo} (use {', '.join(MODS)})"
+    assert key in KEYS, f"unknown key {key!r} in {combo} (letters, digits, f1-f24 or {', '.join(sorted(k for k in KEYS if len(k) > 3 and not k.startswith('f')))})"
     return frozenset(mods), key
 
 
@@ -48,17 +98,31 @@ def expand(action):
         yield action, lambda s: s
 
 
-binds = {}  # action -> [(mods, key)]
-for action, keys in cfg["binds"].items():
-    keys = [keys] if isinstance(keys, str) else keys
-    for name, sub in expand(action):
-        binds[name] = [parse(sub(k)) for k in keys]
+def key_list(v):
+    return [v] if isinstance(v, str) else list(v)
 
-seen = {}
-for action, combos in binds.items():
-    for c in combos:
-        assert c not in seen, f"{'+'.join(sorted(c[0]))}+{c[1]} bound to both {seen[c]} and {action}"
-        seen[c] = action
+
+# keymap.toml value: "key", ["key", ...], [] (unbound) or { hypr = ..., kde = ... } (kde: KDE's own
+# keys; without it KDE uses the Hyprland keys)
+src = {"hypr": {}, "kde": {}}    # action template -> [combo strings]
+kde_own = set()                  # templates with their own KDE keys
+for action, v in cfg["binds"].items():
+    if isinstance(v, dict):
+        assert set(v) <= {"hypr", "kde"}, f"{action}: only hypr and kde go in {{ }}"
+        src["hypr"][action] = key_list(v.get("hypr", []))
+        src["kde"][action] = key_list(v["kde"]) if "kde" in v else src["hypr"][action]
+        kde_own |= {action} if "kde" in v else set()
+    else:
+        src["hypr"][action] = src["kde"][action] = key_list(v)
+    for k in src["hypr"][action] + src["kde"][action]:
+        for ph, word in (("{n}", "desktop number"), ("{dir}", "direction")):
+            assert (ph in action) == (ph in k), \
+                f"{action}: {'put' if ph in action else 'no'} {ph} ({word}) in the key {k}"
+
+binds = {}   # platform -> action -> [(mods, key)]
+for plat in src:
+    binds[plat] = {name: [parse(sub(k)) for k in keys]
+                   for action, keys in src[plat].items() for name, sub in expand(action)}
 
 # What Linux desktops receive after Toshy (normal apps, Mac keyboard): physical -> sent.
 TOSHY_MOD = {"ctrl": "super", "cmd": "ctrl", "opt": "alt", "shift": "shift"}  # dict order = output order
@@ -94,7 +158,10 @@ TOSHY_SPECIAL = {
 # ---- KDE ----------------------------------------------------------------------------------
 KDE_MOD = {"super": "Meta", "ctrl": "Ctrl", "alt": "Alt", "shift": "Shift"}
 KDE_KEY = {"space": "Space", "tab": "Tab", "enter": "Return", "escape": "Esc", "left": "Left", "print": "Print",
-           "right": "Right", "up": "Up", "down": "Down", "backspace": "Backspace"}
+           "right": "Right", "up": "Up", "down": "Down", "backspace": "Backspace", "delete": "Del",
+           "home": "Home", "end": "End", "pageup": "PgUp", "pagedown": "PgDown", "grave": "`", "minus": "-",
+           "equal": "=", "period": ".", "slash": "/", "semicolon": ";", "apostrophe": "'", "bracketleft": "[",
+           "bracketright": "]", "backslash": "\\"}
 
 
 def kde_combo(c):
@@ -126,7 +193,7 @@ KDE_ACTIONS = {  # action -> (file, groups, key, extra fixed keys)
 def kde():
     rows = [("kwinrc", "Desktops", "Number", str(N))]
     for action, (file, groups, key, extra) in KDE_ACTIONS.items():
-        keys = [kde_combo(c) for c in binds.get(action, [])] + extra
+        keys = [kde_combo(c) for c in binds["kde"].get(action, [])] + extra
         rows.append((file, "][".join(groups), key, "\\t".join(keys) or "none"))
     head = "# generated by keys/build.py from keys/keymap.toml; do not edit\n# file\tgroup\tkey\tshortcut\n"
     return head + "".join("\t".join(r) + "\n" for r in rows)
@@ -157,7 +224,8 @@ def apply_kde(tsv):
 
 # ---- Hyprland -----------------------------------------------------------------------------
 HYPR_KEY = {"enter": "Return", "escape": "Escape", "space": "space", "tab": "Tab", "backspace": "BackSpace",
-            "slash": "slash", "grave": "grave", "print": "Print"}
+            "delete": "Delete", "left": "Left", "right": "Right", "up": "Up", "down": "Down", "home": "Home",
+            "end": "End", "pageup": "Prior", "pagedown": "Next", "print": "Print"}   # the rest: keysym = name
 
 
 def hypr_combo(c):
@@ -177,21 +245,40 @@ _move = "hl.dsp.window.move({{ workspace = {}, follow = false }})"
 HYPR_ACTIONS = {  # action -> Lua dispatcher (P = programs table from hyprland.lua)
     **{f"desktop.goto.{n}": f"hl.dsp.focus({{ workspace = {n} }})" for n in range(1, N + 1)},
     **{f"desktop.move.{n}": _move.format(n) for n in range(1, N + 1)},
+    **{f"desktop.take.{n}": f"hl.dsp.window.move({{ workspace = {n}, follow = true }})" for n in range(1, N + 1)},
     "desktop.prev": _step("- 1"),
     "desktop.next": _step("+ 1"),
     "desktop.move.prev": _step("- 1", _move),
     "desktop.move.next": _step("+ 1", _move),
+    "desktop.last": 'hl.dsp.focus({ workspace = "previous" })',
+    "scratchpad.toggle": 'hl.dsp.workspace.toggle_special("scratchpad")',
+    "scratchpad.move": 'hl.dsp.window.move({ workspace = "special:scratchpad", follow = false })',
     "layout.next": 'hl.dsp.exec_cmd("hyprctl switchxkblayout all next")',
     "launcher": "hl.dsp.exec_cmd(P.launcher)",
     "launcher.alt": "hl.dsp.exec_cmd(P.launcher_alt)",
     "terminal": "hl.dsp.exec_cmd(P.terminal)",
     **{f"window.focus.{d}": f'hl.dsp.focus({{ direction = "{d}" }})' for d in DIRS},
     **{f"window.move.{d}": f'hl.dsp.window.move({{ direction = "{d}" }})' for d in DIRS},
+    **{f"window.swap.{d}": f'hl.dsp.window.swap({{ direction = "{d}" }})' for d in DIRS},
+    # left/right: narrower/wider, up/down: shorter/taller (held down: repeats)
+    **{f"window.resize.{d}": f"hl.dsp.window.resize({{ x = {x}, y = {y}, relative = true }})"
+       for d, (x, y) in {"left": (-60, 0), "down": (0, 60), "up": (0, -60), "right": (60, 0)}.items()},
     "window.close": "hl.dsp.window.close()",
     "window.fullscreen": 'hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })',
+    "window.maximize": 'hl.dsp.window.fullscreen({ mode = "maximized", action = "toggle" })',
     "window.float": 'hl.dsp.window.float({ action = "toggle" })',
+    "window.pin": "hl.dsp.window.pin()",
+    "window.center": "hl.dsp.window.center()",
+    "window.split": 'hl.dsp.layout("togglesplit")',
+    "group.toggle": "hl.dsp.group.toggle()",
+    "group.next": "hl.dsp.group.next()",
+    "group.prev": "hl.dsp.group.prev()",
     "session.exit": "hl.dsp.exit()",
+    "session.reload": "hl.dsp.reload_config()",
     "help.keys": 'hl.dsp.exec_cmd("qs ipc call keybinds toggle")',
+    "panel.control": 'hl.dsp.exec_cmd("qs ipc call controlcenter toggle")',
+    "panel.notifications": 'hl.dsp.exec_cmd("qs ipc call notifications toggle")',
+    "panel.settings": 'hl.dsp.exec_cmd("qs ipc call settings toggle")',
     # quickshell/AppSwitcher.qml; it switches when Alt (= Cmd) is let go
     "app.switch.next": 'hl.dsp.global("quickshell:switcher-next")',
     "app.switch.prev": 'hl.dsp.global("quickshell:switcher-prev")',
@@ -201,34 +288,54 @@ HYPR_ACTIONS = {  # action -> Lua dispatcher (P = programs table from hyprland.l
 }
 
 
+HYPR_REPEAT = ("window.resize.",)   # held down: repeat
+
+
 def hypr():
     lines = ["-- generated by keys/build.py from keys/keymap.toml; do not edit",
              "-- usage in hyprland.lua: require(\"binds\")({ terminal = ..., launcher = ..., launcher_alt = ... })",
              "return function(P)"]
-    for action, combos in binds.items():
-        if action in HYPR_ACTIONS:
-            lines += [f'  hl.bind("{hypr_combo(c)}", {HYPR_ACTIONS[action]}) -- {action}' for c in combos]
+    for action, combos in binds["hypr"].items():
+        opts = ", { repeating = true }" if action.startswith(HYPR_REPEAT) else ""
+        lines += [f'  hl.bind("{hypr_combo(c)}", {HYPR_ACTIONS[action]}{opts}) -- {action}' for c in combos]
     return "\n".join(lines + ["end"]) + "\n"
 
 
-# ---- cheat sheet (Quickshell, Hyprland) ---------------------------------------------------
-# Rows shown by the Opt+? overlay (quickshell/Keybinds.qml). Keyed by the action as written in
+# ---- model for Quickshell: Opt+? sheet + settings window's Shortcuts page ----------------------
+# Every action in keymap.toml with its label, in sections. Keyed by the action as written in
 # keymap.toml (placeholders unexpanded), so {n}/{dir} actions get one row each. Order = display.
 SHEET = {
     "Desktops": {
         "desktop.goto.{n}":  "Go to desktop",
         "desktop.prev":      "Previous desktop",
         "desktop.next":      "Next desktop",
+        "desktop.last":      "Desktop you were on before",
         "desktop.move.{n}":  "Send window to desktop",
+        "desktop.take.{n}":  "Take window to desktop",
         "desktop.move.prev": "Send window to previous desktop",
         "desktop.move.next": "Send window to next desktop",
+        "scratchpad.toggle": "Show / hide scratchpad",
+        "scratchpad.move":   "Send window to scratchpad",
     },
     "Windows": {
-        "window.focus.{dir}": "Focus window",
-        "window.move.{dir}":  "Move window",
-        "window.close":       "Close window",
-        "window.fullscreen":  "Fullscreen",
-        "window.float":       "Floating",
+        "window.focus.{dir}":  "Focus window",
+        "window.move.{dir}":   "Move window",
+        "window.swap.{dir}":   "Swap with window",
+        "window.resize.{dir}": "Resize window",
+        "window.close":        "Close window",
+        "window.fullscreen":   "Fullscreen",
+        "window.maximize":     "Maximize",
+        "window.float":        "Floating",
+        "window.pin":          "Pin floating window",
+        "window.center":       "Center floating window",
+        "window.split":        "Turn split sideways / up-down",
+    },
+    "Tab groups": {
+        "group.toggle": "Make / undo a tab group",
+        "group.next":   "Next tab",
+        "group.prev":   "Previous tab",
+    },
+    "App switcher": {
         "app.switch.next":    "Switch app",
         "app.switch.prev":    "Switch app, backwards",
         "app.switch.windows": "In the switcher: that app's windows",
@@ -239,29 +346,35 @@ SHEET = {
         "launcher.alt": "Vicinae",
         "terminal":     "Terminal",
         "layout.next":  "Switch keyboard layout",
-    },
-    "Screenshot": {
         "screenshot.region": "Screenshot key: drag an area",
     },
+    "Panels": {
+        "panel.control":       "Control center",
+        "panel.notifications": "Notifications",
+        "panel.settings":      "Settings",
+        "help.keys":           "Keyboard shortcuts sheet",
+    },
     "Session": {
-        "help.keys":    "This sheet",
-        "session.exit": "Log out",
+        "session.reload": "Reload Hyprland config",
+        "session.exit":   "Log out",
     },
 }
-# Binds that live in hyprland.lua, not keymap.toml (mouse).
+# Binds that live in hyprland.lua, not keymap.toml (mouse); shown, not editable.
 SHEET_EXTRA = {"Windows": [("Move window with mouse", ["⌥ drag"]),
                            ("Resize window with mouse", ["⌥ right-drag"])]}
 
 MAC_MOD = {"ctrl": "⌃", "opt": "⌥", "shift": "⇧", "cmd": "⌘"}   # Apple's order
-MAC_KEY = {"space": "Space", "enter": "↩", "escape": "Esc", "tab": "⇥", "backspace": "⌫",
-           "left": "←", "right": "→", "up": "↑", "down": "↓", "slash": "/", "grave": "`",
+MAC_KEY = {"space": "Space", "enter": "↩", "escape": "Esc", "tab": "⇥", "backspace": "⌫", "delete": "⌦",
+           "left": "←", "right": "→", "up": "↑", "down": "↓", "home": "↖", "end": "↘", "pageup": "⇞",
+           "pagedown": "⇟", "slash": "/", "grave": "`", "minus": "-", "equal": "=", "period": ".",
+           "semicolon": ";", "apostrophe": "'", "bracketleft": "[", "bracketright": "]", "backslash": "\\",
            "print": "Print"}
 SHIFTED = {"slash": "?", "grave": "~"}   # shown as the shifted character, like macOS menus do
 
 
 def mac_label(combo):
     """'opt+shift+{n}' -> '⌥ ⇧ 1–5', 'opt+shift+slash' -> '⌥ ?', 'opt+{dir}' -> '⌥ H J K L'"""
-    *mods, key = combo.lower().split("+")
+    *mods, key = combo.lower().replace(" ", "").split("+")
     if "shift" in mods and key in SHIFTED:
         mods.remove("shift"); key = SHIFTED[key]
     elif key == "{n}":
@@ -273,31 +386,44 @@ def mac_label(combo):
     return " ".join([MAC_MOD[m] for m in MAC_MOD if m in mods] + [key])
 
 
-def sheet():
+def has_kde(action):
+    return any(name in KDE_ACTIONS for name, _ in expand(action))
+
+
+def model():
     groups = []
     for title, rows in SHEET.items():
-        out = []
-        for action, label in rows.items():
-            keys = cfg["binds"].get(action, [])
-            keys = [keys] if isinstance(keys, str) else keys
-            if keys:
-                out.append({"label": label, "keys": [mac_label(k) for k in keys]})
-        out += [{"label": l, "keys": k} for l, k in SHEET_EXTRA.get(title, [])]
+        out = [{"action": a, "label": label, "hypr": src["hypr"][a], "hyprLabel": [mac_label(k) for k in src["hypr"][a]],
+                "kde": src["kde"][a] if a in kde_own else None, "kdeLabel": [mac_label(k) for k in src["kde"][a]],
+                "hasKde": has_kde(a)} for a, label in rows.items()]
+        out += [{"label": l, "hyprLabel": k, "fixed": True} for l, k in SHEET_EXTRA.get(title, [])]
         groups.append({"title": title, "rows": out})
-    missing = set(cfg["binds"]) - {a for rows in SHEET.values() for a in rows}
-    assert not missing, f"add {sorted(missing)} to SHEET in keys/build.py (cheat sheet labels)"
-    body = json.dumps(groups, indent=4, ensure_ascii=False).replace("\n", "\n    ")
-    return ("// generated by keys/build.py from keys/keymap.toml; do not edit\n"
-            "pragma Singleton\nimport QtQuick\nimport Quickshell\n\nSingleton {\n"
-            f"    readonly property var groups: {body}\n}}\n")
+    return json.dumps({"desktops": N, "groups": groups}, indent=1, ensure_ascii=False) + "\n"
 
 
-unmapped = set(binds) - set(KDE_ACTIONS) - set(HYPR_ACTIONS)
-assert not unmapped, f"no platform maps {sorted(unmapped)}: add them to KDE_ACTIONS / HYPR_ACTIONS"
+in_keymap, in_sheet = set(cfg["binds"]), {a for rows in SHEET.values() for a in rows}
+assert not in_keymap - in_sheet, f"add {sorted(in_keymap - in_sheet)} to SHEET in keys/build.py (labels)"
+assert not in_sheet - in_keymap, f"add {sorted(in_sheet - in_keymap)} to keys/keymap.toml (= [] if unbound)"
+no_hypr = {a for a in in_keymap for name, _ in expand(a) if name not in HYPR_ACTIONS}
+assert not no_hypr, f"no Hyprland action for {sorted(no_hypr)}: add them to HYPR_ACTIONS"
+missing = {n for n in HYPR_ACTIONS} - {n for a in in_keymap for n, _ in expand(a)}
+assert not missing, f"add {sorted(missing)} to keys/keymap.toml (= [] if unbound)"
+no_kde = sorted(a for a in kde_own if not has_kde(a))
+assert not no_kde, f"{', '.join(no_kde)} has no KDE equivalent, so no kde key"
+
+# the same key twice on one desktop
+for plat, actions in (("hypr", HYPR_ACTIONS), ("kde", KDE_ACTIONS)):
+    seen = {}
+    for action, combos in binds[plat].items():
+        if action not in actions:
+            continue
+        for c in combos:
+            assert c not in seen, (f"{'+'.join(sorted(c[0]) + [c[1]])} is used twice on "
+                                   f"{'Hyprland' if plat == 'hypr' else 'KDE'}: {seen[c]} and {action}")
+            seen[c] = action
 
 # ---- write --------------------------------------------------------------------------------
-targets = {"keys/generated/kde.tsv": kde, "hypr/binds.lua": hypr,
-           "quickshell/KeybindsData.qml": sheet}
+targets = {"keys/generated/kde.tsv": kde, "hypr/binds.lua": hypr, "quickshell/keymap.json": model}
 
 check = "--check" in sys.argv
 stale = []

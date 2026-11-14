@@ -1,7 +1,9 @@
 # Keyboard shortcuts: the ONE source of truth for desktop / window-manager keybinds.
-# Edit here, then run:
-#   python3 keys/build.py           regenerate keys/generated/kde.tsv and hypr/binds.lua
+# Edit here (or in the settings window's Shortcuts page, which runs build.py for you), then run:
+#   python3 keys/build.py           regenerate keys/generated/kde.tsv, hypr/binds.lua, quickshell/keymap.json
 #   python3 keys/build.py --apply   ...and write the KDE ones into KDE (log out and back in afterwards)
+#
+# Every action Hyprland can bind is listed; [] = unbound. Labels and sections: SHEET in keys/build.py.
 #
 # Keys are the PHYSICAL keys on a Mac-layout keyboard: cmd, opt, ctrl, shift + one key,
 # e.g. "opt+1", "cmd+space", "opt+shift+w". build.py translates them per platform.
@@ -10,37 +12,64 @@
 # a terminal is focused; prefer opt-based binds). Opt is the window-management key.
 #
 # "{n}" expands to 1..desktops, "{dir}" to left/down/up/right with the key h/j/k/l.
-# A list binds several keys to one action; [] = unbound.
-# Platforms without a mapping for an action (see keys/build.py) just skip it.
+# A list binds several keys to one action.
+# The keys apply to Hyprland and to KDE (actions with a KDE equivalent: KDE_ACTIONS in build.py).
+# Different keys on KDE: { hypr = "opt+x", kde = "opt+y" }  (kde = [] unbinds it on KDE only).
 
 desktops = 5
 
 [binds]
 # desktops
-"desktop.goto.{n}" = "opt+{n}"
-"desktop.move.{n}" = "opt+shift+{n}"             # move focused window there (you stay)
-"desktop.prev"     = "opt+shift+tab"
-"desktop.next"     = "opt+tab"
+"desktop.goto.{n}"  = "opt+{n}"
+"desktop.prev"      = "opt+shift+tab"
+"desktop.next"      = "opt+tab"
+"desktop.last"      = []
+"desktop.move.{n}"  = "opt+shift+{n}"            # move focused window there (you stay)
+"desktop.take.{n}"  = []                         # move focused window there and go along
+"desktop.move.prev" = []
+"desktop.move.next" = []
+"scratchpad.toggle" = []                         # a hidden desktop shown over the current one
+"scratchpad.move"   = []
 
-# input / launching
-"layout.next"      = ["opt+space", "ctrl+space"] # ctrl+space is Toshy's Mac-style default
-"launcher"         = "cmd+space"                 # Hyprland: programs.launcher in hypr/hyprland.lua
-"launcher.alt"     = "cmd+opt+space"             # Hyprland: the other launcher
-"terminal"         = "opt+enter"                 # Hyprland only
+# windows
+"window.focus.{dir}"  = "opt+{dir}"
+"window.move.{dir}"   = "opt+shift+{dir}"
+"window.swap.{dir}"   = []
+"window.resize.{dir}" = []                       # left/right narrower/wider, up/down shorter/taller
+"window.close"        = "cmd+q"                  # Toshy sends Alt+F4 (toshy/slices/user_apps.py)
+"window.fullscreen"   = "opt+f"
+"window.maximize"     = []
+"window.float"        = "opt+shift+f"
+"window.pin"          = []
+"window.center"       = []
+"window.split"        = []
 
-# windows (Hyprland only for now)
-"window.focus.{dir}" = "opt+{dir}"
-"window.move.{dir}"  = "opt+shift+{dir}"
-"window.close"       = "cmd+q"                 # KDE + Hyprland; Toshy sends Alt+F4 (toshy/slices/user_apps.py)
-"window.fullscreen"  = "opt+f"
-"window.float"       = "opt+shift+f"
-"app.switch.next"    = "cmd+tab"               # app switcher; Toshy sends Alt+Tab (quickshell/AppSwitcher.qml)
-"app.switch.prev"    = "cmd+shift+tab"
-"app.switch.windows" = "cmd+grave"             # in the switcher: that app's windows; Toshy sends Alt+`
+# tab groups
+"group.toggle" = []
+"group.next"   = []
+"group.prev"   = []
+
+# app switcher (quickshell/AppSwitcher.qml); Toshy sends Cmd+Tab as Alt+Tab, Cmd+` as Alt+`
+"app.switch.next"         = "cmd+tab"
+"app.switch.prev"         = "cmd+shift+tab"
+"app.switch.windows"      = "cmd+grave"
 "app.switch.windows.prev" = "cmd+shift+grave"
-"session.exit"       = "opt+shift+escape"
-"help.keys"          = "opt+shift+slash"           # Opt+? : cheat sheet of these binds (Hyprland)
 
-# screenshot: the keyboard's screenshot key (right of F12) drags an area (Hyprland: hypr/screenshot.sh).
+# launching / typing
+"launcher"     = "cmd+space"                     # Hyprland: programs.launcher in hypr/hyprland.lua
+"launcher.alt" = "cmd+opt+space"                 # Hyprland: the other launcher
+"terminal"     = "opt+enter"
+"layout.next"  = ["opt+space", "ctrl+space"]     # ctrl+space is Toshy's Mac-style default
+# the keyboard's screenshot key (right of F12) drags an area (hypr/screenshot.sh).
 # In Mac mode the NuPhy sends it as a Cmd+Shift+4 macro, which Toshy turns into Shift+Print.
-"screenshot.region"  = "cmd+shift+4"
+"screenshot.region" = "cmd+shift+4"
+
+# Quickshell panels
+"panel.control"       = []
+"panel.notifications" = []
+"panel.settings"      = []
+"help.keys"           = "opt+shift+slash"        # Opt+? : cheat sheet of these binds
+
+# session
+"session.reload" = []
+"session.exit"   = "opt+shift+escape"

@@ -170,6 +170,7 @@ Scope {
             { key: "cursor:zoom_factor", label: "Zoom around the cursor", min: 1, max: 4, step: 0.1, unit: "×" },
             { key: "cursor:no_warps", label: "Never move the cursor by itself" },
         ] },
+        { name: "Shortcuts", shortcuts: true },
         { name: "Displays", displays: true },
     ]
     readonly property var allOptions: [].concat(...pages.map(p => (p.options ?? []).filter(o => o.key)))
@@ -221,10 +222,17 @@ Scope {
         function open(): void { Panels.settingsOpen = true }
         function close(): void { Panels.settingsOpen = false }
         // open at a page by name: `qs ipc call settings page Displays`
-        function page(name: string): void {
-            const i = root.pages.findIndex(p => p.name.toLowerCase() === name.toLowerCase())
-            if (i >= 0) root.page = i
-            Panels.settingsOpen = true
+        function page(name: string): void { root.openPage(name) }
+    }
+    function openPage(name) {
+        const i = root.pages.findIndex(p => p.name.toLowerCase() === name.toLowerCase())
+        if (i >= 0) root.page = i
+        Panels.settingsOpen = true
+    }
+    Connections {       // Panels.openSettings("Shortcuts"), e.g. from the Opt+? sheet
+        target: Panels
+        function onSettingsPageChanged() {
+            if (Panels.settingsPage) { root.openPage(Panels.settingsPage); Panels.settingsPage = "" }
         }
     }
 
@@ -486,111 +494,119 @@ Scope {
     }
 
     // ---- window --------------------------------------------------------------------------
-    FloatingWindow {
-        id: win
-        title: "Settings"
-        visible: Panels.settingsOpen
-        implicitWidth: 900
-        implicitHeight: 620
-        color: Theme.paper
-        onVisibleChanged: {
-            if (visible) { store.reload(); root.refresh() }
-            else Panels.settingsOpen = false
-        }
+    // A new window each time it opens: once the window has been closed from outside (Cmd+Q),
+    // Quickshell can't show the same one again.
+    LazyLoader {
+        active: Panels.settingsOpen
+        FloatingWindow {
+            id: win
+            title: "Settings"
+            visible: true
+            implicitWidth: 900
+            implicitHeight: 620
+            color: Theme.paper
+            Component.onCompleted: { store.reload(); root.refresh() }
+            onVisibleChanged: if (!visible) Panels.settingsOpen = false
 
-        Item {
-            anchors.fill: parent
-            focus: true
-            Keys.onEscapePressed: Panels.settingsOpen = false
-        }
-
-        RowLayout {
-            anchors.fill: parent
-            spacing: 0
-
-            // sidebar
-            ColumnLayout {
-                Layout.preferredWidth: 220
-                Layout.fillWidth: false        // a child with fillWidth would make it grow
-                Layout.fillHeight: true
-                Layout.margins: 28
-                spacing: 10
-                Text { text: "Settings"; color: Theme.ink; font: Theme.heading; Layout.bottomMargin: 14 }
-                Repeater {
-                    model: root.pages
-                    delegate: Text {
-                        required property var modelData
-                        required property int index
-                        text: modelData.name
-                        color: root.page === index || pageArea.containsMouse ? Theme.ink : Theme.inkDim
-                        font: root.page === index ? Theme.text : Theme.textItalic
-                        Rectangle {    // marker for the current page
-                            visible: root.page === parent.index
-                            anchors { right: parent.left; rightMargin: 10; verticalCenter: parent.verticalCenter }
-                            width: 12; height: 1; color: Theme.ink
-                        }
-                        MouseArea {
-                            id: pageArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: { root.page = parent.index; flick.contentY = 0 }
-                        }
-                    }
-                }
-                Item { Layout.fillHeight: true }
-                Text {
-                    Layout.fillWidth: true
-                    text: "Saved to hypr/settings.lua.\nKeys: keys/keymap.toml."
-                    wrapMode: Text.Wrap
-                    color: Theme.inkFaint
-                    font: Theme.textSmall
-                }
+            Item {
+                anchors.fill: parent
+                focus: true
+                Keys.onEscapePressed: Panels.settingsOpen = false
             }
-            Rectangle { Layout.fillHeight: true; implicitWidth: 1; color: Theme.hairline }
 
-            // page
-            Flickable {
-                id: flick
-                Layout.fillWidth: true
-                Layout.preferredWidth: 600
-                Layout.fillHeight: true
-                clip: true
-                contentHeight: pageCol.implicitHeight + 56
-                boundsBehavior: Flickable.StopAtBounds
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
 
+                // sidebar
                 ColumnLayout {
-                    id: pageCol
-                    x: 36; y: 28
-                    width: flick.width - 72
-                    spacing: 0
-
-                    Text {
-                        text: root.pages[root.page].name
-                        color: Theme.ink
-                        font: Theme.heading
-                        Layout.bottomMargin: 18
-                    }
-
+                    Layout.preferredWidth: 220
+                    Layout.fillWidth: false        // a child with fillWidth would make it grow
+                    Layout.fillHeight: true
+                    Layout.margins: 28
+                    spacing: 10
+                    Text { text: "Settings"; color: Theme.ink; font: Theme.heading; Layout.bottomMargin: 14 }
                     Repeater {
-                        model: root.pages[root.page].options ?? []
-                        delegate: Loader {
+                        model: root.pages
+                        delegate: Text {
                             required property var modelData
-                            Layout.fillWidth: true
-                            visible: root.shown(modelData)
-                            sourceComponent: modelData.heading ? headingRow : optionRow
-                            onLoaded: item.opt = modelData
+                            required property int index
+                            text: modelData.name
+                            color: root.page === index || pageArea.containsMouse ? Theme.ink : Theme.inkDim
+                            font: root.page === index ? Theme.text : Theme.textItalic
+                            Rectangle {    // marker for the current page
+                                visible: root.page === parent.index
+                                anchors { right: parent.left; rightMargin: 10; verticalCenter: parent.verticalCenter }
+                                width: 12; height: 1; color: Theme.ink
+                            }
+                            MouseArea {
+                                id: pageArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: { root.page = parent.index; flick.contentY = 0 }
+                            }
                         }
                     }
-
-                    Repeater {
-                        model: root.pages[root.page].animations ? root.animLeaves : []
-                        delegate: AnimBlock { required property var modelData; info: modelData; settings: root }
+                    Item { Layout.fillHeight: true }
+                    Text {
+                        Layout.fillWidth: true
+                        text: "Saved to hypr/settings.lua.\nKeys: keys/keymap.toml."
+                        wrapMode: Text.Wrap
+                        color: Theme.inkFaint
+                        font: Theme.textSmall
                     }
+                }
+                Rectangle { Layout.fillHeight: true; implicitWidth: 1; color: Theme.hairline }
 
-                    Repeater {
-                        model: root.pages[root.page].displays ? root.monitors : []
-                        delegate: MonitorBlock { required property var modelData; monitor: modelData }
+                // page
+                Flickable {
+                    id: flick
+                    Layout.fillWidth: true
+                    Layout.preferredWidth: 600
+                    Layout.fillHeight: true
+                    clip: true
+                    contentHeight: pageCol.implicitHeight + 56
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    ColumnLayout {
+                        id: pageCol
+                        x: 36; y: 28
+                        width: flick.width - 72
+                        spacing: 0
+
+                        Text {
+                            text: root.pages[root.page].name
+                            color: Theme.ink
+                            font: Theme.heading
+                            Layout.bottomMargin: 18
+                        }
+
+                        Repeater {
+                            model: root.pages[root.page].options ?? []
+                            delegate: Loader {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                visible: root.shown(modelData)
+                                sourceComponent: modelData.heading ? headingRow : optionRow
+                                onLoaded: item.opt = modelData
+                            }
+                        }
+
+                        Repeater {
+                            model: root.pages[root.page].animations ? root.animLeaves : []
+                            delegate: AnimBlock { required property var modelData; info: modelData; settings: root }
+                        }
+
+                        ShortcutsPage {
+                            visible: !!root.pages[root.page].shortcuts
+                            Layout.fillWidth: true
+                        }
+
+                        Repeater {
+                            model: root.pages[root.page].displays ? root.monitors : []
+                            delegate: MonitorBlock { required property var modelData; monitor: modelData }
+                        }
                     }
                 }
             }

@@ -6,18 +6,13 @@ return function(P)
   hl.bind("ALT + 3", hl.dsp.focus({ workspace = 3 })) -- desktop.goto.3
   hl.bind("ALT + 4", hl.dsp.focus({ workspace = 4 })) -- desktop.goto.4
   hl.bind("ALT + 5", hl.dsp.focus({ workspace = 5 })) -- desktop.goto.5
+  hl.bind("SUPER + SHIFT + code:192", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 - 1) % 5 + 1 })) end) -- desktop.prev
+  hl.bind("SUPER + code:192", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 + 1) % 5 + 1 })) end) -- desktop.next
   hl.bind("ALT + SHIFT + 1", hl.dsp.window.move({ workspace = 1, follow = false })) -- desktop.move.1
   hl.bind("ALT + SHIFT + 2", hl.dsp.window.move({ workspace = 2, follow = false })) -- desktop.move.2
   hl.bind("ALT + SHIFT + 3", hl.dsp.window.move({ workspace = 3, follow = false })) -- desktop.move.3
   hl.bind("ALT + SHIFT + 4", hl.dsp.window.move({ workspace = 4, follow = false })) -- desktop.move.4
   hl.bind("ALT + SHIFT + 5", hl.dsp.window.move({ workspace = 5, follow = false })) -- desktop.move.5
-  hl.bind("SUPER + SHIFT + code:192", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 - 1) % 5 + 1 })) end) -- desktop.prev
-  hl.bind("SUPER + code:192", function() local id = (hl.get_active_workspace() or {}).id or 1; hl.dispatch(hl.dsp.focus({ workspace = (id - 1 + 1) % 5 + 1 })) end) -- desktop.next
-  hl.bind("ALT + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
-  hl.bind("SUPER + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
-  hl.bind("SUPER + code:191", hl.dsp.exec_cmd(P.launcher)) -- launcher
-  hl.bind("CTRL + ALT + space", hl.dsp.exec_cmd(P.launcher_alt)) -- launcher.alt
-  hl.bind("ALT + Return", hl.dsp.exec_cmd(P.terminal)) -- terminal
   hl.bind("ALT + H", hl.dsp.focus({ direction = "left" })) -- window.focus.left
   hl.bind("ALT + J", hl.dsp.focus({ direction = "down" })) -- window.focus.down
   hl.bind("ALT + K", hl.dsp.focus({ direction = "up" })) -- window.focus.up
@@ -33,7 +28,12 @@ return function(P)
   hl.bind("ALT + SHIFT + Tab", hl.dsp.global("quickshell:switcher-prev")) -- app.switch.prev
   hl.bind("ALT + grave", hl.dsp.global("quickshell:switcher-windows")) -- app.switch.windows
   hl.bind("ALT + SHIFT + grave", hl.dsp.global("quickshell:switcher-windows-prev")) -- app.switch.windows.prev
-  hl.bind("ALT + SHIFT + Escape", hl.dsp.exit()) -- session.exit
-  hl.bind("ALT + SHIFT + slash", hl.dsp.exec_cmd("qs ipc call keybinds toggle")) -- help.keys
+  hl.bind("SUPER + code:191", hl.dsp.exec_cmd(P.launcher)) -- launcher
+  hl.bind("CTRL + ALT + space", hl.dsp.exec_cmd(P.launcher_alt)) -- launcher.alt
+  hl.bind("ALT + Return", hl.dsp.exec_cmd(P.terminal)) -- terminal
+  hl.bind("ALT + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
+  hl.bind("SUPER + space", hl.dsp.exec_cmd("hyprctl switchxkblayout all next")) -- layout.next
   hl.bind("SHIFT + Print", hl.dsp.exec_cmd("~/.config/hypr/screenshot.sh")) -- screenshot.region
+  hl.bind("ALT + SHIFT + slash", hl.dsp.exec_cmd("qs ipc call keybinds toggle")) -- help.keys
+  hl.bind("ALT + SHIFT + Escape", hl.dsp.exit()) -- session.exit
 end

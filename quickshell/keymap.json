@@ -1,0 +1,528 @@
+{
+ "desktops": 5,
+ "groups": [
+  {
+   "title": "Desktops",
+   "rows": [
+    {
+     "action": "desktop.goto.{n}",
+     "label": "Go to desktop",
+     "hypr": [
+      "opt+{n}"
+     ],
+     "hyprLabel": [
+      "⌥ 1–5"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ 1–5"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "desktop.prev",
+     "label": "Previous desktop",
+     "hypr": [
+      "opt+shift+tab"
+     ],
+     "hyprLabel": [
+      "⌥ ⇧ ⇥"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⇧ ⇥"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "desktop.next",
+     "label": "Next desktop",
+     "hypr": [
+      "opt+tab"
+     ],
+     "hyprLabel": [
+      "⌥ ⇥"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⇥"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "desktop.last",
+     "label": "Desktop you were on before",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "desktop.move.{n}",
+     "label": "Send window to desktop",
+     "hypr": [
+      "opt+shift+{n}"
+     ],
+     "hyprLabel": [
+      "⌥ ⇧ 1–5"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⇧ 1–5"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "desktop.take.{n}",
+     "label": "Take window to desktop",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "desktop.move.prev",
+     "label": "Send window to previous desktop",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": true
+    },
+    {
+     "action": "desktop.move.next",
+     "label": "Send window to next desktop",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": true
+    },
+    {
+     "action": "scratchpad.toggle",
+     "label": "Show / hide scratchpad",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "scratchpad.move",
+     "label": "Send window to scratchpad",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    }
+   ]
+  },
+  {
+   "title": "Windows",
+   "rows": [
+    {
+     "action": "window.focus.{dir}",
+     "label": "Focus window",
+     "hypr": [
+      "opt+{dir}"
+     ],
+     "hyprLabel": [
+      "⌥ H J K L"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ H J K L"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "window.move.{dir}",
+     "label": "Move window",
+     "hypr": [
+      "opt+shift+{dir}"
+     ],
+     "hyprLabel": [
+      "⌥ ⇧ H J K L"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⇧ H J K L"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "window.swap.{dir}",
+     "label": "Swap with window",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "window.resize.{dir}",
+     "label": "Resize window",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "window.close",
+     "label": "Close window",
+     "hypr": [
+      "cmd+q"
+     ],
+     "hyprLabel": [
+      "⌘ Q"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌘ Q"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "window.fullscreen",
+     "label": "Fullscreen",
+     "hypr": [
+      "opt+f"
+     ],
+     "hyprLabel": [
+      "⌥ F"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ F"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "window.maximize",
+     "label": "Maximize",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "window.float",
+     "label": "Floating",
+     "hypr": [
+      "opt+shift+f"
+     ],
+     "hyprLabel": [
+      "⌥ ⇧ F"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⇧ F"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "window.pin",
+     "label": "Pin floating window",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "window.center",
+     "label": "Center floating window",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "window.split",
+     "label": "Turn split sideways / up-down",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "label": "Move window with mouse",
+     "hyprLabel": [
+      "⌥ drag"
+     ],
+     "fixed": true
+    },
+    {
+     "label": "Resize window with mouse",
+     "hyprLabel": [
+      "⌥ right-drag"
+     ],
+     "fixed": true
+    }
+   ]
+  },
+  {
+   "title": "Tab groups",
+   "rows": [
+    {
+     "action": "group.toggle",
+     "label": "Make / undo a tab group",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "group.next",
+     "label": "Next tab",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "group.prev",
+     "label": "Previous tab",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    }
+   ]
+  },
+  {
+   "title": "App switcher",
+   "rows": [
+    {
+     "action": "app.switch.next",
+     "label": "Switch app",
+     "hypr": [
+      "cmd+tab"
+     ],
+     "hyprLabel": [
+      "⌘ ⇥"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌘ ⇥"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "app.switch.prev",
+     "label": "Switch app, backwards",
+     "hypr": [
+      "cmd+shift+tab"
+     ],
+     "hyprLabel": [
+      "⇧ ⌘ ⇥"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⇧ ⌘ ⇥"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "app.switch.windows",
+     "label": "In the switcher: that app's windows",
+     "hypr": [
+      "cmd+grave"
+     ],
+     "hyprLabel": [
+      "⌘ `"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌘ `"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "app.switch.windows.prev",
+     "label": "… backwards",
+     "hypr": [
+      "cmd+shift+grave"
+     ],
+     "hyprLabel": [
+      "⌘ ~"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌘ ~"
+     ],
+     "hasKde": true
+    }
+   ]
+  },
+  {
+   "title": "Launch & type",
+   "rows": [
+    {
+     "action": "launcher",
+     "label": "Command palette",
+     "hypr": [
+      "cmd+space"
+     ],
+     "hyprLabel": [
+      "⌘ Space"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌘ Space"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "launcher.alt",
+     "label": "Vicinae",
+     "hypr": [
+      "cmd+opt+space"
+     ],
+     "hyprLabel": [
+      "⌥ ⌘ Space"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⌘ Space"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "terminal",
+     "label": "Terminal",
+     "hypr": [
+      "opt+enter"
+     ],
+     "hyprLabel": [
+      "⌥ ↩"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ↩"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "layout.next",
+     "label": "Switch keyboard layout",
+     "hypr": [
+      "opt+space",
+      "ctrl+space"
+     ],
+     "hyprLabel": [
+      "⌥ Space",
+      "⌃ Space"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ Space",
+      "⌃ Space"
+     ],
+     "hasKde": true
+    },
+    {
+     "action": "screenshot.region",
+     "label": "Screenshot key: drag an area",
+     "hypr": [
+      "cmd+shift+4"
+     ],
+     "hyprLabel": [
+      "⇧ ⌘ 4"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⇧ ⌘ 4"
+     ],
+     "hasKde": false
+    }
+   ]
+  },
+  {
+   "title": "Panels",
+   "rows": [
+    {
+     "action": "panel.control",
+     "label": "Control center",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "panel.notifications",
+     "label": "Notifications",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "panel.settings",
+     "label": "Settings",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "help.keys",
+     "label": "Keyboard shortcuts sheet",
+     "hypr": [
+      "opt+shift+slash"
+     ],
+     "hyprLabel": [
+      "⌥ ?"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ?"
+     ],
+     "hasKde": false
+    }
+   ]
+  },
+  {
+   "title": "Session",
+   "rows": [
+    {
+     "action": "session.reload",
+     "label": "Reload Hyprland config",
+     "hypr": [],
+     "hyprLabel": [],
+     "kde": null,
+     "kdeLabel": [],
+     "hasKde": false
+    },
+    {
+     "action": "session.exit",
+     "label": "Log out",
+     "hypr": [
+      "opt+shift+escape"
+     ],
+     "hyprLabel": [
+      "⌥ ⇧ Esc"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "⌥ ⇧ Esc"
+     ],
+     "hasKde": false
+    }
+   ]
+  }
+ ]
+}
