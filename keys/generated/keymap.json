@@ -165,10 +165,16 @@
     {
      "action": "window.resize.{dir}",
      "label": "Resize window",
-     "hypr": [],
-     "hyprLabel": [],
+     "hypr": [
+      "opt+ctrl+{dir}"
+     ],
+     "hyprLabel": [
+      "⌃ ⌥ H J K L"
+     ],
      "kde": null,
-     "kdeLabel": [],
+     "kdeLabel": [
+      "⌃ ⌥ H J K L"
+     ],
      "hasKde": false
     },
     {
@@ -274,28 +280,46 @@
     {
      "action": "group.toggle",
      "label": "Make / undo a tab group",
-     "hypr": [],
-     "hyprLabel": [],
+     "hypr": [
+      "opt+m"
+     ],
+     "hyprLabel": [
+      "⌥ M"
+     ],
      "kde": null,
-     "kdeLabel": [],
+     "kdeLabel": [
+      "⌥ M"
+     ],
      "hasKde": false
     },
     {
      "action": "group.next",
      "label": "Next tab",
-     "hypr": [],
-     "hyprLabel": [],
+     "hypr": [
+      "opt+n"
+     ],
+     "hyprLabel": [
+      "⌥ N"
+     ],
      "kde": null,
-     "kdeLabel": [],
+     "kdeLabel": [
+      "⌥ N"
+     ],
      "hasKde": false
     },
     {
      "action": "group.prev",
      "label": "Previous tab",
-     "hypr": [],
-     "hyprLabel": [],
+     "hypr": [
+      "opt+p"
+     ],
+     "hyprLabel": [
+      "⌥ P"
+     ],
      "kde": null,
-     "kdeLabel": [],
+     "kdeLabel": [
+      "⌥ P"
+     ],
      "hasKde": false
     }
    ]
@@ -449,6 +473,176 @@
    ]
   },
   {
+   "title": "Function keys",
+   "rows": [
+    {
+     "action": "overview.desktop",
+     "label": "Mission control: this desktop",
+     "hypr": [
+      "f3"
+     ],
+     "hyprLabel": [
+      "F3"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F3"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "overview.all",
+     "label": "Mission control: all windows, search",
+     "hypr": [
+      "f4"
+     ],
+     "hyprLabel": [
+      "F4"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F4"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "brightness.down",
+     "label": "Brightness down",
+     "hypr": [
+      "f1"
+     ],
+     "hyprLabel": [
+      "F1"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F1"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "brightness.up",
+     "label": "Brightness up",
+     "hypr": [
+      "f2"
+     ],
+     "hyprLabel": [
+      "F2"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F2"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "appearance.toggle",
+     "label": "Dark / light mode",
+     "hypr": [
+      "f6"
+     ],
+     "hyprLabel": [
+      "F6"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F6"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "media.back",
+     "label": "Back 5 seconds",
+     "hypr": [
+      "f7"
+     ],
+     "hyprLabel": [
+      "F7"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F7"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "media.playpause",
+     "label": "Play / pause",
+     "hypr": [
+      "f8"
+     ],
+     "hyprLabel": [
+      "F8"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F8"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "media.forward",
+     "label": "Forward 5 seconds",
+     "hypr": [
+      "f9"
+     ],
+     "hyprLabel": [
+      "F9"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F9"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "volume.mute",
+     "label": "Mute",
+     "hypr": [
+      "f10"
+     ],
+     "hyprLabel": [
+      "F10"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F10"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "volume.down",
+     "label": "Volume down",
+     "hypr": [
+      "f11"
+     ],
+     "hyprLabel": [
+      "F11"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F11"
+     ],
+     "hasKde": false
+    },
+    {
+     "action": "volume.up",
+     "label": "Volume up",
+     "hypr": [
+      "f12"
+     ],
+     "hyprLabel": [
+      "F12"
+     ],
+     "kde": null,
+     "kdeLabel": [
+      "F12"
+     ],
+     "hasKde": false
+    }
+   ]
+  },
+  {
    "title": "Panels",
    "rows": [
     {
@@ -472,10 +666,16 @@
     {
      "action": "panel.settings",
      "label": "Settings",
-     "hypr": [],
-     "hyprLabel": [],
+     "hypr": [
+      "f5"
+     ],
+     "hyprLabel": [
+      "F5"
+     ],
      "kde": null,
-     "kdeLabel": [],
+     "kdeLabel": [
+      "F5"
+     ],
      "hasKde": false
     },
     {

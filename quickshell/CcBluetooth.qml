@@ -22,7 +22,7 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: 10
-        IconImage { implicitSize: 16; source: Quickshell.iconPath(root.on ? "network-bluetooth-symbolic" : "network-bluetooth-inactive-symbolic", "bluetooth-symbolic") }
+        SymbolIcon { implicitSize: 16; source: Quickshell.iconPath(root.on ? "network-bluetooth-symbolic" : "network-bluetooth-inactive-symbolic", "bluetooth-symbolic") }
         Text { Layout.fillWidth: true; text: "Bluetooth"; color: Theme.ink; font: Theme.text }
         Toggle {
             checked: root.on
@@ -45,9 +45,9 @@ ColumnLayout {
                 id: row
                 anchors.fill: parent
                 spacing: 6
-                IconImage {
+                SymbolIcon {      // e.g. audio-headset -> audio-headset-symbolic, in the theme's ink
                     implicitSize: 14
-                    source: Quickshell.iconPath(dev.modelData.icon || "bluetooth", "bluetooth")
+                    source: Quickshell.iconPath((dev.modelData.icon || "bluetooth") + "-symbolic", "bluetooth-symbolic")
                 }
                 Text {
                     Layout.fillWidth: true

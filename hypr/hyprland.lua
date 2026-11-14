@@ -35,19 +35,34 @@ hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto"
 ---- AUTOSTART ----
 -------------------
 
+-- GTK 4 apps draw with GTK's GL renderer instead of its default Vulkan one, which on this NVIDIA
+-- card sometimes paints parts of a window black (Ghostty's active tab flickering black). Also
+-- passed to systemd below, since Ghostty windows can be started through D-Bus.
+hl.env("GSK_RENDERER", "ngl")
+
 hl.on("hyprland.start", function()
     -- Let systemd user services see this session (Toshy runs as one), then restart Toshy so it
     -- detects Hyprland instead of whatever it saw when it started at login.
     -- (Toshy refuses to start without XDG_SESSION_TYPE.)
     hl.exec_cmd("dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP "
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
-        .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX "
+        .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
         .. "&& systemctl --user restart toshy-config.service")
     -- Hyprland-only Ghostty look (see the end of ghostty/config.ghostty).
     hl.exec_cmd("ln -sfn hyprland.ghostty ~/.config/ghostty/session.ghostty")
     hl.exec_cmd("vicinae server")
     hl.exec_cmd("qs") -- Quickshell: bar (quickshell/ in dotfiles)
     hl.exec_cmd("hypridle") -- screen off after 2 idle hours (hypridle.conf)
+    -- Plugins (hymission, HyprCapture, hyprglass), installed with hyprpm (built against this
+    -- exact Hyprland; after a Hyprland update run `hyprpm update`). Their settings are applied
+    -- once they're loaded (hl.plugin.<name> exists from then on).
+    hl.exec_cmd("command -v hyprpm >/dev/null && hyprpm reload -n && hyprctl reload")
+    -- leftover mission control flags (hypr/overview-flag.sh) would keep Toshy's h/j/k/l -> arrows on
+    hl.exec_cmd("rm -f $XDG_RUNTIME_DIR/hymission-open $XDG_RUNTIME_DIR/hymission-search")
+    -- mission control's search box looks like the shell (hymission-search.css); KDE may rewrite
+    -- gtk.css, so add the import again when it's missing
+    hl.exec_cmd("f=~/.config/gtk-4.0/gtk.css; mkdir -p ${f%/*}; touch $f; grep -q hymission-search $f "
+        .. "|| sed -i '1i @import url(\"../hypr/hymission-search.css\");' $f")
 end)
 
 require("kde")
@@ -132,13 +147,20 @@ end
 hl.bind("ALT + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind("ALT + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
--- Media keys
-hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })
-hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),      { locked = true, repeating = true })
-hl.bind("XF86AudioMute",        hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),     { locked = true })
-hl.bind("XF86AudioPlay",        hl.dsp.exec_cmd("playerctl play-pause"),                            { locked = true })
+-- Media keys: volume, mute and play/pause are the F-row's (keys/keymap.toml); next/previous
+-- track only come from other devices (the F-row's F7/F9 seek instead).
 hl.bind("XF86AudioNext",        hl.dsp.exec_cmd("playerctl next"),                                  { locked = true })
 hl.bind("XF86AudioPrev",        hl.dsp.exec_cmd("playerctl previous"),                              { locked = true })
+
+--------------------
+---- WORKSPACES ----
+--------------------
+
+-- Desktops 1-5 always exist, even empty (keys/keymap.toml: desktops = 5): mission control's
+-- strip shows all five and can switch to an empty one (it fails on one that doesn't exist yet).
+for i = 1, 5 do
+    hl.workspace_rule({ workspace = tostring(i), persistent = true })
+end
 
 -----------------
 ---- WINDOWS ----
@@ -210,6 +232,70 @@ hl.window_rule({
     center = true,
 })
 
+-----------------
+---- PLUGINS ----
+-----------------
+
+-- Installed with hyprpm and loaded at start (start block above, which re-reads this file after
+-- loading them). Each part only runs once its plugin is loaded.
+
+-- Liquid glass (hyprglass) under the shell's panels (Quickshell layers; quickshell/Theme.qml keeps
+-- their backgrounds see-through) and under windows while they're unfocused (90% opacity).
+-- Light or dark glass follows dark mode (hypr/appearance.sh switches it while running).
+if hl.plugin.hyprglass then
+    local hg = hl.plugin.hyprglass
+    local p = io.popen("gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null")
+    local scheme = p and p:read("*a") or ""
+    if p then p:close() end
+    -- The look (style, blur, refraction, ...) is set in the settings window's Glass page
+    -- (settings.lua, applied below). A style other than "default" sets most values itself.
+    hg.config({
+        default_theme = scheme:find("dark") and "dark" or "light",
+        default_preset = "pomme",      -- Apple-like
+        skip_opaque_windows = false,   -- apps mark their windows opaque even at 90% opacity
+        layers = { enabled = true },
+    })
+    for _, ns in ipairs({ "quickshell-bar", "quickshell-controlcenter", "quickshell-palette",
+                          "quickshell-switcher", "quickshell-notifications" }) do
+        hg.layer(ns, {})
+    end
+    -- the Opt+? sheet dims the whole screen (35%): glass only under the card
+    hg.layer("quickshell-keybinds", { mask_mode = "alpha", mask_threshold = 0.5 })
+end
+
+-- Mission control (hymission; keys/keymap.toml: overview.*, set up in keys/build.py): the windows
+-- spread out with a strip of all five desktops along the top (drag a window onto one to move it).
+-- F3 = this desktop, no search box: the mouse, the arrows and h/j/k/l or Opt+h/j/k/l (Toshy)
+-- move real focus, 1-9 pick a window, / starts a search. F4 = all desktops with a search box (styled by hymission-search.css): type part of a
+-- title or app name, Enter goes there. Esc closes; Opt+Tab switches desktop (leftmost window).
+if hl.plugin.hymission then
+    hl.config({ plugin = { hymission = {
+        workspace_strip_anchor = "top",
+        -- F4 (all desktops): one row per desktop, in desktop order. While its search box is up,
+        -- the keys can only step through hymission's list (Up/Down), which is in this order, so
+        -- next/previous then reads left to right, row by row
+        one_workspace_per_row = 1,
+        multi_workspace_sort_recent_first = 0,
+        -- only the selected window grows (in F4 the selection doesn't follow the pointer; a hovered
+        -- window growing too would look like a second selection)
+        hover_expand_scale = 1.0,
+    } } })
+end
+
+-- Screenshots (HyprCapture, on the screenshot key; keys/keymap.toml): drag an area or click a
+-- window, saved and named like macOS does, copied, with a thumbnail in the corner.
+if hl.plugin.hyprcapture then
+    hl.config({ plugin = { hyprcapture = {
+        default_mode = "region",
+        fusion_mode = true,            -- drag = area, click = that window
+        save = true,
+        clipboard = true,
+        show_thumbnail = true,
+        save_dir = os.getenv("HOME") .. "/Pictures/Screenshots",
+        filename_template = "Screenshot %Y-%m-%d at %H.%M.%S.png",
+    } } })
+end
+
 ------------------
 ---- SETTINGS ----
 ------------------
@@ -218,6 +304,9 @@ hl.window_rule({
 -- options: { ["general:gaps_in"] = 6 } -> hl.config({ general = { gaps_in = 6 } })
 local settings = require("settings")
 for key, value in pairs(settings.options or {}) do
+    -- a plugin's options only exist once it's loaded (this file runs again then)
+    local plugin = key:match("^plugin:([^:]+):")
+    if plugin and not hl.plugin[plugin] then goto continue end
     local root, parts = {}, {}
     local node = root
     for part in key:gmatch("[^:]+") do parts[#parts + 1] = part end
@@ -227,6 +316,7 @@ for key, value in pairs(settings.options or {}) do
     end
     node[parts[#parts]] = value
     hl.config(root)
+    ::continue::
 end
 -- animations: { ["windowsIn"] = { enabled = true, speed = 4, curve = "easy", style = "popin 80%" } }
 for leaf, a in pairs(settings.animations or {}) do

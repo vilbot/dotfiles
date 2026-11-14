@@ -138,7 +138,7 @@ Scope {
             id: panel
             anchors { top: parent.top; right: parent.right; bottom: parent.bottom; margins: 10 }
             width: root.cardWidth + 2 * 16
-            color: Qt.rgba(0.953, 0.937, 0.902, 0.90)   // Theme.wall
+            color: Theme.wall
             border { color: Theme.hairline; width: 1 }
             radius: 2
             MouseArea { anchors.fill: parent }   // clicks on the panel don't close it

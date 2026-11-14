@@ -56,7 +56,8 @@ ColumnLayout {
         Layout.fillWidth: true
         text: "Type keys as cmd, opt, ctrl or shift + a key, e.g. opt+shift+f; several keys: separate with commas. "
             + "KDE left empty uses the Hyprland key, none turns it off on KDE only, – means KDE has no such action. "
-            + "{n} is the desktop number 1–" + Keymap.desktops + ", {dir} is h j k l."
+            + "{n} is the desktop number 1–" + Keymap.desktops + ", {dir} is h j k l. "
+            + "f1–f12 are the F-row keys, which act like a Mac's (right Option + F-key gives the plain F-key)."
         wrapMode: Text.Wrap
         color: Theme.inkDim
         font: Theme.textSmall

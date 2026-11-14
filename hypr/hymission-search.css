@@ -1,0 +1,31 @@
+/* Mission control's search box (hymission's GTK helper, F4), styled like the Quickshell panels
+   (quickshell/Theme.qml: paper, ink, hairline, serif). Loaded through ~/.config/gtk-4.0/gtk.css
+   (hyprland.lua adds the @import at start); user CSS outranks the helper's own styling.
+   Only these two class names are touched, so other GTK apps are unaffected. */
+
+window.hymission-search {
+    background: rgba(243, 239, 230, 0.94);
+    border: 1px solid rgba(42, 39, 35, 0.15);
+    border-radius: 4px;
+    box-shadow: none;
+}
+window.hymission-search .searchbar {
+    color: #2a2723;
+    font-family: "Liberation Serif";
+    font-size: 17px;
+    padding: 10px 20px;
+}
+/* the result count */
+window.hymission-search .searchbar label:last-child {
+    color: #a39d92;
+    font-style: italic;
+}
+
+@media (prefers-color-scheme: dark) {
+    window.hymission-search {
+        background: rgba(34, 32, 29, 0.94);
+        border-color: rgba(236, 230, 218, 0.16);
+    }
+    window.hymission-search .searchbar { color: #ece6da; }
+    window.hymission-search .searchbar label:last-child { color: #6f695f; }
+}

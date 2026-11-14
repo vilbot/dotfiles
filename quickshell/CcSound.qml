@@ -25,7 +25,7 @@ ColumnLayout {
     RowLayout {
         Layout.fillWidth: true
         spacing: 10
-        IconImage {
+        SymbolIcon {
             implicitSize: 16
             source: Quickshell.iconPath(root.sink?.audio?.muted ? "audio-volume-muted-symbolic" : "audio-volume-high-symbolic")
             MouseArea {
@@ -64,7 +64,7 @@ ColumnLayout {
         Layout.topMargin: 4
         visible: root.source !== null
         spacing: 10
-        IconImage {
+        SymbolIcon {
             implicitSize: 16
             source: Quickshell.iconPath(root.source?.audio?.muted ? "microphone-sensitivity-muted-symbolic" : "audio-input-microphone-symbolic")
             MouseArea {

@@ -34,6 +34,49 @@ keymap("User: Zed - Mac keymap handles these", {
     _hmp_is_zed(ctx)
 )
 
+# Right Option + F-key = the plain F-key, like Fn + F-key on a Mac: the F-row itself sends the
+# functions printed on the keys (modmap "User: Mac F-row" in the user_custom_modmaps slice).
+_fkey_sent = {
+    "F1": "BRIGHTNESSDOWN", "F2": "BRIGHTNESSUP", "F3": "SCALE", "F4": "SEARCH",
+    "F5": "F17", "F6": "F18", "F7": "REWIND", "F8": "PLAYPAUSE",
+    "F9": "FASTFORWARD", "F10": "MUTE", "F11": "VOLUMEDOWN", "F12": "VOLUMEUP",
+}
+keymap("User: right Option + F-key", {
+    **{C(f"RAlt-{sent}"): C(fkey) for fkey, sent in _fkey_sent.items()},
+    **{C(f"RAlt-Shift-{sent}"): C(f"Shift-{fkey}") for fkey, sent in _fkey_sent.items()},
+}, when = lambda ctx:
+    cnfg.screen_has_focus and
+    not ctx_app_is_remote
+)
+
+# Mission control (hymission, F3 / F4): h/j/k/l (and Opt+h/j/k/l) move between its windows.
+# dotfiles/hypr/overview-flag.sh keeps these flag files while it's open (hyprland.lua removes
+# leftovers at start, so the letters can't stay arrows). Without its search box (F3): they become
+# the arrow keys, which move the selection (and focus) in that direction. With the search box up
+# (F4, or / in F3) letters type there, so only Opt+h/j/k/l are mapped, and only Up / Down step
+# through the windows there (Left / Right move the text cursor): h/k = previous, j/l = next.
+_hm_open = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "hymission-open")
+_hm_search = os.path.join(os.environ.get("XDG_RUNTIME_DIR", "/tmp"), "hymission-search")
+# The search box sometimes ignores the first key after a modifier event, and Toshy lifts Opt just
+# before sending the arrow, so an F24 goes first: nothing uses it (the search box ignores it too),
+# so whether it's swallowed or not, exactly one arrow arrives.
+keymap("User: mission control search Opt+hjkl", {
+    C("Alt-h"):                 [C("F24"), C("Up")],
+    C("Alt-k"):                 [C("F24"), C("Up")],
+    C("Alt-j"):                 [C("F24"), C("Down")],
+    C("Alt-l"):                 [C("F24"), C("Down")],
+}, when = lambda ctx: os.path.exists(_hm_search))
+keymap("User: mission control hjkl", {
+    C("h"):                     C("Left"),
+    C("j"):                     C("Down"),
+    C("k"):                     C("Up"),
+    C("l"):                     C("Right"),
+    C("Alt-h"):                 C("Left"),
+    C("Alt-j"):                 C("Down"),
+    C("Alt-k"):                 C("Up"),
+    C("Alt-l"):                 C("Right"),
+}, when = lambda ctx: os.path.exists(_hm_open) and not os.path.exists(_hm_search))
+
 # Cmd+Q closes the focused window (not quit the app) in every app, on KDE and Hyprland: Alt+F4
 # is KDE's close-window key and hypr binds it too (dotfiles/keys/keymap.toml: window.close).
 # Placed first, so it beats Toshy's per-app Cmd+Q rules (Firefox quit-all, terminals, ...).

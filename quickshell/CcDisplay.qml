@@ -1,6 +1,8 @@
-// Control center: monitor brightness (DDC/CI via ddcutil) and night light (hyprsunset).
-// Each row hides itself when it can't work: brightness needs DDC/CI turned on in the monitor's
-// own menu, night light needs the hyprsunset package.
+// Control center: brightness and night light.
+// Brightness goes to the monitor itself over DDC/CI (ddcutil) when the monitor answers; otherwise
+// (DDC/CI off in its menu, or a driver that can't reach it, like NVIDIA's open driver over
+// DisplayPort) the screen is dimmed in software with hyprsunset's gamma. One hyprsunset runs
+// while the shell runs and does both dimming and night light (`hyprctl hyprsunset ...`).
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -10,9 +12,12 @@ import Quickshell.Widgets
 ColumnLayout {
     id: root
     spacing: 8
-    visible: brightness >= 0 || hasSunset
+    visible: hasDdc || hasSunset
 
-    property int brightness: -1          // 0..100, -1 = no DDC
+    property int brightness: -1          // monitor brightness 0..100 over DDC, -1 = no DDC
+    readonly property bool hasDdc: brightness >= 0
+    property int dim: 100                // software brightness (hyprsunset gamma %), without DDC
+    readonly property int dimMin: 20     // never darker than this (the screen stays readable)
     property int pending: -1             // value waiting to be sent
     property bool hasSunset: false
     property bool nightLight: false
@@ -48,41 +53,66 @@ ColumnLayout {
         }
     }
 
+    // F1 / F2 (keys/keymap.toml: brightness.down/up): `qs ipc call brightness down|up`
+    function step(d) {
+        if (hasDdc) {
+            brightness = Math.max(0, Math.min(100, brightness + d))
+            pending = brightness
+            send.restart()
+        } else if (hasSunset) {
+            dim = Math.max(dimMin, Math.min(100, dim + d))
+        }
+    }
+    IpcHandler {
+        target: "brightness"
+        function up(): void { root.step(10) }
+        function down(): void { root.step(-10) }
+    }
+
     RowLayout {
         Layout.fillWidth: true
-        visible: root.brightness >= 0
+        visible: root.hasDdc || root.hasSunset
         spacing: 10
-        IconImage { implicitSize: 16; source: Quickshell.iconPath("brightness-high-symbolic", "display-brightness-symbolic") }
+        SymbolIcon { implicitSize: 16; source: Quickshell.iconPath("brightness-high-symbolic", "display-brightness-symbolic") }
         Slider {
             Layout.fillWidth: true
-            value: root.brightness / 100
-            onMoved: v => { root.brightness = Math.round(v * 100); root.pending = root.brightness; send.restart() }
+            value: (root.hasDdc ? root.brightness : root.dim) / 100
+            onMoved: v => {
+                if (root.hasDdc) { root.brightness = Math.round(v * 100); root.pending = root.brightness; send.restart() }
+                else root.dim = Math.max(root.dimMin, Math.round(v * 100))
+            }
         }
         Text {
             Layout.preferredWidth: 36
             horizontalAlignment: Text.AlignRight
-            text: root.brightness + "%"
+            text: (root.hasDdc ? root.brightness : root.dim) + "%"
             color: Theme.inkDim
             font: Theme.text
         }
     }
 
-    // ---- night light ----------------------------------------------------------------------
+    // ---- hyprsunset: night light + software dimming -------------------------------------------
     Process {
         running: true
         command: ["sh", "-c", "command -v hyprsunset"]
         onExited: code => root.hasSunset = code === 0
     }
-    Process {        // runs while night light is on; stopping it restores normal colors
-        running: root.nightLight
-        command: ["hyprsunset", "-t", String(root.nightTemperature)]
+    Process {        // starts with normal colors; stopping it (shell restart) restores them
+        running: root.hasSunset
+        command: ["hyprsunset", "--identity"]
+    }
+    function sunset(args) { Quickshell.execDetached(["hyprctl", "hyprsunset"].concat(args)) }
+    onDimChanged: sunset(["gamma", String(dim)])
+    onNightLightChanged: {
+        if (nightLight) sunset(["temperature", String(nightTemperature)])
+        else { sunset(["identity"]); sunset(["gamma", String(dim)]) }
     }
 
     RowLayout {
         Layout.fillWidth: true
         visible: root.hasSunset
         spacing: 10
-        IconImage { implicitSize: 16; source: Quickshell.iconPath("redshift-status-on", "weather-clear-night-symbolic") }
+        SymbolIcon { implicitSize: 16; source: Quickshell.iconPath("redshift-status-on", "weather-clear-night-symbolic") }
         Text { Layout.fillWidth: true; text: "Night light"; color: Theme.ink; font: Theme.text }
         Toggle { checked: root.nightLight; onToggled: v => root.nightLight = v }
     }

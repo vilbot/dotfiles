@@ -13,6 +13,7 @@
 #
 # "{n}" expands to 1..desktops, "{dir}" to left/down/up/right with the key h/j/k/l.
 # A list binds several keys to one action.
+# f1..f12 are the F-row keys, which act like a Mac's (see "function keys" below).
 # The keys apply to Hyprland and to KDE (actions with a KDE equivalent: KDE_ACTIONS in build.py).
 # Different keys on KDE: { hypr = "opt+x", kde = "opt+y" }  (kde = [] unbinds it on KDE only).
 
@@ -35,7 +36,7 @@ desktops = 5
 "window.focus.{dir}"  = "opt+{dir}"
 "window.move.{dir}"   = "opt+shift+{dir}"
 "window.swap.{dir}"   = []
-"window.resize.{dir}" = []                       # left/right narrower/wider, up/down shorter/taller
+"window.resize.{dir}" = "opt+ctrl+{dir}"         # left/right narrower/wider, up/down shorter/taller
 "window.close"        = "cmd+q"                  # Toshy sends Alt+F4 (toshy/slices/user_apps.py)
 "window.fullscreen"   = "opt+f"
 "window.maximize"     = []
@@ -45,9 +46,9 @@ desktops = 5
 "window.split"        = []
 
 # tab groups
-"group.toggle" = []
-"group.next"   = []
-"group.prev"   = []
+"group.toggle" = "opt+m"
+"group.next"   = "opt+n"
+"group.prev"   = "opt+p"
 
 # app switcher (quickshell/AppSwitcher.qml); Toshy sends Cmd+Tab as Alt+Tab, Cmd+` as Alt+`
 "app.switch.next"         = "cmd+tab"
@@ -64,10 +65,24 @@ desktops = 5
 # In Mac mode the NuPhy sends it as a Cmd+Shift+4 macro, which Toshy turns into Shift+Print.
 "screenshot.region" = "cmd+shift+4"
 
+# function keys: the F-row works like a Mac keyboard's; f1..f12 here mean the keys with the icons
+# (Toshy sends the functions, right Option + F-key gives the plain F-key; keys/build.py: FKEY_SENT)
+"overview.desktop"  = "f3"                       # mission control (hymission plugin)
+"overview.all"      = "f4"                       # all desktops' windows, with search
+"brightness.down"   = "f1"
+"brightness.up"     = "f2"
+"appearance.toggle" = "f6"                       # moon key
+"media.back"        = "f7"
+"media.playpause"   = "f8"
+"media.forward"     = "f9"
+"volume.mute"       = "f10"
+"volume.down"       = "f11"
+"volume.up"         = "f12"
+
 # Quickshell panels
 "panel.control"       = []
 "panel.notifications" = []
-"panel.settings"      = []
+"panel.settings"      = "f5"                     # microphone key
 "help.keys"           = "opt+shift+slash"        # Opt+? : cheat sheet of these binds
 
 # session

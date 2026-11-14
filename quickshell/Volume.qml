@@ -22,7 +22,7 @@ Item {
         anchors.centerIn: parent
         spacing: 5
 
-        IconImage {
+        SymbolIcon {
             implicitSize: 16
             source: Quickshell.iconPath(root.muted || root.volume === 0 ? "audio-volume-muted-symbolic"
                                       : root.volume < 0.34 ? "audio-volume-low-symbolic"

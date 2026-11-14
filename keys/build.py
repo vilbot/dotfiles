@@ -11,7 +11,7 @@
 Generated files (do NOT hand-edit, edit keymap.toml instead):
     keys/generated/kde.tsv          <- KDE shortcut values; --apply writes them into ~/.config
     hypr/binds.lua                  <- Hyprland binds; hyprland.lua does require("binds")(programs)
-    quickshell/keymap.json          <- every action with its keys and label, for the Opt+? sheet
+    keys/generated/keymap.json      <- every action with its keys and label, for the Opt+? sheet
                                        (quickshell/Keybinds.qml) and the settings window's
                                        Shortcuts page (quickshell/ShortcutsPage.qml)
 
@@ -155,6 +155,14 @@ TOSHY_SPECIAL = {
              (frozenset({"cmd", "shift"}), "4"): "SHIFT + Print"},
 }
 
+# The F-row works like a Mac keyboard's (toshy/slices/user_custom_modmaps.py): Toshy turns F1–F12
+# into the functions printed on the keys (right Option + F-key gives the plain F-key). So a
+# physical F-key in keymap.toml reaches Hyprland as this (F5/F6 as F17/F18, by keycode = evdev + 8):
+FKEY_SENT = {"f1": "XF86MonBrightnessDown", "f2": "XF86MonBrightnessUp", "f3": "XF86LaunchA",
+             "f4": "XF86Search", "f5": "code:195", "f6": "code:196", "f7": "XF86AudioRewind",
+             "f8": "XF86AudioPlay", "f9": "XF86AudioForward", "f10": "XF86AudioMute",
+             "f11": "XF86AudioLowerVolume", "f12": "XF86AudioRaiseVolume"}
+
 # ---- KDE ----------------------------------------------------------------------------------
 KDE_MOD = {"super": "Meta", "ctrl": "Ctrl", "alt": "Alt", "shift": "Shift"}
 KDE_KEY = {"space": "Space", "tab": "Tab", "enter": "Return", "escape": "Esc", "left": "Left", "print": "Print",
@@ -168,6 +176,8 @@ def kde_combo(c):
     if c in TOSHY_SPECIAL["kde"]:
         return TOSHY_SPECIAL["kde"][c]
     mods, key = c
+    assert key not in FKEY_SENT, (f"{key.upper()} sends a Mac function key (brightness, volume, ...) on KDE "
+                                  "too, so it can't be a KDE shortcut here; give that action another kde key")
     key = KDE_KEY.get(key) or (key.upper() if re.fullmatch(r"[a-z]|f\d+", key) else key)
     return "+".join([KDE_MOD[TOSHY_MOD[m]] for m in TOSHY_MOD if m in mods] + [key])
 
@@ -232,22 +242,32 @@ def hypr_combo(c):
     if c in TOSHY_SPECIAL["hypr"]:
         return TOSHY_SPECIAL["hypr"][c]
     mods, key = c
-    key = HYPR_KEY.get(key) or (key.upper() if re.fullmatch(r"[a-z]|f\d+", key) else key)
+    key = FKEY_SENT.get(key) or HYPR_KEY.get(key) or (key.upper() if re.fullmatch(r"[a-z]|f\d+", key) else key)
     return " + ".join([TOSHY_MOD[m].upper() for m in TOSHY_MOD if m in mods] + [key])
 
 
 # Desktops wrap around 1..N like KDE (Hyprland's own relative workspaces don't stop at N).
-_step = lambda d, dsp="hl.dsp.focus({{ workspace = {} }})": (
-    f"function() local id = (hl.get_active_workspace() or {{}}).id or 1; "
-    f"hl.dispatch({dsp.format(f'(id - 1 {d}) % {N} + 1')}) end")
+# In mission control, switching desktop also picks that desktop's leftmost window.
+def _step(d, dsp="hl.dsp.focus({{ workspace = {} }})", leftmost=False):
+    after = " if overview_open() then focus_leftmost(n) end" if leftmost else ""
+    return (f"function() local id = (hl.get_active_workspace() or {{}}).id or 1; local n = (id - 1 {d}) % {N} + 1; "
+            f"hl.dispatch({dsp.format('n')});{after} end")
 # Moving a window doesn't switch desktop (like KDE's "Window to Desktop N").
 _move = "hl.dsp.window.move({{ workspace = {}, follow = false }})"
+def overview(scope, labels, follow, mode):
+    return (f'function() local hm = hl.plugin.hymission; if not hm then return end; '
+            f'hl.config({{ plugin = {{ hymission = {{ pick_labels_enabled = {labels}, pick_labels_show = 0, '
+            f'overview_focus_follows_mouse = {follow} }} }} }}); '
+            f'hm.toggle("{scope}"); '
+            f'hl.dispatch(hl.dsp.exec_cmd("~/.config/hypr/overview-flag.sh {mode}")) end')
+
+
 HYPR_ACTIONS = {  # action -> Lua dispatcher (P = programs table from hyprland.lua)
     **{f"desktop.goto.{n}": f"hl.dsp.focus({{ workspace = {n} }})" for n in range(1, N + 1)},
     **{f"desktop.move.{n}": _move.format(n) for n in range(1, N + 1)},
     **{f"desktop.take.{n}": f"hl.dsp.window.move({{ workspace = {n}, follow = true }})" for n in range(1, N + 1)},
-    "desktop.prev": _step("- 1"),
-    "desktop.next": _step("+ 1"),
+    "desktop.prev": _step("- 1", leftmost=True),
+    "desktop.next": _step("+ 1", leftmost=True),
     "desktop.move.prev": _step("- 1", _move),
     "desktop.move.next": _step("+ 1", _move),
     "desktop.last": 'hl.dsp.focus({ workspace = "previous" })',
@@ -284,19 +304,72 @@ HYPR_ACTIONS = {  # action -> Lua dispatcher (P = programs table from hyprland.l
     "app.switch.prev": 'hl.dsp.global("quickshell:switcher-prev")',
     "app.switch.windows": 'hl.dsp.global("quickshell:switcher-windows")',
     "app.switch.windows.prev": 'hl.dsp.global("quickshell:switcher-windows-prev")',
-    "screenshot.region": 'hl.dsp.exec_cmd("~/.config/hypr/screenshot.sh")',
+    # HyprCapture (Hyprland plugin) once it's loaded, else hypr/screenshot.sh
+    "screenshot.region": ('function() if hl.plugin and hl.plugin.hyprcapture then hl.plugin.hyprcapture.open() '
+                          'else hl.dispatch(hl.dsp.exec_cmd("~/.config/hypr/screenshot.sh")) end end'),
+    # mission control (hymission, a Hyprland plugin; does nothing until it's loaded).
+    # F3: this desktop, no search box; the mouse and the selection move real focus. The search box
+    # opens by itself unless pick labels (or vim_keys) are on, so F3 turns on hidden pick labels
+    # (1-9 pick a window, / still searches; vim_keys would show a warning each time it's turned on).
+    # F4: all desktops with the search box ready (labels off). The search box holds the keyboard, so
+    # hymission can't move real focus; with focus-follows-mouse on it would still hand the selection
+    # back to the window under the pointer after every arrow press, so that's off in F4.
+    # hypr/overview-flag.sh keeps flag files while it's open (Opt+h/j/k/l and Opt+Tab use them).
+    "overview.desktop": overview("onlycurrentworkspace", labels=1, follow=1, mode="plain"),
+    "overview.all": overview("forceall", labels=0, follow=0, mode="search"),
+    # F-row (the Mac functions; FKEY_SENT above)
+    "brightness.down": 'hl.dsp.exec_cmd("qs ipc call brightness down")',   # quickshell/CcDisplay.qml
+    "brightness.up": 'hl.dsp.exec_cmd("qs ipc call brightness up")',
+    "appearance.toggle": 'hl.dsp.exec_cmd("~/.config/hypr/appearance.sh toggle")',
+    "media.back": 'hl.dsp.exec_cmd("playerctl position 5-")',
+    "media.playpause": 'hl.dsp.exec_cmd("playerctl play-pause")',
+    "media.forward": 'hl.dsp.exec_cmd("playerctl position 5+")',
+    "volume.mute": 'hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle")',
+    "volume.down": 'hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-")',
+    "volume.up": 'hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+")',
 }
 
 
-HYPR_REPEAT = ("window.resize.",)   # held down: repeat
+# hl.bind options by action (prefix): repeating = repeats while held, locked = also works while
+# a lock screen or inhibitor is up
+HYPR_OPTS = {"window.resize.": "repeating = true", "brightness.": "repeating = true",
+             "volume.mute": "locked = true", "volume.": "locked = true, repeating = true",
+             "media.": "locked = true"}
+
+
+def hypr_opts(action):
+    opts = next((o for prefix, o in HYPR_OPTS.items() if action.startswith(prefix)), None)
+    return f", {{ {opts} }}" if opts else ""
+
+
+HYPR_HELPERS = """
+-- mission control is open (hypr/overview-flag.sh keeps this file while it is)
+local function overview_open()
+  local f = io.open((os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/hymission-open", "r")
+  if f then f:close() end
+  return f ~= nil
+end
+-- focus the leftmost window of a desktop, once mission control's desktop switch is done (it takes
+-- 180 ms and then focuses that desktop's last-used window itself)
+local function focus_leftmost(ws)
+  hl.timer(function()
+    local best
+    for _, w in ipairs(hl.get_workspace_windows(ws) or {}) do
+      local x = type(w.at) == "table" and w.at.x or 0
+      if not w.hidden and (not best or x < best.x) then best = { x = x, address = w.address } end
+    end
+    if best then hl.dispatch(hl.dsp.focus({ window = "address:" .. best.address })) end
+  end, { timeout = 250, type = "oneshot" })
+end
+"""
 
 
 def hypr():
     lines = ["-- generated by keys/build.py from keys/keymap.toml; do not edit",
              "-- usage in hyprland.lua: require(\"binds\")({ terminal = ..., launcher = ..., launcher_alt = ... })",
-             "return function(P)"]
+             HYPR_HELPERS, "return function(P)"]
     for action, combos in binds["hypr"].items():
-        opts = ", { repeating = true }" if action.startswith(HYPR_REPEAT) else ""
+        opts = hypr_opts(action)
         lines += [f'  hl.bind("{hypr_combo(c)}", {HYPR_ACTIONS[action]}{opts}) -- {action}' for c in combos]
     return "\n".join(lines + ["end"]) + "\n"
 
@@ -347,6 +420,19 @@ SHEET = {
         "terminal":     "Terminal",
         "layout.next":  "Switch keyboard layout",
         "screenshot.region": "Screenshot key: drag an area",
+    },
+    "Function keys": {
+        "overview.desktop":  "Mission control: this desktop",
+        "overview.all":      "Mission control: all windows, search",
+        "brightness.down":   "Brightness down",
+        "brightness.up":     "Brightness up",
+        "appearance.toggle": "Dark / light mode",
+        "media.back":        "Back 5 seconds",
+        "media.playpause":   "Play / pause",
+        "media.forward":     "Forward 5 seconds",
+        "volume.mute":       "Mute",
+        "volume.down":       "Volume down",
+        "volume.up":         "Volume up",
     },
     "Panels": {
         "panel.control":       "Control center",
@@ -423,7 +509,7 @@ for plat, actions in (("hypr", HYPR_ACTIONS), ("kde", KDE_ACTIONS)):
             seen[c] = action
 
 # ---- write --------------------------------------------------------------------------------
-targets = {"keys/generated/kde.tsv": kde, "hypr/binds.lua": hypr, "quickshell/keymap.json": model}
+targets = {"keys/generated/kde.tsv": kde, "hypr/binds.lua": hypr, "keys/generated/keymap.json": model}
 
 check = "--check" in sys.argv
 stale = []

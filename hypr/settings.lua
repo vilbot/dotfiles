@@ -4,7 +4,9 @@ return {
     options = {
         ["decoration:active_opacity"] = 1,
         ["decoration:blur:ignore_opacity"] = true,
+        ["decoration:blur:noise"] = 0,
         ["decoration:blur:popups"] = false,
+        ["decoration:blur:size"] = 2,
         ["decoration:blur:variant"] = 0,
         ["decoration:dim_inactive"] = true,
         ["decoration:dim_strength"] = 0.4,

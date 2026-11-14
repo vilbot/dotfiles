@@ -48,7 +48,7 @@ PanelWindow {
             anchors.centerIn: parent
             width: content.implicitWidth + 2 * 48
             height: content.implicitHeight + 2 * 40
-            color: Qt.rgba(0.953, 0.937, 0.902, 0.97)   // Theme.wall, nearly opaque
+            color: Theme.card
             border { color: Theme.hairline; width: 1 }
             radius: 2
 

@@ -31,7 +31,7 @@ Rectangle {
                                     : iconRef !== "" ? iconRef : notification.image
 
     implicitHeight: body.implicitHeight + 28
-    color: Qt.rgba(0.953, 0.937, 0.902, 0.94)   // Theme.wall, nearly opaque
+    color: Theme.panel
     border { color: Theme.hairline; width: 1 }
     radius: 2
 

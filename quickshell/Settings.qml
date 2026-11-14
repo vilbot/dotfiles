@@ -22,6 +22,8 @@ Scope {
     id: root
 
     readonly property var variantIs: v => ({ key: "decoration:blur:variant", in: v })
+    // the glass sliders only matter for hyprglass's "default" style (the others set them themselves)
+    readonly property var ownGlass: ({ key: "plugin:hyprglass:default_preset", in: ["default"] })
     readonly property var pages: [
         { name: "Windows", options: [
             { key: "general:gaps_in", label: "Gap between windows", min: 0, max: 40 },
@@ -170,7 +172,28 @@ Scope {
             { key: "cursor:zoom_factor", label: "Zoom around the cursor", min: 1, max: 4, step: 0.1, unit: "×" },
             { key: "cursor:no_warps", label: "Never move the cursor by itself" },
         ] },
+        // liquid glass: the hyprglass plugin (hypr/hyprland.lua, PLUGINS) under the bar, panels and
+        // unfocused windows. Screenshots don't show it (the plugin skips captures).
+        { name: "Glass", options: [
+            { key: "plugin:hyprglass:enabled", label: "Liquid glass" },
+            { key: "plugin:hyprglass:default_preset", label: "Style",
+              choices: [["pomme", "Apple-like"], ["subtle", "Subtle"], ["clear", "Clear"], ["glass", "Glass block"],
+                        ["high_contrast", "High contrast"], ["default", "Your own (sliders below)"]] },
+            { heading: "Your own style", when: root.ownGlass },
+            { key: "plugin:hyprglass:blur_strength", label: "Blur", min: 0, max: 6, step: 0.1, when: root.ownGlass },
+            { key: "plugin:hyprglass:blur_iterations", label: "Blur passes", min: 1, max: 6, when: root.ownGlass },
+            { key: "plugin:hyprglass:glass_opacity", label: "Glass strength", min: 0, max: 1, percent: true, when: root.ownGlass },
+            { key: "plugin:hyprglass:frost", label: "Frost", min: 0, max: 1, percent: true, when: root.ownGlass },
+            { key: "plugin:hyprglass:noise_strength", label: "Grain", min: 0, max: 1, percent: true, when: root.ownGlass },
+            { key: "plugin:hyprglass:refraction_strength", label: "Refraction at the edges", min: 0, max: 2, step: 0.05, when: root.ownGlass },
+            { key: "plugin:hyprglass:lens_distortion", label: "Lens bulge", min: 0, max: 1, step: 0.05, when: root.ownGlass },
+            { key: "plugin:hyprglass:edge_thickness", label: "Edge width", min: 0, max: 0.3, step: 0.01, when: root.ownGlass },
+            { key: "plugin:hyprglass:chromatic_aberration", label: "Rainbow fringe", min: 0, max: 1, step: 0.05, when: root.ownGlass },
+            { key: "plugin:hyprglass:fresnel_strength", label: "Edge glow", min: 0, max: 1, step: 0.05, when: root.ownGlass },
+            { key: "plugin:hyprglass:specular_strength", label: "Highlights", min: 0, max: 1, step: 0.05, when: root.ownGlass },
+        ] },
         { name: "Shortcuts", shortcuts: true },
+        { name: "Wallpaper", wallpaper: true },
         { name: "Displays", displays: true },
     ]
     readonly property var allOptions: [].concat(...pages.map(p => (p.options ?? []).filter(o => o.key)))
@@ -600,6 +623,11 @@ Scope {
 
                         ShortcutsPage {
                             visible: !!root.pages[root.page].shortcuts
+                            Layout.fillWidth: true
+                        }
+
+                        WallpaperPage {
+                            visible: !!root.pages[root.page].wallpaper
                             Layout.fillWidth: true
                         }
 

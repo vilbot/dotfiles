@@ -31,7 +31,7 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: root.wired !== null
         spacing: 10
-        IconImage { implicitSize: 16; source: Quickshell.iconPath("network-wired-symbolic") }
+        SymbolIcon { implicitSize: 16; source: Quickshell.iconPath("network-wired-symbolic") }
         Text { text: "Ethernet"; color: Theme.ink; font: Theme.text }
         Item { Layout.fillWidth: true }
         Text {
@@ -48,7 +48,7 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: root.wifi !== null
         spacing: 10
-        IconImage { implicitSize: 16; source: Quickshell.iconPath(Networking.wifiEnabled ? "network-wireless-symbolic" : "network-wireless-disconnected-symbolic") }
+        SymbolIcon { implicitSize: 16; source: Quickshell.iconPath(Networking.wifiEnabled ? "network-wireless-symbolic" : "network-wireless-disconnected-symbolic") }
         Text { Layout.fillWidth: true; text: "Wi-Fi"; color: Theme.ink; font: Theme.text }
         Toggle {
             enabled: Networking.wifiHardwareEnabled
