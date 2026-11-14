@@ -34,5 +34,13 @@ desktops = 5
 "window.close"       = "cmd+q"                 # KDE + Hyprland; Toshy sends Alt+F4 (toshy/slices/user_apps.py)
 "window.fullscreen"  = "opt+f"
 "window.float"       = "opt+shift+f"
+"app.switch.next"    = "cmd+tab"               # app switcher; Toshy sends Alt+Tab (quickshell/AppSwitcher.qml)
+"app.switch.prev"    = "cmd+shift+tab"
+"app.switch.windows" = "cmd+grave"             # in the switcher: that app's windows; Toshy sends Alt+`
+"app.switch.windows.prev" = "cmd+shift+grave"
 "session.exit"       = "opt+shift+escape"
 "help.keys"          = "opt+shift+slash"           # Opt+? : cheat sheet of these binds (Hyprland)
+
+# screenshot: the keyboard's screenshot key (right of F12) drags an area (Hyprland: hypr/screenshot.sh).
+# In Mac mode the NuPhy sends it as a Cmd+Shift+4 macro, which Toshy turns into Shift+Print.
+"screenshot.region"  = "cmd+shift+4"

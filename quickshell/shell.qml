@@ -28,4 +28,8 @@ ShellRoot {
 
     // command palette (Cmd+Space)
     CommandPalette {}
+
+
+    // Cmd+Tab app switcher
+    AppSwitcher {}
 }

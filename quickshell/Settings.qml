@@ -26,7 +26,7 @@ Scope {
         { name: "Windows", options: [
             { key: "general:gaps_in", label: "Gap between windows", min: 0, max: 40 },
             { key: "general:gaps_out", label: "Gap at the screen edge", min: 0, max: 80 },
-            { key: "general:border_size", label: "Border width", max: 10 },
+            { key: "general:border_size", label: "Border thickness", max: 10, unit: " px" },
             { key: "decoration:rounding", label: "Corner rounding", max: 30 },
             { key: "decoration:rounding_power", label: "Corner shape", step: 0.1 },
             { key: "decoration:border_part_of_window", label: "Border counts as window" },
@@ -163,7 +163,7 @@ Scope {
             { key: "input:accel_profile", label: "Mouse acceleration",
               choices: [["", "Default"], ["adaptive", "Adaptive"], ["flat", "Off"]], resetValue: "" },
             { key: "input:natural_scroll", label: "Natural scrolling" },
-            { key: "input:follow_mouse", label: "Focus follows the mouse", choices: [[1, "Yes"], [0, "No"]] },
+            { key: "input:follow_mouse", label: "Focus windows by", choices: [[2, "Clicking"], [1, "Hovering"]] },
             { heading: "Cursor" },
             { key: "cursor:inactive_timeout", label: "Hide the idle cursor after", min: 0, max: 10, step: 1, unit: " s", zero: "never" },
             { key: "cursor:hide_on_key_press", label: "Hide while typing" },
@@ -298,6 +298,8 @@ Scope {
         path: root.file
         atomicWrites: true
         onLoaded: root.parse(text())
+        // a reset just rewrote the file: reload Hyprland now that it's on disk
+        onSaved: if (root.reloadAfterSave) { root.reloadAfterSave = false; reloader.running = true }
     }
 
     // settings.lua -> overrides, animOverrides, monitorRules (the format writeFile() produces)
@@ -384,8 +386,8 @@ Scope {
     }
     function reset(opt) {
         const ov = Object.assign({}, overrides); delete ov[opt.key]; overrides = ov
+        reloadAfterSave = true
         writeFile()
-        reloadTimer.restart()
     }
 
     // effective animation of a leaf (unset leaves inherit from their parent)
@@ -409,8 +411,8 @@ Scope {
     }
     function resetAnim(leaf) {
         const ao = Object.assign({}, animOverrides); delete ao[leaf]; animOverrides = ao
+        reloadAfterSave = true
         writeFile()
-        reloadTimer.restart()
     }
 
     Timer {             // coalesce slider drags into one hyprctl call
@@ -427,12 +429,14 @@ Scope {
         }
     }
     Timer { id: saveTimer; interval: 400; onTriggered: root.writeFile() }
-    Timer {             // after a reset: reload so hyprland.lua's own value comes back, then re-read
-        id: reloadTimer
-        interval: 300
-        onTriggered: { Quickshell.execDetached(["hyprctl", "reload"]); rereadTimer.restart() }
+    // after a reset: reload so hyprland.lua's own value comes back, then re-read straight away
+    // (hyprctl reload returns once the config is applied)
+    property bool reloadAfterSave: false
+    Process {
+        id: reloader
+        command: ["hyprctl", "reload"]
+        onExited: root.refresh()
     }
-    Timer { id: rereadTimer; interval: 800; onTriggered: root.refresh() }
 
     // ---- displays ------------------------------------------------------------------------
     function monitorKey(m) { return "desc:" + m.make + " " + m.model }

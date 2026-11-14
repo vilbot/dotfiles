@@ -15,6 +15,10 @@ kglobalshortcutsrc	kwin	Switch to Previous Desktop	Meta+Shift+F14
 kglobalshortcutsrc	kwin	Switch to Next Desktop	Meta+F14
 kglobalshortcutsrc	kwin	Window to Previous Desktop	none
 kglobalshortcutsrc	kwin	Window to Next Desktop	none
+kglobalshortcutsrc	kwin	Walk Through Windows	Alt+Tab\tMeta+Tab
+kglobalshortcutsrc	kwin	Walk Through Windows (Reverse)	Alt+Shift+Tab\tMeta+Shift+Tab
+kglobalshortcutsrc	kwin	Walk Through Windows of Current Application	Alt+`
+kglobalshortcutsrc	kwin	Walk Through Windows of Current Application (Reverse)	Alt+~
 kglobalshortcutsrc	KDE Keyboard Layout Switcher	Switch to Next Keyboard Layout	Alt+Space\tMeta+Space
 kglobalshortcutsrc	services][org.kde.krunner.desktop	_launch	Alt+F2\tSearch
 kglobalshortcutsrc	kwin	Window Close	Alt+F4

@@ -68,7 +68,13 @@ TOSHY_SPECIAL = {
              (frozenset({"cmd"}), "q"): "Alt+F4",          # toshy/slices/user_apps.py
              # Toshy sends Opt+(Shift+)Tab as Super+F14 so it can't collide with Cmd+Tab (Alt+Tab)
              (frozenset({"opt"}), "tab"): "Meta+F14",
-             (frozenset({"opt", "shift"}), "tab"): "Meta+Shift+F14"},
+             (frozenset({"opt", "shift"}), "tab"): "Meta+Shift+F14",
+             # Toshy sends Cmd+(Shift+)Tab as Alt+(Shift+)Tab, holding Alt while Cmd is held
+             (frozenset({"cmd"}), "tab"): "Alt+Tab",
+             (frozenset({"cmd", "shift"}), "tab"): "Alt+Shift+Tab",
+             # and Cmd+(Shift+)` as Alt+(Shift+)`
+             (frozenset({"cmd"}), "grave"): "Alt+`",
+             (frozenset({"cmd", "shift"}), "grave"): "Alt+~"},
     # Toshy's default is Super+D, but physical Ctrl+D sends that too (e.g. vim's Ctrl+D in Zed);
     # toshy/slices/user_apps.py makes Cmd+Space send Super+F13 on Hyprland instead. F13's keysym
     # is XF86Tools on Linux, so bind the raw keycode (evdev 183 + 8).
@@ -76,12 +82,18 @@ TOSHY_SPECIAL = {
              (frozenset({"cmd"}), "q"): "ALT + F4",        # toshy/slices/user_apps.py
              # Opt+(Shift+)Tab arrive as Super+F14 (see kde above); F14 = evdev 184 + 8
              (frozenset({"opt"}), "tab"): "SUPER + code:192",
-             (frozenset({"opt", "shift"}), "tab"): "SUPER + SHIFT + code:192"},
+             (frozenset({"opt", "shift"}), "tab"): "SUPER + SHIFT + code:192",
+             (frozenset({"cmd"}), "tab"): "ALT + Tab",
+             (frozenset({"cmd", "shift"}), "tab"): "ALT + SHIFT + Tab",
+             (frozenset({"cmd"}), "grave"): "ALT + grave",
+             (frozenset({"cmd", "shift"}), "grave"): "ALT + SHIFT + grave",
+             # the NuPhy's screenshot key sends Cmd+Shift+4; Toshy turns that into Shift+Print
+             (frozenset({"cmd", "shift"}), "4"): "SHIFT + Print"},
 }
 
 # ---- KDE ----------------------------------------------------------------------------------
 KDE_MOD = {"super": "Meta", "ctrl": "Ctrl", "alt": "Alt", "shift": "Shift"}
-KDE_KEY = {"space": "Space", "tab": "Tab", "enter": "Return", "escape": "Esc", "left": "Left",
+KDE_KEY = {"space": "Space", "tab": "Tab", "enter": "Return", "escape": "Esc", "left": "Left", "print": "Print",
            "right": "Right", "up": "Up", "down": "Down", "backspace": "Backspace"}
 
 
@@ -101,6 +113,10 @@ KDE_ACTIONS = {  # action -> (file, groups, key, extra fixed keys)
     "desktop.next": (SC, ["kwin"], "Switch to Next Desktop", []),
     "desktop.move.prev": (SC, ["kwin"], "Window to Previous Desktop", []),
     "desktop.move.next": (SC, ["kwin"], "Window to Next Desktop", []),
+    "app.switch.next": (SC, ["kwin"], "Walk Through Windows", ["Meta+Tab"]),           # KDE default extra
+    "app.switch.prev": (SC, ["kwin"], "Walk Through Windows (Reverse)", ["Meta+Shift+Tab"]),
+    "app.switch.windows": (SC, ["kwin"], "Walk Through Windows of Current Application", []),
+    "app.switch.windows.prev": (SC, ["kwin"], "Walk Through Windows of Current Application (Reverse)", []),
     "layout.next":  (SC, ["KDE Keyboard Layout Switcher"], "Switch to Next Keyboard Layout", []),
     "launcher":     (SC, ["services", "org.kde.krunner.desktop"], "_launch", ["Search"]),
     "window.close": (SC, ["kwin"], "Window Close", []),
@@ -141,7 +157,7 @@ def apply_kde(tsv):
 
 # ---- Hyprland -----------------------------------------------------------------------------
 HYPR_KEY = {"enter": "Return", "escape": "Escape", "space": "space", "tab": "Tab", "backspace": "BackSpace",
-            "slash": "slash"}
+            "slash": "slash", "grave": "grave", "print": "Print"}
 
 
 def hypr_combo(c):
@@ -176,6 +192,12 @@ HYPR_ACTIONS = {  # action -> Lua dispatcher (P = programs table from hyprland.l
     "window.float": 'hl.dsp.window.float({ action = "toggle" })',
     "session.exit": "hl.dsp.exit()",
     "help.keys": 'hl.dsp.exec_cmd("qs ipc call keybinds toggle")',
+    # quickshell/AppSwitcher.qml; it switches when Alt (= Cmd) is let go
+    "app.switch.next": 'hl.dsp.global("quickshell:switcher-next")',
+    "app.switch.prev": 'hl.dsp.global("quickshell:switcher-prev")',
+    "app.switch.windows": 'hl.dsp.global("quickshell:switcher-windows")',
+    "app.switch.windows.prev": 'hl.dsp.global("quickshell:switcher-windows-prev")',
+    "screenshot.region": 'hl.dsp.exec_cmd("~/.config/hypr/screenshot.sh")',
 }
 
 
@@ -207,12 +229,19 @@ SHEET = {
         "window.close":       "Close window",
         "window.fullscreen":  "Fullscreen",
         "window.float":       "Floating",
+        "app.switch.next":    "Switch app",
+        "app.switch.prev":    "Switch app, backwards",
+        "app.switch.windows": "In the switcher: that app's windows",
+        "app.switch.windows.prev": "… backwards",
     },
     "Launch & type": {
         "launcher":     "Command palette",
         "launcher.alt": "Vicinae",
         "terminal":     "Terminal",
         "layout.next":  "Switch keyboard layout",
+    },
+    "Screenshot": {
+        "screenshot.region": "Screenshot key: drag an area",
     },
     "Session": {
         "help.keys":    "This sheet",
@@ -225,8 +254,9 @@ SHEET_EXTRA = {"Windows": [("Move window with mouse", ["⌥ drag"]),
 
 MAC_MOD = {"ctrl": "⌃", "opt": "⌥", "shift": "⇧", "cmd": "⌘"}   # Apple's order
 MAC_KEY = {"space": "Space", "enter": "↩", "escape": "Esc", "tab": "⇥", "backspace": "⌫",
-           "left": "←", "right": "→", "up": "↑", "down": "↓", "slash": "/"}
-SHIFTED = {"slash": "?"}   # shown as the shifted character, like macOS menus do
+           "left": "←", "right": "→", "up": "↑", "down": "↓", "slash": "/", "grave": "`",
+           "print": "Print"}
+SHIFTED = {"slash": "?", "grave": "~"}   # shown as the shifted character, like macOS menus do
 
 
 def mac_label(combo):

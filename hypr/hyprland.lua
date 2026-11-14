@@ -47,6 +47,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("ln -sfn hyprland.ghostty ~/.config/ghostty/session.ghostty")
     hl.exec_cmd("vicinae server")
     hl.exec_cmd("qs") -- Quickshell: bar (quickshell/ in dotfiles)
+    hl.exec_cmd("hypridle") -- screen off after 2 idle hours (hypridle.conf)
 end)
 
 require("kde")
@@ -104,9 +105,13 @@ hl.config({
         -- Same layouts as KDE: US and Swedish (swerty). Opt+Space switches (see keys/keymap.toml).
         kb_layout  = "us,se",
         kb_variant = ",swerty",
-        follow_mouse = 1,
+        -- Click to focus, like a Mac: hovering doesn't focus windows (scrolling still goes to the
+        -- window under the pointer), and keyboard focus changes (Cmd+Tab, Opt+H/J/K/L) never move
+        -- the pointer.
+        follow_mouse = 2,
         sensitivity  = 0,
     },
+    cursor = { no_warps = true },
 })
 
 ---------------------
@@ -115,6 +120,13 @@ hl.config({
 
 -- Everything keyboard-related lives in keys/keymap.toml -> binds.lua.
 require("binds")(programs)
+
+-- App switcher (quickshell/AppSwitcher.qml): Cmd+Tab arrives as ALT+Tab (binds.lua). The switcher
+-- sees Alt (= Cmd) being let go itself; this release bind is a fallback (Hyprland skips it when
+-- another key was pressed in between). Does nothing when the switcher isn't open.
+for _, key in ipairs({ "Alt_L", "Alt_R" }) do
+    hl.bind("ALT + " .. key, hl.dsp.global("quickshell:switcher-commit"), { release = true })
+end
 
 -- Mouse: Opt + left-drag moves a window, Opt + right-drag resizes it.
 hl.bind("ALT + mouse:272", hl.dsp.window.drag(),   { mouse = true })
@@ -168,6 +180,12 @@ hl.layer_rule({
     -- Notification cards are slightly translucent; blur what's behind them.
     name  = "blur-quickshell-notifications",
     match = { namespace = "^quickshell-notifications$" },
+    blur  = true,
+})
+
+hl.layer_rule({
+    name  = "blur-quickshell-switcher",
+    match = { namespace = "^quickshell-switcher$" },
     blur  = true,
 })
 

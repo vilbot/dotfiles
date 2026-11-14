@@ -24,7 +24,7 @@ Scope {
                                      ?? Quickshell.screens[0]
 
     function toggle() { if (showing) close(); else show() }
-    function show() { query = ""; current = 0; confirming = ""; showing = true }
+    function show() { query = ""; current = 0; confirming = ""; lastMouse = Qt.point(-1, -1); showing = true }
     function close() { showing = false }
 
     // Toshy passes Ctrl+N/P/J/K through while this file exists (toshy/slices/user_apps.py)
@@ -138,7 +138,19 @@ Scope {
         }
         return out.sort((a, b) => b.s - a.s).slice(0, maxResults)
     }
-    onResultsChanged: { current = 0; confirming = "" }
+    // a new search starts at the top; other updates (a window title changing) keep the selection
+    onQueryChanged: { current = 0; confirming = "" }
+    onResultsChanged: current = Math.min(current, Math.max(0, results.length - 1))
+
+    // hover selects only when the mouse really moves, not when a row appears under a still mouse
+    property point lastMouse: Qt.point(-1, -1)
+    function hovered(item, mouse, i) {
+        const p = item.mapToItem(null, mouse.x, mouse.y)
+        if (p.x === lastMouse.x && p.y === lastMouse.y) return
+        const first = lastMouse.x < 0
+        lastMouse = p
+        if (!first) current = i
+    }
 
     function run(i) {
         const it = results[i]
@@ -279,7 +291,7 @@ Scope {
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onEntered: root.current = res.index
+                            onPositionChanged: mouse => root.hovered(parent, mouse, res.index)
                             onClicked: root.run(res.index)
                         }
                     }

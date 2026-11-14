@@ -68,6 +68,30 @@ Singleton {
                     ]
                 },
                 {
+                    "label": "Switch app",
+                    "keys": [
+                        "⌘ ⇥"
+                    ]
+                },
+                {
+                    "label": "Switch app, backwards",
+                    "keys": [
+                        "⇧ ⌘ ⇥"
+                    ]
+                },
+                {
+                    "label": "In the switcher: that app's windows",
+                    "keys": [
+                        "⌘ `"
+                    ]
+                },
+                {
+                    "label": "… backwards",
+                    "keys": [
+                        "⌘ ~"
+                    ]
+                },
+                {
                     "label": "Move window with mouse",
                     "keys": [
                         "⌥ drag"
@@ -107,6 +131,17 @@ Singleton {
                     "keys": [
                         "⌥ Space",
                         "⌃ Space"
+                    ]
+                }
+            ]
+        },
+        {
+            "title": "Screenshot",
+            "rows": [
+                {
+                    "label": "Screenshot key: drag an area",
+                    "keys": [
+                        "⇧ ⌘ 4"
                     ]
                 }
             ]

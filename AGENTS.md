@@ -18,7 +18,7 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `toshy/` | Toshy (linux) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`binds.lua`, `colors.lua` generated; `settings.lua` written by the settings app), `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
-| `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, notifications, control center, settings window, command palette, Opt+? keybind sheet; `Colors.qml` and `KeybindsData.qml` generated | `~/.config/quickshell` (linux) |
+| `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, notifications, control center, settings window, command palette, Cmd+Tab app switcher, Opt+? keybind sheet; `Colors.qml` and `KeybindsData.qml` generated | `~/.config/quickshell` (linux) |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
@@ -63,8 +63,11 @@ Installed separately; its installer regenerates `~/.config/toshy/toshy_config.py
 - Keybinds come from `keys/keymap.toml`. Opt (ALT after Toshy) is the window-management modifier. Cmd+Space reaches Hyprland as SUPER+F13 (set in `toshy/slices/user_apps.py`; Toshy's default SUPER+D collides with physical Ctrl+D).
 - Launchers: `programs.launcher` (Cmd+Space, the Quickshell command palette `quickshell/CommandPalette.qml`) / `programs.launcher_alt` (Cmd+Opt+Space, Vicinae as backup) in `hyprland.lua`.
 - The Sony TV mirrors the Samsung (monitor rule in `hyprland.lua`).
+- Cmd+Tab app switcher (`quickshell/AppSwitcher.qml`): Toshy sends Cmd+Tab as Alt+Tab with Alt held, `binds.lua` sends it to Quickshell global shortcuts (`quickshell:switcher-next/prev`), and letting go of Cmd is noticed by `quickshell/scripts/wait-alt-release.py` (polls the keyboards' key state; Hyprland's Alt release binds in `hyprland.lua` are only a fallback).
+- Idle: `hypr/hypridle.conf` (hyprlang, not Lua; hypridle is started from `hyprland.lua`) only turns the screen off after 2 hours. No lock screen, no sleep.
 - `settings.lua` is written by the Quickshell settings window (`quickshell/Settings.qml`: Hyprland options + monitor modes) and applied last in `hyprland.lua`. Changing an option there overrides the value in `hyprland.lua`; per-monitor modes live only there. Keep its one-entry-per-line format (the app parses it back).
 - Control center (`quickshell/ControlCenter.qml`, the switches icon in the bar): sound, brightness (ddcutil; needs DDC/CI on in the monitor menu), night light (hyprsunset), Wi-Fi, Bluetooth.
+- Screenshots: `hypr/screenshot.sh` (drag an area; the keyboard's screenshot key = Cmd+Shift+4, `screenshot.region` in `keys/keymap.toml`), saved to `~/Pictures/Screenshots`, copied with wl-copy, shown as a notification.
 - Apps to hide on Hyprland only: list IDs in `hypr/hidden-apps.txt`, run `python3 hypr/hide-apps.py` (adds `NotShowIn=Hyprland;`, so KDE still shows them).
 
 Terminal quirk: the ANSI "yellow" slot is sage (`base0A`) and ANSI "magenta" is the real yellow (`base0E`). Shells color commands with **magenta** so they show yellow (zsh `fg=magenta`, pwsh `` `e[35m ``).
