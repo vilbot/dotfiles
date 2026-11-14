@@ -14,6 +14,7 @@ return {
         ["decoration:shadow:enabled"] = true,
         ["general:border_size"] = 0,
         ["input:follow_mouse"] = 1,
+        ["input:sensitivity"] = -0.5,
     },
     animations = {
         ["borderangle"] = { enabled = false, speed = 1, curve = "default", style = "" },
