@@ -55,6 +55,8 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("hypridle")
     -- The first terminal; a new one opens whenever the last window closes (tty/session.sh).
     hl.exec_cmd(tty .. "session.sh")
+    -- volume, "muted", keyboard layout and notifications, as text in the top right (tty/shell)
+    hl.exec_cmd("qs -p " .. tty .. "shell")
 end)
 
 hl.config({
@@ -98,10 +100,22 @@ hl.window_rule({ name = "tty-alone-no-border", match = { workspace = "w[tv1]" },
 hl.window_rule({
     name = "tty-minibuffer",
     match = { class = "^tty-minibuffer$" },
-    float = true, pin = true, size = "(monitor_w*0.5) 150", move = "(monitor_w*0.25) 0",  -- then sized to its results
+    float = true, pin = true, border_size = 1,
+    size = "(monitor_w*0.5) 150", move = "(monitor_w*0.25) 0",  -- then sized to its results
+})
+
+-- The settings panel (tty/panel.sh): down the right side, over the windows.
+hl.window_rule({
+    name = "tty-panel",
+    match = { class = "^tty-panel$" },
+    float = true, pin = true, border_size = 1,
+    size = "(monitor_w*0.3) monitor_h", move = "(monitor_w*0.7) 0",
 })
 
 Actions = require("actions")({ programs = programs, desktops = desktops })
+-- the full desktop's panels are Quickshell's; here F5 (Settings) opens the terminal panel
+Actions["panel.settings"] = function() hl.dispatch(hl.dsp.exec_cmd(tty .. "panel.sh")) end
+Actions["panel.control"] = Actions["panel.settings"]
 
 -- Mouse: Opt + left-drag moves a window, Opt + right-drag resizes it.
 hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })

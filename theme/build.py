@@ -12,6 +12,7 @@ Generated files (do NOT hand-edit, edit the yaml or a template instead):
     zed/themes/gruver16.json        <- from theme/templates/zed.json ({{base0D}} tokens)
     hypr/colors.lua                 <- hex without '#', e.g. require("colors").base0D
     quickshell/services/Colors.qml           <- singleton, e.g. Colors.base0D
+    tty/shell/Colors.qml            <- the same, for the "None" desktop's own Quickshell
     jetbrains/gruver16/*            <- via jetbrains/build.py (reads the nvim palette)
 """
 import pathlib, re, subprocess, sys
@@ -87,6 +88,7 @@ targets = {
     "wezterm/colors/gruver16.toml": wezterm,
     "ghostty/themes/gruver16": ghostty,
     "tty/foot-colors.ini": foot,
+    "tty/shell/Colors.qml": quickshell,
     "zed/themes/gruver16.json": zed,
 }
 

@@ -26,4 +26,23 @@ fi
 if python3 theme/build.py --check >/dev/null; then ok "tty/foot-colors.ini (theme/build.py)"
 else bad "themes out of date: python3 theme/build.py"; fi
 
+for f in tty/*.sh tty/term tty/start tty/bin/*; do
+    bash -n "$f" 2>/dev/null || bad "$f: $(bash -n "$f" 2>&1)"
+done && ok "shell scripts parse"
+
+# every panel tab has its hints and binds, and no two actions share a key
+if err=$(python3 - <<'PY' 2>&1
+import importlib.util
+spec = importlib.util.spec_from_file_location("panel", "tty/panel/panel.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+common = {"j", "k", "g", "G", "H", "L", "q", "tab"}
+for name, tab in m.TABS.items():
+    keys = [k for k, *_ in tab.actions.values()]
+    assert len(keys) == len(set(keys)), f"{name}: a key is used twice: {keys}"
+    assert not common & set(keys), f"{name}: takes a key every tab uses: {common & set(keys)}"
+    for k, hint, method, *_ in tab.actions.values():
+        assert callable(getattr(tab, method, None)), f"{name}: no method {method}"
+PY
+); then ok "tty/panel/panel.py"; else bad "tty/panel/panel.py: $err"; fi
+
 exit $fail

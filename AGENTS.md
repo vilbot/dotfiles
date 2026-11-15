@@ -19,7 +19,7 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`actions.lua`, `settings.lua` + `json.lua`; `colors.lua` generated), `settings.json` (written by the settings window), `curves.json`, `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
 | `quickshell/` | Quickshell (linux, Hyprland): the shell; `services/Colors.qml` generated | `~/.config/quickshell` (linux) |
-| `tty/` | "None" desktop: an all-terminal Hyprland (`hyprland.lua`, started by `start`; every terminal is `term` = foot with `foot.ini`; launcher `launch.sh` + `favorites.txt`; zsh there adds `logout`/`shutdown`/`reboot` via `zsh/.zshrc`) and the login screen for all desktops (`login.sh`: greetd + tuigreet, run with sudo). Check: `tty/check.sh` | — |
+| `tty/` | "None" desktop: an all-terminal Hyprland (`hyprland.lua`, started by `start`; every terminal is `term` = foot with `foot.ini`; launcher `launch.sh` + `favorites.txt`; settings panel `panel.sh` (F5; its tabs and their keys are `panel/panel.py`); `shell/` = its own Quickshell, text only: volume, muted, layout, notifications; zsh there adds `logout`/`shutdown`/`reboot` via `zsh/.zshrc`) and the login screen for all desktops (`login.sh`: greetd + tuigreet, run with sudo). Check: `tty/check.sh` | — |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
