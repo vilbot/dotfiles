@@ -1,0 +1,187 @@
+# mackeys (keys/daemon): what each physical key on the Mac keyboard sends on Hyprland.
+# Left side of a mapping: physical keys (cmd, opt, ctrl, shift; lopt / ropt for one side).
+# Right side: what apps get (ctrl, alt, super, shift). Saved changes apply within a second.
+
+devices = ["NuPhy Air75"]
+
+[apps]  # Hyprland window classes
+terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient"]
+zed = ["dev.zed.Zed"]
+browser = ["google-chrome", "chromium", "firefox", "brave-browser"]
+
+[modifiers]
+cmd = "ctrl"
+opt = "alt"
+ctrl = "super"
+
+[tap_hold]
+key = "capslock"
+tap = "esc"
+hold = "ctrl"
+tap_ms = 1000
+
+[keys]  # the F-row sends what is printed on it
+f1 = "brightnessdown"
+f2 = "brightnessup"
+f3 = "scale"           # mission control
+f4 = "search"
+f5 = "f17"             # settings
+f6 = "f18"             # dark / light mode
+f7 = "rewind"
+f8 = "playpause"
+f9 = "fastforward"
+f10 = "mute"
+f11 = "volumedown"
+f12 = "volumeup"
+
+# Layers, top to bottom: the first applying layer that maps a combo wins.
+# `when`: app / not_app (a group above), flag / not_flag (a file in $XDG_RUNTIME_DIR).
+
+[[layer]]
+name = "mission control search"
+when = { flag = "hymission-search" }
+[layer.map]  # the search box can drop the first key after a modifier change; F24 takes that hit
+"opt+h" = ["f24", "up"]
+"opt+k" = ["f24", "up"]
+"opt+j" = ["f24", "down"]
+"opt+l" = ["f24", "down"]
+
+[[layer]]
+name = "mission control"
+when = { flag = "hymission-open", not_flag = "hymission-search" }
+[layer.map]
+h = "left"
+j = "down"
+k = "up"
+l = "right"
+"opt+h" = "left"
+"opt+j" = "down"
+"opt+k" = "up"
+"opt+l" = "right"
+
+[[layer]]
+name = "desktop"
+[layer.map]
+"cmd+space" = "super+f13"
+"cmd+tab" = { send = "alt+tab", hold = true }
+"cmd+shift+tab" = { send = "alt+shift+tab", hold = true }
+"cmd+`" = { send = "alt+grave", hold = true }
+"cmd+shift+`" = { send = "alt+shift+grave", hold = true }
+"opt+tab" = "super+f14"
+"opt+shift+tab" = "super+shift+f14"
+"cmd+q" = "alt+f4"
+"ropt+f1" = "f1"
+"ropt+f2" = "f2"
+"ropt+f3" = "f3"
+"ropt+f4" = "f4"
+"ropt+f5" = "f5"
+"ropt+f6" = "f6"
+"ropt+f7" = "f7"
+"ropt+f8" = "f8"
+"ropt+f9" = "f9"
+"ropt+f10" = "f10"
+"ropt+f11" = "f11"
+"ropt+f12" = "f12"
+"ropt+shift+f1" = "shift+f1"
+"ropt+shift+f2" = "shift+f2"
+"ropt+shift+f3" = "shift+f3"
+"ropt+shift+f4" = "shift+f4"
+"ropt+shift+f5" = "shift+f5"
+"ropt+shift+f6" = "shift+f6"
+"ropt+shift+f7" = "shift+f7"
+"ropt+shift+f8" = "shift+f8"
+"ropt+shift+f9" = "shift+f9"
+"ropt+shift+f10" = "shift+f10"
+"ropt+shift+f11" = "shift+f11"
+"ropt+shift+f12" = "shift+f12"
+
+[[layer]]
+name = "command palette"  # its own Ctrl+N/P/J/K, nothing rewritten
+when = { flag = "quickshell-palette-open" }
+stop = true
+
+[[layer]]
+name = "zed"  # zed/keymap.linux.json already is the Mac keymap
+when = { app = "zed" }
+stop = true
+
+[[layer]]
+name = "browsers"
+when = { app = "browser" }
+[layer.map]
+"cmd+opt+i" = "ctrl+shift+i"
+"cmd+opt+j" = "ctrl+shift+j"
+"cmd+opt+left" = "ctrl+pageup"
+"cmd+opt+right" = "ctrl+pagedown"
+
+[[layer]]
+name = "terminals"
+when = { app = "terminal" }
+modifiers = { ctrl = "ctrl" }
+[layer.map]
+"cmd+c" = "ctrl+shift+c"
+"cmd+v" = "ctrl+shift+v"
+"cmd+t" = "ctrl+shift+t"
+"cmd+w" = "ctrl+shift+w"
+"cmd+n" = "ctrl+shift+n"
+"cmd+f" = "ctrl+shift+f"
+"cmd+s" = "ctrl+shift+s"
+"cmd+l" = "ctrl+shift+l"
+"cmd+d" = "ctrl+shift+d"
+"cmd+[" = "ctrl+shift+["
+"cmd+]" = "ctrl+shift+]"
+"cmd+=" = "ctrl+shift+="
+"cmd+." = "ctrl+c"
+"cmd+shift+left" = "ctrl+pageup"
+"cmd+shift+right" = "ctrl+pagedown"
+"ctrl+tab" = "ctrl+pagedown"
+"ctrl+shift+tab" = "ctrl+pageup"
+"ctrl+`" = "ctrl+pageup"
+"opt+backspace" = "ctrl+w"
+"opt+delete" = ["esc", "d"]
+"cmd+backspace" = "ctrl+u"
+"cmd+delete" = "ctrl+k"
+
+[[layer]]
+name = "mac text editing"
+[layer.map]
+"cmd+left" = "home"
+"cmd+right" = "end"
+"cmd+up" = "ctrl+home"
+"cmd+down" = "ctrl+end"
+"cmd+shift+left" = "shift+home"
+"cmd+shift+right" = "shift+end"
+"cmd+shift+up" = "ctrl+shift+home"
+"cmd+shift+down" = "ctrl+shift+end"
+"opt+left" = "ctrl+left"
+"opt+right" = "ctrl+right"
+"opt+shift+left" = "ctrl+shift+left"
+"opt+shift+right" = "ctrl+shift+right"
+"opt+backspace" = "ctrl+backspace"
+"opt+shift+backspace" = "ctrl+backspace"
+"opt+delete" = "ctrl+delete"
+"opt+shift+delete" = "ctrl+delete"
+"cmd+backspace" = "ctrl+shift+backspace"
+"cmd+shift+[" = "ctrl+pageup"
+"cmd+shift+]" = "ctrl+pagedown"
+"cmd+." = "esc"
+"cmd+h" = []
+"opt+shift+g" = "ctrl+shift+g"
+"ropt+enter" = "insert"
+
+[[layer]]
+name = "emacs keys"  # physical Ctrl, like in macOS text fields
+when = { not_app = "terminal" }
+[layer.map]
+"ctrl+a" = "home"
+"ctrl+e" = "end"
+"ctrl+b" = "left"
+"ctrl+f" = "right"
+"ctrl+n" = "down"
+"ctrl+p" = "up"
+"ctrl+k" = ["shift+end", "backspace"]
+"ctrl+d" = "delete"
+"ctrl+backspace" = "ctrl+backspace"
+"ctrl+delete" = "ctrl+delete"
+"ctrl+tab" = { send = "ctrl+tab", hold = true }
+"ctrl+shift+tab" = { send = "ctrl+shift+tab", hold = true }

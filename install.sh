@@ -34,6 +34,7 @@ LINKS=(
   "quickshell                                 $HOME/.config/quickshell"
   "kde/env/ghostty-session.sh                 $HOME/.config/plasma-workspace/env/ghostty-session.sh"
   "xdg-desktop-portal/hyprland-portals.conf   $HOME/.config/xdg-desktop-portal/hyprland-portals.conf"
+  "keys/daemon/mackeys.service                $HOME/.config/systemd/user/mackeys.service"
 )
 
 run() { if (( DRY )); then echo "  would: $*"; else "$@"; fi; }
@@ -61,6 +62,16 @@ if [[ $OS == linux ]]; then
     run python3 "$DOT/toshy/apply.py"
   else
     echo "note    Toshy not installed (https://github.com/RedBearAK/toshy); then re-run to apply toshy/"
+  fi
+fi
+
+# mackeys (Mac keyboard on Hyprland, keys/daemon): build it; hyprland.lua starts the service.
+if [[ $OS == linux ]]; then
+  if command -v cargo >/dev/null; then
+    run cargo build --release --manifest-path "$DOT/keys/daemon/Cargo.toml"
+    run systemctl --user daemon-reload
+  else
+    echo "note    cargo missing (pacman -S rust); then re-run to build keys/daemon"
   fi
 fi
 

@@ -1,0 +1,7 @@
+[Unit]
+Description=mackeys: Mac keyboard on Hyprland (dotfiles/keys)
+
+[Service]
+ExecStart=%h/dotfiles/keys/daemon/target/release/mackeys %h/dotfiles/keys/remap.toml
+Restart=on-failure
+RestartSec=1

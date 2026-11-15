@@ -15,7 +15,8 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `jetbrains/` | JetBrains theme plugin | installed manually from `jetbrains/gruver16/gruver16-plugin.zip` |
 | `theme/` | gruver16 color source + generator | — |
 | `keys/` | desktop/WM keybind source + generator (KDE + Hyprland) | KDE: `keys/build.py --apply`; Hyprland: generates `hypr/binds.lua` |
-| `toshy/` | Toshy (linux) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
+| `keys/daemon/` + `keys/remap.toml` | mackeys, the Mac keyboard on Hyprland (replaces Toshy there); `cargo test` in `keys/daemon` | `mackeys.service` → `~/.config/systemd/user/` (linux) |
+| `toshy/` | Toshy (linux, now KDE only) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`binds.lua`, `colors.lua` generated; `settings.lua` written by the settings app), `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
 | `quickshell/` | Quickshell (linux, Hyprland): bar, wallpaper, notifications, control center, settings window, command palette, Cmd+Tab app switcher, Opt+? keybind sheet; `Colors.qml` generated | `~/.config/quickshell` (linux) |

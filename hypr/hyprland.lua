@@ -41,13 +41,13 @@ hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto"
 hl.env("GSK_RENDERER", "ngl")
 
 hl.on("hyprland.start", function()
-    -- Let systemd user services see this session (Toshy runs as one), then restart Toshy so it
-    -- detects Hyprland instead of whatever it saw when it started at login.
-    -- (Toshy refuses to start without XDG_SESSION_TYPE.)
+    -- Let systemd user services see this session, then swap Toshy (it starts at login; KDE still
+    -- uses it) for mackeys, the keyboard remapper for Hyprland (keys/remap.toml, keys/daemon).
+    -- Toshy's session monitor starts Toshy again when it sees a session, so it stops first.
     hl.exec_cmd("dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP "
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
-        .. "&& systemctl --user restart toshy-config.service")
+        .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
     -- Hyprland-only Ghostty look (see the end of ghostty/config.ghostty).
     hl.exec_cmd("ln -sfn hyprland.ghostty ~/.config/ghostty/session.ghostty")
     hl.exec_cmd("vicinae server")
@@ -120,6 +120,9 @@ hl.config({
         -- Same layouts as KDE: US and Swedish (swerty). Opt+Space switches (see keys/keymap.toml).
         kb_layout  = "us,se",
         kb_variant = ",swerty",
+        -- Caps is Esc / Ctrl (keys/remap.toml) and never Caps Lock, even when the raw keyboard
+        -- reaches Hyprland (while mackeys starts or restarts).
+        kb_options = "ctrl:nocaps",
         -- Click to focus, like a Mac: hovering doesn't focus windows (scrolling still goes to the
         -- window under the pointer), and keyboard focus changes (Cmd+Tab, Opt+H/J/K/L) never move
         -- the pointer.
