@@ -8,7 +8,7 @@ import Quickshell.Hyprland
 RowLayout {
     id: root
     property var screen
-    property int count: 5   // keep in sync with `desktops` in keys/keymap.toml
+    property int count: 5   // keep in sync with `desktops` in keys/remap.toml
     spacing: 2
 
     function roman(n) {

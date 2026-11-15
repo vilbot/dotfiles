@@ -3,6 +3,7 @@
 # Right side: what apps get (ctrl, alt, super, shift). Saved changes apply within a second.
 
 devices = ["NuPhy Air75"]
+desktops = 5  # hypr/hyprland.lua has the same number
 
 [apps]  # Hyprland window classes
 terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient"]
@@ -20,26 +21,16 @@ tap = "esc"
 hold = "ctrl"
 tap_ms = 1000
 
-[keys]  # the F-row sends what is printed on it
-f1 = "brightnessdown"
-f2 = "brightnessup"
-f3 = "scale"           # mission control
-f4 = "search"
-f5 = "f17"             # settings
-f6 = "f18"             # dark / light mode
-f7 = "rewind"
-f8 = "playpause"
-f9 = "fastforward"
-f10 = "mute"
-f11 = "volumedown"
-f12 = "volumeup"
-
-# Layers, top to bottom: the first applying layer that maps a combo wins.
-# `when`: app / not_app (a group above), flag / not_flag (a file in $XDG_RUNTIME_DIR).
+# Layers, top to bottom: the first applying layer that has the pressed keys wins.
+# `when`: app / not_app (a group above), layer / not_layer (an open layer-shell namespace),
+# overview (mission control is open). `let_through`: while the layer applies, other keys no layer
+# maps are dropped.
+# `map`: keys -> keys apps get. `actions`: desktop actions (hypr/actions.lua) by section, with
+# their keys and a label for the shortcut sheet (Opt+?); `{n}` = desktops 1..N, `{dir}` = h j k l.
 
 [[layer]]
 name = "mission control search"
-when = { flag = "hymission-search" }
+when = { overview = true, layer = "hymission-search" }
 [layer.map]  # the search box can drop the first key after a modifier change; F24 takes that hit
 "opt+h" = ["f24", "up"]
 "opt+k" = ["f24", "up"]
@@ -48,7 +39,9 @@ when = { flag = "hymission-search" }
 
 [[layer]]
 name = "mission control"
-when = { flag = "hymission-open", not_flag = "hymission-search" }
+when = { overview = true, not_layer = "hymission-search" }
+# typing would reach the focused window behind it; / starts a search, 1-9 pick a window
+let_through = ["esc", "enter", "tab", "left", "down", "up", "right", "/", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
 [layer.map]
 h = "left"
 j = "down"
@@ -60,16 +53,18 @@ l = "right"
 "opt+l" = "right"
 
 [[layer]]
+name = "mission control desktops"
+when = { overview = true }
+[layer.map]  # launchers open behind mission control, where they can't be typed in
+"cmd+space" = []
+"cmd+opt+space" = []
+[layer.actions."Mission control"]
+"overview.desktop.next" = { keys = "opt+tab", label = "Next desktop, its leftmost window" }
+"overview.desktop.prev" = { keys = "opt+shift+tab", label = "Previous desktop, its leftmost window" }
+
+[[layer]]
 name = "desktop"
 [layer.map]
-"cmd+space" = "super+f13"
-"cmd+tab" = { send = "alt+tab", hold = true }
-"cmd+shift+tab" = { send = "alt+shift+tab", hold = true }
-"cmd+`" = { send = "alt+grave", hold = true }
-"cmd+shift+`" = { send = "alt+shift+grave", hold = true }
-"opt+tab" = "super+f14"
-"opt+shift+tab" = "super+shift+f14"
-"cmd+q" = "alt+f4"
 "ropt+f1" = "f1"
 "ropt+f2" = "f2"
 "ropt+f3" = "f3"
@@ -95,9 +90,76 @@ name = "desktop"
 "ropt+shift+f11" = "shift+f11"
 "ropt+shift+f12" = "shift+f12"
 
+[layer.actions.Desktops]
+"desktop.goto.{n}" = { keys = "opt+{n}", label = "Go to desktop" }
+"desktop.prev" = { keys = "opt+shift+tab", label = "Previous desktop" }
+"desktop.next" = { keys = "opt+tab", label = "Next desktop" }
+"desktop.last" = { keys = [], label = "Desktop you were on before" }
+"desktop.move.{n}" = { keys = "opt+shift+{n}", label = "Send window to desktop" }
+"desktop.take.{n}" = { keys = [], label = "Take window to desktop" }
+"desktop.move.prev" = { keys = [], label = "Send window to previous desktop" }
+"desktop.move.next" = { keys = [], label = "Send window to next desktop" }
+"scratchpad.toggle" = { keys = [], label = "Show / hide scratchpad" }
+"scratchpad.move" = { keys = [], label = "Send window to scratchpad" }
+
+[layer.actions.Windows]
+"window.focus.{dir}" = { keys = "opt+{dir}", label = "Focus window" }
+"window.move.{dir}" = { keys = "opt+shift+{dir}", label = "Move window" }
+"window.swap.{dir}" = { keys = [], label = "Swap with window" }
+"window.resize.{dir}" = { keys = "opt+ctrl+{dir}", label = "Resize window", repeat = true }
+"window.close" = { keys = "cmd+q", label = "Close window" }
+"window.fullscreen" = { keys = "opt+f", label = "Fullscreen" }
+"window.maximize" = { keys = [], label = "Maximize" }
+"window.float" = { keys = "opt+shift+f", label = "Floating" }
+"window.pin" = { keys = [], label = "Pin floating window" }
+"window.center" = { keys = [], label = "Center floating window" }
+"window.split" = { keys = [], label = "Turn split sideways / up-down" }
+
+[layer.actions."Tab groups"]
+"group.toggle" = { keys = "opt+m", label = "Make / undo a tab group" }
+"group.next" = { keys = "opt+n", label = "Next tab" }
+"group.prev" = { keys = "opt+p", label = "Previous tab" }
+
+[layer.actions."App switcher"]  # quickshell/AppSwitcher.qml switches when Cmd is let go
+"app.switch.next" = { keys = "cmd+tab", label = "Switch app", on_release = "app.switch.commit" }
+"app.switch.prev" = { keys = "cmd+shift+tab", label = "Switch app, backwards", on_release = "app.switch.commit" }
+"app.switch.windows" = { keys = "cmd+`", label = "In the switcher: that app's windows", on_release = "app.switch.commit" }
+"app.switch.windows.prev" = { keys = "cmd+shift+`", label = "… backwards", on_release = "app.switch.commit" }
+
+[layer.actions."Launch & type"]
+"launcher" = { keys = "cmd+space", label = "Command palette" }
+"launcher.alt" = { keys = "cmd+opt+space", label = "Vicinae" }
+"terminal" = { keys = "opt+enter", label = "Terminal" }
+"layout.next" = { keys = ["opt+space", "ctrl+space"], label = "Switch keyboard layout" }
+# the keyboard's screenshot key (right of F12) is a Cmd+Shift+4 macro in Mac mode
+"screenshot.region" = { keys = "cmd+shift+4", label = "Screenshot key: drag an area" }
+
+[layer.actions."Function keys"]  # the F-row does what is printed on it; right Option + F-key is the F-key
+"brightness.down" = { keys = "f1", label = "Brightness down", repeat = true }
+"brightness.up" = { keys = "f2", label = "Brightness up", repeat = true }
+"overview.desktop" = { keys = "f3", label = "Mission control: this desktop" }
+"overview.all" = { keys = "f4", label = "Mission control: all windows, search", wait_for_layer = "hymission-search" }
+"panel.settings" = { keys = "f5", label = "Settings" }
+"appearance.toggle" = { keys = "f6", label = "Dark / light mode" }
+"media.back" = { keys = "f7", label = "Back 5 seconds" }
+"media.playpause" = { keys = "f8", label = "Play / pause" }
+"media.forward" = { keys = "f9", label = "Forward 5 seconds" }
+"volume.mute" = { keys = "f10", label = "Mute" }
+"volume.down" = { keys = "f11", label = "Volume down", repeat = true }
+"volume.up" = { keys = "f12", label = "Volume up", repeat = true }
+
+[layer.actions.Panels]
+"panel.control" = { keys = [], label = "Control center" }
+"panel.notifications" = { keys = [], label = "Notifications" }
+"help.keys" = { keys = "opt+shift+/", label = "Keyboard shortcuts sheet" }
+
+[layer.actions.Session]
+"session.reload" = { keys = [], label = "Reload Hyprland config" }
+"session.exit" = { keys = "opt+shift+esc", label = "Log out" }
+
 [[layer]]
 name = "command palette"  # its own Ctrl+N/P/J/K, nothing rewritten
-when = { flag = "quickshell-palette-open" }
+when = { layer = "quickshell-palette" }
 stop = true
 
 [[layer]]
@@ -185,3 +247,7 @@ when = { not_app = "terminal" }
 "ctrl+delete" = "ctrl+delete"
 "ctrl+tab" = { send = "ctrl+tab", hold = true }
 "ctrl+shift+tab" = { send = "ctrl+shift+tab", hold = true }
+
+[notes]  # on the sheet, not keys of mackeys
+Windows = [["Move window with mouse", "⌥ drag"], ["Resize window with mouse", "⌥ right-drag"]]
+Session = [["Restart mackeys (works without it too)", "⌃ ⌥ ⌘ ↩"]]

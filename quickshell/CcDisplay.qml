@@ -53,7 +53,7 @@ ColumnLayout {
         }
     }
 
-    // F1 / F2 (keys/keymap.toml: brightness.down/up): `qs ipc call brightness down|up`
+    // F1 / F2 (keys/remap.toml: brightness.down/up): `qs ipc call brightness down|up`
     function step(d) {
         if (hasDdc) {
             brightness = Math.max(0, Math.min(100, brightness + d))

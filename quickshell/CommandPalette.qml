@@ -27,9 +27,6 @@ Scope {
     function show() { query = ""; current = 0; confirming = ""; lastMouse = Qt.point(-1, -1); showing = true }
     function close() { showing = false }
 
-    // Toshy passes Ctrl+N/P/J/K through while this file exists (toshy/slices/user_apps.py)
-    readonly property string toshyFlag: Quickshell.env("XDG_RUNTIME_DIR") + "/quickshell-palette-open"
-    onShowingChanged: Quickshell.execDetached(showing ? ["touch", toshyFlag] : ["rm", "-f", toshyFlag])
     function move(d) { current = Math.max(0, Math.min(results.length - 1, current + d)) }
 
     IpcHandler {
@@ -218,8 +215,8 @@ Scope {
                     Keys.onEnterPressed: root.run(root.current)
                     Keys.onUpPressed: root.move(-1)
                     Keys.onDownPressed: root.move(1)
-                    // Ctrl+N/J down, Ctrl+P/K up. Physical Ctrl arrives as Super (Meta) after
-                    // Toshy in most apps, as Ctrl over terminals.
+                    // Ctrl+N/J down, Ctrl+P/K up. Physical Ctrl arrives as Super (Meta) through
+                    // mackeys, as Ctrl without it.
                     Keys.onPressed: event => {
                         if (!(event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) return
                         if (event.key === Qt.Key_N || event.key === Qt.Key_J) { root.move(1); event.accepted = true }

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Dark / light mode for everything at once (F6, keys/keymap.toml: appearance.toggle):
+# Dark / light mode for everything at once (F6, keys/remap.toml: appearance.toggle):
 #   appearance.sh toggle | dark | light | get
 # - GTK 4 / libadwaita apps, Chrome (its Mode set to "Device") and websites, and anything else
 #   reading the desktop portal's color-scheme: gsettings org.gnome.desktop.interface color-scheme

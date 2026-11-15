@@ -36,14 +36,26 @@ pub fn grab(path: &Path) -> Result<Device> {
     Ok(device)
 }
 
-/// Blocks for the next key going down or up: (key, is_down, time in ms). Auto-repeat is
-/// dropped: the desktop repeats keys itself.
-pub fn next_keys(device: &mut Device) -> Result<Vec<(KeyCode, bool, u64)>> {
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Press {
+    Down,
+    Up,
+    /// The keyboard's auto-repeat while a key is held.
+    Repeat,
+}
+
+/// Blocks for the next keys: (key, what happened, time in ms).
+pub fn next_keys(device: &mut Device) -> Result<Vec<(KeyCode, Press, u64)>> {
     let mut keys = Vec::new();
     for event in device.fetch_events()? {
-        if let EventSummary::Key(_, key, value @ (0 | 1)) = event.destructure() {
+        if let EventSummary::Key(_, key, value) = event.destructure() {
+            let press = match value {
+                0 => Press::Up,
+                1 => Press::Down,
+                _ => Press::Repeat,
+            };
             let ms = event.timestamp().duration_since(UNIX_EPOCH).map_or(0, |d| d.as_millis() as u64);
-            keys.push((key, value == 1, ms));
+            keys.push((key, press, ms));
         }
     }
     Ok(keys)
@@ -59,9 +71,7 @@ pub fn virtual_keyboard() -> Result<VirtualDevice> {
 }
 
 /// Sends key events, each in its own report so they arrive in order.
-pub fn send(device: &mut VirtualDevice, keys: &[(KeyCode, bool)]) -> Result<()> {
-    for (key, is_down) in keys {
-        device.emit(&[InputEvent::new(EventType::KEY.0, key.code(), *is_down as i32)])?;
-    }
+pub fn send(device: &mut VirtualDevice, key: KeyCode, is_down: bool) -> Result<()> {
+    device.emit(&[InputEvent::new(EventType::KEY.0, key.code(), is_down as i32)])?;
     Ok(())
 }

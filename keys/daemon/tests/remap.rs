@@ -1,30 +1,37 @@
 //! What the real keys/remap.toml does, key by key.
 //!
-//! `run` takes physical events ("+cmd +c -c -cmd", "wait:1500") and returns what apps get
-//! ("+leftctrl +c -c -leftctrl").
+//! `run` takes physical events ("+cmd +c -c -cmd", "*f12" = auto-repeat, "wait:1500") and
+//! returns what apps get and which actions run ("+leftctrl +c -c -leftctrl", "run:window.close").
 
 use mackeys::config::Config;
-use mackeys::engine::{Engine, World};
+use mackeys::engine::{Engine, Out, World};
 use mackeys::keys::{key_name, parse_key};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 struct Desk {
     app: &'static str,
-    flags: &'static [&'static str],
+    layers: &'static [&'static str],
+    overview: bool,
 }
 
 impl World for Desk {
     fn app(&self) -> &str {
         self.app
     }
-    fn flag(&self, name: &str) -> bool {
-        self.flags.contains(&name)
+    fn layer_open(&self, namespace: &str) -> bool {
+        self.layers.contains(&namespace)
+    }
+    fn overview_open(&self) -> bool {
+        self.overview
     }
 }
 
-const CHROME: Desk = Desk { app: "google-chrome", flags: &[] };
-const GHOSTTY: Desk = Desk { app: "com.mitchellh.ghostty", flags: &[] };
-const ZED: Desk = Desk { app: "dev.zed.Zed", flags: &[] };
+const fn app(app: &'static str) -> Desk {
+    Desk { app, layers: &[], overview: false }
+}
+const CHROME: Desk = app("google-chrome");
+const GHOSTTY: Desk = app("com.mitchellh.ghostty");
+const ZED: Desk = app("dev.zed.Zed");
 
 fn engine() -> Engine {
     Engine::new(Config::parse(include_str!("../../remap.toml")).expect("remap.toml parses"))
@@ -53,9 +60,16 @@ fn run(e: &mut Engine, world: &Desk, events: &str) -> String {
             continue;
         }
         now += 10;
-        let (is_down, name) = (ev.starts_with('+'), &ev[1..]);
-        for (key, down) in e.key(physical(name), is_down, now, world) {
-            out.push(format!("{}{}", if down { '+' } else { '-' }, key_name(key)));
+        let (kind, name) = ev.split_at(1);
+        let result = match kind {
+            "*" => e.repeat(physical(name)),
+            _ => e.key(physical(name), kind == "+", now, world),
+        };
+        for o in result {
+            out.push(match o {
+                Out::Key(key, down) => format!("{}{}", if down { '+' } else { '-' }, key_name(key)),
+                Out::Run(action) => format!("run:{action}"),
+            });
         }
     }
     out.join(" ")
@@ -93,30 +107,37 @@ fn zed_gets_mac_text_keys_untouched() {
 }
 
 #[test]
-fn cmd_tab_keeps_alt_down_until_cmd_goes_up() {
+fn cmd_tab_switches_apps_and_commits_when_cmd_goes_up() {
     assert_eq!(
         run(&mut engine(), &CHROME, "+cmd +tab -tab +tab -tab -cmd"),
-        "+leftctrl -leftctrl +leftalt +tab -tab +tab -tab -leftalt"
+        "+leftctrl run:app.switch.next run:app.switch.next -leftctrl run:app.switch.commit"
     );
     assert_eq!(
         run(&mut engine(), &CHROME, "+cmd +tab -tab +shift +tab -tab -shift -cmd"),
-        "+leftctrl -leftctrl +leftalt +tab -tab +leftshift +tab -tab -leftshift -leftalt"
+        "+leftctrl run:app.switch.next +leftshift run:app.switch.prev -leftshift -leftctrl run:app.switch.commit"
     );
 }
 
 #[test]
-fn desktop_keys() {
-    assert_eq!(run(&mut engine(), &GHOSTTY, "+cmd +space -space -cmd"), "+leftctrl -leftctrl +leftmeta +f13 -f13 -leftmeta");
-    assert_eq!(run(&mut engine(), &CHROME, "+opt +tab -tab -opt"), "+leftalt -leftalt +leftmeta +f14 -f14 -leftmeta");
-    assert_eq!(run(&mut engine(), &CHROME, "+cmd +q -q -cmd"), "+leftctrl -leftctrl +leftalt +f4 -f4 -leftalt");
+fn desktop_actions() {
+    assert_eq!(run(&mut engine(), &GHOSTTY, "+cmd +space -space -cmd"), "+leftctrl run:launcher -leftctrl");
+    assert_eq!(run(&mut engine(), &CHROME, "+opt +tab -tab -opt"), "+leftalt run:desktop.next -leftalt");
+    assert_eq!(run(&mut engine(), &CHROME, "+opt +3 -3 -opt"), "+leftalt run:desktop.goto.3 -leftalt");
+    assert_eq!(run(&mut engine(), &CHROME, "+opt +h -h -opt"), "+leftalt run:window.focus.left -leftalt");
+    assert_eq!(run(&mut engine(), &CHROME, "+cmd +q -q -cmd"), "+leftctrl run:window.close -leftctrl");
 }
 
 #[test]
-fn f_row_sends_what_is_printed_and_right_option_gives_f_keys() {
-    assert_eq!(run(&mut engine(), &CHROME, "+f1 -f1"), "+brightnessdown -brightnessdown");
+fn held_keys_repeat_only_repeating_actions() {
+    assert_eq!(run(&mut engine(), &CHROME, "+f12 *f12 *f12 -f12"), "run:volume.up run:volume.up run:volume.up");
+    assert_eq!(run(&mut engine(), &CHROME, "+f3 *f3 -f3"), "run:overview.desktop");
+    assert_eq!(run(&mut engine(), &CHROME, "+a *a -a"), "+a -a");
+}
+
+#[test]
+fn f_row_runs_what_is_printed_and_right_option_gives_f_keys() {
+    assert_eq!(run(&mut engine(), &CHROME, "+f1 -f1"), "run:brightness.down");
     assert_eq!(run(&mut engine(), &CHROME, "+ropt +f1 -f1 -ropt"), "+rightalt -rightalt +f1 -f1");
-    // left Option + F1 is not the plain F-key
-    assert_eq!(run(&mut engine(), &CHROME, "+opt +f1 -f1 -opt"), "+leftalt +brightnessdown -brightnessdown -leftalt");
 }
 
 #[test]
@@ -144,16 +165,38 @@ fn ctrl_tab_keeps_ctrl_down_in_browsers() {
 
 #[test]
 fn mission_control_hjkl() {
-    let open = Desk { app: "google-chrome", flags: &["hymission-open"] };
-    let search = Desk { app: "google-chrome", flags: &["hymission-open", "hymission-search"] };
+    let open = Desk { overview: true, ..CHROME };
+    let search = Desk { overview: true, layers: &["hymission-search"], ..CHROME };
     assert_eq!(run(&mut engine(), &open, "+h -h"), "+left -left");
+    assert_eq!(run(&mut engine(), &open, "+opt +tab -tab -opt"), "+leftalt run:overview.desktop.next -leftalt");
     assert_eq!(run(&mut engine(), &search, "+h -h"), "+h -h");
     assert_eq!(run(&mut engine(), &search, "+opt +h -h -opt"), "+leftalt -leftalt +f24 -f24 +up -up");
 }
 
+/// Typing doesn't reach the window behind mission control; its own keys and actions still work.
+#[test]
+fn mission_control_drops_typing() {
+    let open = Desk { overview: true, ..CHROME };
+    let search = Desk { overview: true, layers: &["hymission-search"], ..CHROME };
+    assert_eq!(run(&mut engine(), &open, "+c -c +cmd +c -c -cmd"), "+leftctrl -leftctrl");
+    assert_eq!(run(&mut engine(), &open, "+esc -esc +3 -3 +slash -slash"), "+esc -esc +3 -3 +slash -slash");
+    assert_eq!(run(&mut engine(), &open, "+f4 -f4 +opt +1 -1 -opt"), "run:overview.all +leftalt run:desktop.goto.1 -leftalt");
+    assert_eq!(run(&mut engine(), &search, "+c -c"), "+c -c");
+    assert_eq!(run(&mut engine(), &CHROME, "+c -c"), "+c -c");
+    assert_eq!(run(&mut engine(), &open, "+cmd +space -space -cmd"), "+leftctrl -leftctrl");
+    assert_eq!(run(&mut engine(), &search, "+cmd +space -space -cmd"), "+leftctrl -leftctrl");
+    assert_eq!(run(&mut engine(), &CHROME, "+cmd +space -space -cmd"), "+leftctrl run:launcher -leftctrl");
+}
+
+#[test]
+fn f4_waits_for_the_search_box() {
+    let config = Config::parse(include_str!("../../remap.toml")).unwrap();
+    assert_eq!(config.waits.get("overview.all").map(String::as_str), Some("hymission-search"));
+}
+
 #[test]
 fn command_palette_gets_ctrl_letters_untouched() {
-    let palette = Desk { app: "google-chrome", flags: &["quickshell-palette-open"] };
+    let palette = Desk { layers: &["quickshell-palette"], ..CHROME };
     assert_eq!(run(&mut engine(), &palette, "+ctrl +n -n -ctrl"), "+leftmeta +n -n -leftmeta");
 }
 
@@ -191,7 +234,7 @@ fn every_key_comes_back_up() {
         let out = run(&mut e, world, &events.join(" "));
 
         let mut down: BTreeSet<&str> = BTreeSet::new();
-        for ev in out.split_whitespace() {
+        for ev in out.split_whitespace().filter(|ev| !ev.starts_with("run:")) {
             let (is_down, key) = (ev.starts_with('+'), &ev[1..]);
             if is_down {
                 down.insert(key);
@@ -205,7 +248,40 @@ fn every_key_comes_back_up() {
 
 #[test]
 fn config_errors_say_where() {
-    let bad = include_str!("../../remap.toml").replace("\"cmd+q\" = \"alt+f4\"", "\"cmd+q\" = \"alt+f99\"");
+    let bad = include_str!("../../remap.toml").replace("\"ropt+f1\" = \"f1\"", "\"ropt+f1\" = \"f99\"");
     let err = format!("{:#}", Config::parse(&bad).err().expect("bad key is an error"));
-    assert!(err.contains("desktop") && err.contains("cmd+q") && err.contains("f99"), "{err}");
+    assert!(err.contains("desktop") && err.contains("ropt+f1") && err.contains("f99"), "{err}");
+}
+
+#[test]
+fn sheet_lists_actions_with_mac_keys() {
+    let config = Config::parse(include_str!("../../remap.toml")).unwrap();
+    let sheet: serde_json::Value = serde_json::from_str(&mackeys::sheet::json(&config)).unwrap();
+    let rows: Vec<&serde_json::Value> = sheet["groups"].as_array().unwrap().iter().flat_map(|g| g["rows"].as_array().unwrap()).collect();
+    let label = |action: &str| rows.iter().find(|r| r["action"] == action).map(|r| r["keysLabel"].clone()).unwrap();
+    assert_eq!(label("window.focus.{dir}"), serde_json::json!(["⌥ H J K L"]));
+    assert_eq!(label("desktop.move.{n}"), serde_json::json!(["⌥ ⇧ 1–5"]));
+    assert_eq!(label("help.keys"), serde_json::json!(["⌥ ?"]));
+    assert_eq!(label("desktop.last"), serde_json::json!([]));
+    let titles: Vec<&str> = sheet["groups"].as_array().unwrap().iter().map(|g| g["title"].as_str().unwrap()).collect();
+    assert_eq!(titles.first(), Some(&"Desktops"));
+    assert!(titles.contains(&"Mission control"));
+}
+
+#[test]
+fn shortcuts_page_edits_keep_the_file_and_refuse_clashes() {
+    let text = include_str!("../../remap.toml");
+    let set = |action: &str, keys: &[&str]| {
+        let changes = BTreeMap::from([(action.to_string(), keys.iter().map(|k| k.to_string()).collect())]);
+        mackeys::edit::set_keys(text, &changes)
+    };
+    let new = set("window.close", &["opt+w"]).unwrap();
+    assert!(new.contains(r#""window.close" = { keys = "opt+w", label = "Close window" }"#), "{new}");
+    assert_eq!(new.lines().count(), text.lines().count());
+    assert!(new.contains("# the keyboard's screenshot key"));
+    assert!(set("window.pin", &[]).unwrap().contains(r#""window.pin" = { keys = [], label"#));
+
+    let err = format!("{:#}", set("window.float", &["opt+f"]).unwrap_err());
+    assert!(err.contains("twice") && err.contains("opt+f"), "{err}");
+    assert!(set("no.such.action", &["opt+w"]).is_err());
 }

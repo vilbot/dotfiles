@@ -16,7 +16,7 @@ case "$(uname -s)" in
 esac
 
 # Zed keymaps: keymap.json is mac (cmd-*). Linux gets keymap.linux.json, generated from it by
-# zed/build.py for Toshy's key swaps (Cmd->Ctrl, Ctrl->Super) so Zed behaves like on the Mac.
+# zed/build.py for mackeys' key swaps (Cmd->Ctrl, Ctrl->Super) so Zed behaves like on the Mac.
 if [[ $OS == mac ]]; then ZED_KEYMAP=zed/keymap.json; else ZED_KEYMAP=zed/keymap.linux.json; fi
 
 # source (relative to repo)  ->  target
@@ -55,7 +55,7 @@ for entry in "${LINKS[@]}"; do
   run ln -s "$src" "$target"
 done
 
-# Toshy (mac-style keys on Linux) is installed separately; its config is regenerated on upgrade,
+# Toshy (mac-style keys on KDE; mackeys does Hyprland) is installed separately; its config is regenerated on upgrade,
 # so only our customizations are kept here and written in, not linked.
 if [[ $OS == linux ]]; then
   if [[ -f "$HOME/.config/toshy/toshy_config.py" ]]; then
@@ -77,11 +77,6 @@ fi
 
 # Hide apps listed in hypr/hidden-apps.txt on Hyprland (overrides in ~/.local/share/applications).
 [[ $OS == linux ]] && run python3 "$DOT/hypr/hide-apps.py"
-
-# KDE shortcuts from keys/keymap.toml (KDE rewrites its config, so it's applied, not linked).
-if [[ $OS == linux ]] && command -v kwriteconfig6 >/dev/null; then
-  run python3 "$DOT/keys/build.py" --apply
-fi
 
 # Login shell should be zsh. chsh asks for a password, so only print the command.
 if [[ $OS == linux ]]; then

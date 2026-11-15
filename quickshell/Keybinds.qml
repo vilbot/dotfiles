@@ -1,7 +1,7 @@
 // Opt+? cheat sheet: every keymap bind on a gallery-style card over the dimmed desktop.
-// Rows come from Keymap.qml (keys/keymap.toml through keys/build.py): only actions with a key.
+// Rows come from Keymap.qml (keys/remap.toml, through mackeys): only actions with a key.
 // "edit" opens the settings window's Shortcuts page.
-// Toggle: `qs ipc call keybinds toggle` (bound to Opt+? in hypr/binds.lua). Esc or a click closes.
+// Toggle: `qs ipc call keybinds toggle` (help.keys, Opt+?). Esc or a click closes.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -122,7 +122,7 @@ PanelWindow {
                                         font: Theme.text
                                     }
                                     Text {
-                                        text: row.modelData.hyprLabel.join("   or   ")
+                                        text: row.modelData.keysLabel.join("   or   ")
                                         color: Theme.inkDim
                                         font: Theme.text
                                     }

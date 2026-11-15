@@ -8,11 +8,8 @@
 //   Cmd+Tab in the windows view goes back to the app icons.
 // - Esc cancels; clicking an app or window switches to it.
 //
-// Keys: Toshy turns Cmd+Tab / Cmd+` into Alt+Tab / Alt+`, holding Alt while Cmd is held.
-// hypr/binds.lua (keys/keymap.toml: app.switch.*) sends them here as global shortcuts. Letting go
-// of Cmd is noticed by scripts/wait-alt-release.py, which polls the keyboards' key state while the
-// switcher is open: Hyprland's release binds don't fire after Tab was pressed in between, and this
-// window never saw Alt go down, so Qt drops its release.
+// Keys: mackeys (keys/remap.toml: app.switch.*) runs these global shortcuts, and switcher-commit
+// when Cmd is let go.
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
@@ -124,14 +121,6 @@ Scope {
         const first = lastMouse.x < 0
         lastMouse = p
         if (!first) current = i
-    }
-
-    // letting go of Cmd (= Alt): the script exits as soon as no Alt key is down
-    Process {
-        id: altWatch
-        running: root.showing
-        command: [Quickshell.shellDir + "/scripts/wait-alt-release.py"]
-        onExited: code => { if (code === 0) root.commit() }
     }
 
     GlobalShortcut { appid: "quickshell"; name: "switcher-next"; description: "App switcher: next"; onPressed: root.step(1) }

@@ -3,12 +3,15 @@
 use crate::keys::{Chord, Mod, OutMod, Trigger, parse_key};
 use anyhow::{Context, Result, bail};
 use evdev::KeyCode;
+use indexmap::IndexMap;
 use serde::Deserialize;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 pub struct Config {
     /// Keyboards to take over: a device is used when its name contains one of these.
     pub devices: Vec<String>,
+    /// How many desktops `{n}` stands for.
+    pub desktops: u32,
     /// Window classes by group name, e.g. "terminal" -> ["com.mitchellh.ghostty", ...].
     pub apps: HashMap<String, Vec<String>>,
     /// What each physical modifier sends unless a layer says otherwise.
@@ -18,6 +21,11 @@ pub struct Config {
     pub tap_hold: Option<TapHold>,
     /// Checked top to bottom; see `Layer`.
     pub layers: Vec<Layer>,
+    /// Every action with its label and keys as written, by section: the keyboard shortcut sheet.
+    pub sheet: Vec<Section>,
+    /// Actions that open a layer (`wait_for_layer`): keys typed right after them are held back
+    /// until it is open, action name -> layer namespace.
+    pub waits: HashMap<String, String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -35,6 +43,15 @@ impl ModMap {
             Mod::Opt => self.opt,
             Mod::Ctrl => self.ctrl,
             Mod::Shift => self.shift,
+        }
+    }
+
+    pub fn set(&mut self, m: Mod, sent: OutMod) {
+        match m {
+            Mod::Cmd => self.cmd = sent,
+            Mod::Opt => self.opt = sent,
+            Mod::Ctrl => self.ctrl = sent,
+            Mod::Shift => self.shift = sent,
         }
     }
 }
@@ -57,25 +74,47 @@ pub struct Layer {
     pub map: Vec<(Trigger, Action)>,
     /// When this layer applies, layers below it are not checked.
     pub stop: bool,
+    /// When this layer applies, a key no layer maps goes through only if it is listed here;
+    /// the rest are dropped (None: everything goes through).
+    pub let_through: Option<Vec<KeyCode>>,
 }
 
 #[derive(Default)]
 pub struct When {
     pub app: Option<String>,
     pub not_app: Option<String>,
-    pub flag: Option<String>,
-    pub not_flag: Option<String>,
+    /// A layer (Hyprland layer-shell namespace, e.g. "quickshell-palette") is open.
+    pub layer: Option<String>,
+    pub not_layer: Option<String>,
+    /// Mission control (hymission) is open.
+    pub overview: Option<bool>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Action {
     /// Sent while the physical key is down. With `hold`, the chord's modifiers stay down until
-    /// the trigger's modifier is let go (Cmd+Tab: Alt stays held while the switcher is open).
+    /// the trigger's modifier is let go (Ctrl+Tab in browsers).
     Send { chord: Chord, hold: bool },
     /// Tapped one after another when the key goes down.
     Sequence(Vec<Chord>),
+    /// Runs a desktop action (hypr/actions.lua). `repeat`: again while the key is held.
+    /// `on_release`: another action, run when the trigger's modifier is let go.
+    Run { name: String, repeat: bool, on_release: Option<String> },
     /// Nothing is sent.
     Nothing,
+}
+
+pub struct Section {
+    pub title: String,
+    pub rows: Vec<Row>,
+}
+
+pub struct Row {
+    /// The action as written ("window.focus.{dir}"); None for a note (a mouse bind).
+    pub action: Option<String>,
+    pub label: String,
+    /// Keys as written ("opt+{dir}").
+    pub keys: Vec<String>,
 }
 
 // --- the file as written ----------------------------------------------------------------
@@ -84,6 +123,7 @@ pub enum Action {
 #[serde(deny_unknown_fields)]
 struct File {
     devices: Vec<String>,
+    desktops: u32,
     #[serde(default)]
     apps: HashMap<String, Vec<String>>,
     modifiers: BTreeMap<String, String>,
@@ -92,6 +132,9 @@ struct File {
     tap_hold: Option<FileTapHold>,
     #[serde(default, rename = "layer")]
     layers: Vec<FileLayer>,
+    /// Shown on the sheet, not keys of ours: section -> [[label, keys], ...]
+    #[serde(default)]
+    notes: IndexMap<String, Vec<[String; 2]>>,
 }
 
 #[derive(Deserialize)]
@@ -112,9 +155,13 @@ struct FileLayer {
     #[serde(default)]
     modifiers: BTreeMap<String, String>,
     #[serde(default)]
-    map: BTreeMap<String, FileAction>,
+    map: BTreeMap<String, FileSend>,
+    /// section -> action -> how it's bound
+    #[serde(default)]
+    actions: IndexMap<String, IndexMap<String, FileAction>>,
     #[serde(default)]
     stop: bool,
+    let_through: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Default)]
@@ -122,17 +169,48 @@ struct FileLayer {
 struct FileWhen {
     app: Option<String>,
     not_app: Option<String>,
-    flag: Option<String>,
-    not_flag: Option<String>,
+    layer: Option<String>,
+    not_layer: Option<String>,
+    overview: Option<bool>,
 }
 
 #[derive(Deserialize)]
 #[serde(untagged)]
-enum FileAction {
+enum FileSend {
     One(String),
     Many(Vec<String>),
     Held { send: String, hold: bool },
 }
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct FileAction {
+    keys: OneOrMany,
+    label: String,
+    #[serde(default)]
+    repeat: bool,
+    on_release: Option<String>,
+    wait_for_layer: Option<String>,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum OneOrMany {
+    One(String),
+    Many(Vec<String>),
+}
+
+impl OneOrMany {
+    fn list(&self) -> Vec<String> {
+        match self {
+            OneOrMany::One(k) => vec![k.clone()],
+            OneOrMany::Many(ks) => ks.clone(),
+        }
+    }
+}
+
+/// `{dir}` in an action name and its keys: the direction and its vim key.
+pub const DIRECTIONS: [(&str, &str); 4] = [("left", "h"), ("down", "j"), ("up", "k"), ("right", "l")];
 
 impl Config {
     pub fn parse(text: &str) -> Result<Config> {
@@ -154,15 +232,70 @@ impl Config {
             .context("in [tap_hold]")?;
 
         let mut layers = Vec::new();
-        for l in file.layers {
-            let layer = layer(l, &file.apps)?;
-            layers.push(layer);
+        // the sheet: keys that always work first, then those of a mode (mission control, ...)
+        let (mut sheet, mut modes): (Vec<Section>, Vec<Section>) = (Vec::new(), Vec::new());
+        let mut action_names = HashSet::new();
+        let mut waits = HashMap::new();
+        for l in &file.layers {
+            layers.push(layer(l, &file.apps, file.desktops)?);
+            let w = &l.when;
+            let in_mode = w.app.is_some() || w.not_app.is_some() || w.layer.is_some() || w.not_layer.is_some() || w.overview.is_some();
+            for (title, actions) in &l.actions {
+                let rows = actions.iter().map(|(name, a)| Row { action: Some(name.clone()), label: a.label.clone(), keys: a.keys.list() });
+                section(if in_mode { &mut modes } else { &mut sheet }, title).rows.extend(rows);
+                for (name, a) in actions {
+                    if !action_names.insert(name.clone()) {
+                        bail!("action {name:?} is listed twice");
+                    }
+                    if let Some(layer) = &a.wait_for_layer {
+                        for (name, _) in expand(name, &a.keys.list(), file.desktops)? {
+                            waits.insert(name, layer.clone());
+                        }
+                    }
+                }
+            }
         }
-        Ok(Config { devices: file.devices, apps: file.apps, modifiers, keys, tap_hold, layers })
+        sheet.extend(modes);
+        for (title, notes) in &file.notes {
+            let rows = notes.iter().map(|[label, keys]| Row { action: None, label: label.clone(), keys: vec![keys.clone()] });
+            section(&mut sheet, title).rows.extend(rows);
+        }
+
+        Ok(Config { devices: file.devices, desktops: file.desktops, apps: file.apps, modifiers, keys, tap_hold, layers, sheet, waits })
     }
 }
 
-fn layer(l: FileLayer, apps: &HashMap<String, Vec<String>>) -> Result<Layer> {
+impl Config {
+    /// Every action the keys can run, expanded ("desktop.goto.1", ...), sorted.
+    pub fn action_names(&self) -> Vec<String> {
+        let mut names: Vec<String> = self
+            .layers
+            .iter()
+            .flat_map(|l| &l.map)
+            .filter_map(|(_, a)| match a {
+                Action::Run { name, on_release, .. } => Some([Some(name.clone()), on_release.clone()]),
+                _ => None,
+            })
+            .flatten()
+            .flatten()
+            .collect();
+        names.sort();
+        names.dedup();
+        names
+    }
+}
+
+fn section<'a>(sheet: &'a mut Vec<Section>, title: &str) -> &'a mut Section {
+    match sheet.iter().position(|s| s.title == title) {
+        Some(i) => &mut sheet[i],
+        None => {
+            sheet.push(Section { title: title.to_string(), rows: Vec::new() });
+            sheet.last_mut().unwrap()
+        }
+    }
+}
+
+fn layer(l: &FileLayer, apps: &HashMap<String, Vec<String>>, desktops: u32) -> Result<Layer> {
     let ctx = || format!("in layer {:?}", l.name);
     for group in [&l.when.app, &l.when.not_app].into_iter().flatten() {
         if !apps.contains_key(group) {
@@ -175,22 +308,87 @@ fn layer(l: FileLayer, apps: &HashMap<String, Vec<String>>) -> Result<Layer> {
         .map(|(m, out)| Ok((physical_mod(m)?, OutMod::parse(out)?)))
         .collect::<Result<_>>()
         .with_context(ctx)?;
-    let mut map = Vec::new();
-    for (trigger, action) in &l.map {
+
+    let mut map: Vec<(Trigger, Action)> = Vec::new();
+    for (trigger, send) in &l.map {
         let parsed = (|| -> Result<(Trigger, Action)> {
-            let action = match action {
-                FileAction::One(chord) => Action::Send { chord: Chord::parse(chord)?, hold: false },
-                FileAction::Held { send, hold } => Action::Send { chord: Chord::parse(send)?, hold: *hold },
-                FileAction::Many(chords) if chords.is_empty() => Action::Nothing,
-                FileAction::Many(chords) => Action::Sequence(chords.iter().map(|c| Chord::parse(c)).collect::<Result<_>>()?),
+            let action = match send {
+                FileSend::One(chord) => Action::Send { chord: Chord::parse(chord)?, hold: false },
+                FileSend::Held { send, hold } => Action::Send { chord: Chord::parse(send)?, hold: *hold },
+                FileSend::Many(chords) if chords.is_empty() => Action::Nothing,
+                FileSend::Many(chords) => Action::Sequence(chords.iter().map(|c| Chord::parse(c)).collect::<Result<_>>()?),
             };
             Ok((Trigger::parse(trigger)?, action))
         })()
         .with_context(|| format!("{}: {trigger:?}", ctx()))?;
         map.push(parsed);
     }
-    let when = When { app: l.when.app, not_app: l.when.not_app, flag: l.when.flag, not_flag: l.when.not_flag };
-    Ok(Layer { name: l.name, when, modifiers, map, stop: l.stop })
+    for (name, a) in l.actions.values().flatten() {
+        if let Some(r) = &a.on_release {
+            check_name(r).with_context(ctx)?;
+        }
+        for (name, key) in expand(name, &a.keys.list(), desktops).with_context(ctx)? {
+            let trigger = Trigger::parse(&key).with_context(|| format!("{}: {name}", ctx()))?;
+            map.push((trigger, Action::Run { name, repeat: a.repeat, on_release: a.on_release.clone() }));
+        }
+    }
+    for (i, (t, _)) in map.iter().enumerate() {
+        if map[..i].iter().any(|(earlier, _)| earlier == t) {
+            bail!("{}: the same keys are used twice ({})", ctx(), describe(t));
+        }
+    }
+
+    let let_through = l
+        .let_through
+        .as_ref()
+        .map(|keys| keys.iter().map(|k| parse_key(k)).collect::<Result<Vec<_>>>())
+        .transpose()
+        .with_context(|| format!("{}: let_through", ctx()))?;
+
+    let w = &l.when;
+    let when = When { app: w.app.clone(), not_app: w.not_app.clone(), layer: w.layer.clone(), not_layer: w.not_layer.clone(), overview: w.overview };
+    Ok(Layer { name: l.name.clone(), when, modifiers, map, stop: l.stop, let_through })
+}
+
+/// "desktop.goto.{n}" + "opt+{n}" -> desktop.goto.1 = opt+1, ...; {dir} -> left/h, down/j, ...
+pub fn expand(name: &str, keys: &[String], desktops: u32) -> Result<Vec<(String, String)>> {
+    check_name(name)?;
+    let fills: Vec<(String, String)> = if name.contains("{n}") {
+        (1..=desktops).map(|n| (n.to_string(), n.to_string())).collect()
+    } else if name.contains("{dir}") {
+        DIRECTIONS.iter().map(|(d, k)| (d.to_string(), k.to_string())).collect()
+    } else {
+        vec![(String::new(), String::new())]
+    };
+    let mut out = Vec::new();
+    for (in_name, in_key) in &fills {
+        let name = name.replace("{n}", in_name).replace("{dir}", in_name);
+        for key in keys {
+            out.push((name.clone(), key.replace("{n}", in_key).replace("{dir}", in_key)));
+        }
+    }
+    Ok(out)
+}
+
+/// Action names go into Lua (`Actions["name"]()`), so only plain characters.
+fn check_name(name: &str) -> Result<()> {
+    if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || "._-{}".contains(c)) {
+        bail!("action name {name:?}: use letters, digits and . _ -");
+    }
+    Ok(())
+}
+
+fn describe(t: &Trigger) -> String {
+    let mut parts: Vec<String> = t.mods.iter().map(|(m, side)| {
+        let side = match side {
+            Some(crate::keys::Side::Left) => "l",
+            Some(crate::keys::Side::Right) => "r",
+            None => "",
+        };
+        format!("{side}{}", format!("{m:?}").to_lowercase())
+    }).collect();
+    parts.push(crate::keys::key_name(t.key));
+    parts.join("+")
 }
 
 fn mod_map(m: &BTreeMap<String, String>) -> Result<ModMap> {

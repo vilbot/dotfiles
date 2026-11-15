@@ -574,7 +574,7 @@ Scope {
                     Item { Layout.fillHeight: true }
                     Text {
                         Layout.fillWidth: true
-                        text: "Saved to hypr/settings.lua.\nKeys: keys/keymap.toml."
+                        text: "Saved to hypr/settings.lua.\nKeys: keys/remap.toml."
                         wrapMode: Text.Wrap
                         color: Theme.inkFaint
                         font: Theme.textSmall

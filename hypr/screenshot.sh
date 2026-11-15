@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Screenshot of an area you drag (Esc cancels). Bound to the keyboard's screenshot key
-# (keys/keymap.toml: screenshot.region). Saves to ~/Pictures/Screenshots, copies the picture to
+# (keys/remap.toml: screenshot.region). Saves to ~/Pictures/Screenshots, copies the picture to
 # the clipboard (needs wl-copy, from the wl-clipboard package) and shows a notification with it.
 set -euo pipefail
 
