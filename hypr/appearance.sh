@@ -6,7 +6,7 @@
 #   (xdg-desktop-portal-gtk passes it on; apps switch while running)
 # - GTK 3 apps: gtk-theme Breeze / Breeze-Dark
 # - Qt / KDE apps: the KDE color scheme BreezeLight / BreezeDark (kdeglobals, applied live)
-# - Quickshell (bar, panels) follows the gsettings value itself (quickshell/Theme.qml)
+# - Quickshell (bar, panels) follows the gsettings value itself (quickshell/services/Theme.qml)
 # - liquid glass (hyprglass): its dark / light theme
 # Ghostty, Zed and nvim keep gruver16 (dark) either way.
 set -euo pipefail

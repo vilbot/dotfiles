@@ -3,7 +3,7 @@
 # Right side: what apps get (ctrl, alt, super, shift). Saved changes apply within a second.
 
 devices = ["NuPhy Air75"]
-desktops = 5  # hypr/hyprland.lua has the same number
+desktops = 5  # also read by hypr/hyprland.lua and the bar
 
 [apps]  # Hyprland window classes
 terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient"]
@@ -120,7 +120,7 @@ name = "desktop"
 "group.next" = { keys = "opt+n", label = "Next tab" }
 "group.prev" = { keys = "opt+p", label = "Previous tab" }
 
-[layer.actions."App switcher"]  # quickshell/AppSwitcher.qml switches when Cmd is let go
+[layer.actions."App switcher"]  # quickshell/switcher/AppSwitcher.qml switches when Cmd is let go
 "app.switch.next" = { keys = "cmd+tab", label = "Switch app", on_release = "app.switch.commit" }
 "app.switch.prev" = { keys = "cmd+shift+tab", label = "Switch app, backwards", on_release = "app.switch.commit" }
 "app.switch.windows" = { keys = "cmd+`", label = "In the switcher: that app's windows", on_release = "app.switch.commit" }

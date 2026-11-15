@@ -45,7 +45,7 @@ return function(opts)
     A["group.next"] = run(hl.dsp.group.next())
     A["group.prev"] = run(hl.dsp.group.prev())
 
-    -- App switcher (quickshell/AppSwitcher.qml). mackeys runs commit when Cmd is let go.
+    -- App switcher (quickshell/switcher/AppSwitcher.qml). mackeys runs commit when Cmd is let go.
     for _, name in ipairs({ "next", "prev", "windows", "windows-prev", "commit" }) do
         A["app.switch." .. name:gsub("-", ".")] = run(hl.dsp.global("quickshell:switcher-" .. name))
     end
@@ -98,7 +98,7 @@ return function(opts)
     end
 
     -- Function keys
-    A["brightness.down"] = exec("qs ipc call brightness down") -- quickshell/CcDisplay.qml
+    A["brightness.down"] = exec("qs ipc call brightness down") -- quickshell/services/Brightness.qml
     A["brightness.up"] = exec("qs ipc call brightness up")
     A["appearance.toggle"] = exec("~/.config/hypr/appearance.sh toggle")
     A["media.back"] = exec("playerctl position 5-")

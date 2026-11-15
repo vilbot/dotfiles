@@ -1,0 +1,49 @@
+{
+    "animations": {
+        "border": {
+            "curve": "default",
+            "enabled": true,
+            "speed": 8,
+            "style": ""
+        },
+        "borderangle": {
+            "curve": "default",
+            "enabled": false,
+            "speed": 1,
+            "style": ""
+        },
+        "windowsIn": {
+            "curve": "default",
+            "enabled": true,
+            "speed": 7,
+            "style": ""
+        },
+        "workspaces": {
+            "curve": "quick",
+            "enabled": true,
+            "speed": 5,
+            "style": ""
+        }
+    },
+    "monitors": {
+        "desc:Samsung Electric Company LS27FG53x": {
+            "mode": "2560x1440@200.00",
+            "scale": 1
+        }
+    },
+    "options": {
+        "decoration:active_opacity": 1,
+        "decoration:blur:ignore_opacity": true,
+        "decoration:blur:noise": 0,
+        "decoration:blur:popups": false,
+        "decoration:blur:size": 2,
+        "decoration:blur:variant": 0,
+        "decoration:dim_inactive": true,
+        "decoration:dim_strength": 0.4,
+        "decoration:fullscreen_opacity": 1,
+        "decoration:shadow:enabled": true,
+        "general:border_size": 0,
+        "input:follow_mouse": 1,
+        "input:sensitivity": -0.5
+    }
+}

@@ -1,5 +1,5 @@
 /* Mission control's search box (hymission's GTK helper, F4), styled like the Quickshell panels
-   (quickshell/Theme.qml: paper, ink, hairline, serif). Loaded through ~/.config/gtk-4.0/gtk.css
+   (quickshell/services/Theme.qml: paper, ink, hairline, serif). Loaded through ~/.config/gtk-4.0/gtk.css
    (hyprland.lua adds the @import at start); user CSS outranks the helper's own styling.
    Only these two class names are touched, so other GTK apps are unaffected. */
 

@@ -10,7 +10,7 @@ Generated files (do NOT hand-edit, edit the yaml or a template instead):
     ghostty/themes/gruver16
     zed/themes/gruver16.json        <- from theme/templates/zed.json ({{base0D}} tokens)
     hypr/colors.lua                 <- hex without '#', e.g. require("colors").base0D
-    quickshell/Colors.qml           <- singleton, e.g. Colors.base0D
+    quickshell/services/Colors.qml           <- singleton, e.g. Colors.base0D
     jetbrains/gruver16/*            <- via jetbrains/build.py (reads the nvim palette)
 """
 import pathlib, re, subprocess, sys
@@ -72,7 +72,7 @@ def quickshell():
 targets = {
     "nvim/lua/palettes/gruver16.lua": nvim,
     "hypr/colors.lua": hypr,
-    "quickshell/Colors.qml": quickshell,
+    "quickshell/services/Colors.qml": quickshell,
     "wezterm/colors/gruver16.toml": wezterm,
     "ghostty/themes/gruver16": ghostty,
     "zed/themes/gruver16.json": zed,

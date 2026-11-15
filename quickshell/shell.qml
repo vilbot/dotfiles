@@ -1,35 +1,33 @@
 //@ pragma IconTheme breeze
 //@ pragma UseQApplication
-// Quickshell entry point (linked to ~/.config/quickshell, started from hypr/hyprland.lua).
-// Run by hand to see errors:  qs   (or: qs -p ~/dotfiles/quickshell)
+// The shell (Hyprland): bar and wallpaper on every monitor, and the panels, which stay hidden
+// until opened. services/ holds the state they share, widgets/ the controls they're built from.
+// Run by hand to see errors:  qs -p ~/dotfiles/quickshell
 import QtQuick
 import Quickshell
+import qs.bar
+import qs.wallpaper
+import qs.notifications
+import qs.controlcenter
+import qs.settings
+import qs.palette
+import qs.switcher
+import qs.keybinds
 
 ShellRoot {
-    // One wallpaper and one bar per monitor.
     Variants {
         model: Quickshell.screens
-        Wallpaper {}
+        WallpaperLayer {}
     }
     Variants {
         model: Quickshell.screens
         Bar {}
     }
-
-    // Opt+? keybind cheat sheet (hidden until toggled)
-    Keybinds {}
-
-    // notification server + popups
-    Notifications {}
-
-    // control center (click the volume in the bar) and the settings window
+    Popups {}
+    History {}
     ControlCenter {}
-    Settings {}
-
-    // command palette (Cmd+Space)
+    SettingsWindow {}
     CommandPalette {}
-
-
-    // Cmd+Tab app switcher
     AppSwitcher {}
+    KeySheet {}
 }
