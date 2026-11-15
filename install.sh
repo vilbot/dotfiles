@@ -35,7 +35,6 @@ LINKS=(
   "kde/env/ghostty-session.sh                 $HOME/.config/plasma-workspace/env/ghostty-session.sh"
   "xdg-desktop-portal/hyprland-portals.conf   $HOME/.config/xdg-desktop-portal/hyprland-portals.conf"
   "keys/daemon/mackeys.service                $HOME/.config/systemd/user/mackeys.service"
-  ".zprofile                                  $HOME/.zprofile"
 )
 
 run() { if (( DRY )); then echo "  would: $*"; else "$@"; fi; }

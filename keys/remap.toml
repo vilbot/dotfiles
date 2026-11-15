@@ -6,7 +6,7 @@ devices = ["NuPhy Air75"]
 desktops = 5  # also read by hypr/hyprland.lua and the bar
 
 [apps]  # Hyprland window classes
-terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient"]
+terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient", "tty-session", "tty-minibuffer"]
 zed = ["dev.zed.Zed"]
 browser = ["google-chrome", "chromium", "firefox", "brave-browser"]
 

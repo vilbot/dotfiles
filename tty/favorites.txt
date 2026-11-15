@@ -1,0 +1,3 @@
+google-chrome
+dev.zed.Zed
+yazi

@@ -1,5 +1,5 @@
--- "None" desktop: a desktop that is all terminal. Started from the tty login chooser
--- (tty/chooser.sh) with `start-hyprland -- -c ~/dotfiles/tty/hyprland.lua`.
+-- "None" desktop: a desktop that is all terminal. Started by tty/start, the login screen's
+-- "None" (tty/login.sh).
 -- Terminals everywhere (foot, tty/foot.ini: Hack + gruver16), no bar, wallpaper, gaps,
 -- rounding, animations or plugins. Tiling, desktops and mackeys' keys work like on the full
 -- desktop: the actions come from hypr/actions.lua, with this desktop's programs.
@@ -14,8 +14,8 @@ package.path = hypr .. "?.lua;" .. package.path
 local term = tty .. "term"
 local programs = {
     terminal     = term,
-    launcher     = term .. " -a tty-minibuffer " .. tty .. "launch.sh",
-    launcher_alt = term .. " -a tty-minibuffer " .. tty .. "launch.sh",
+    launcher     = tty .. "launch.sh",
+    launcher_alt = tty .. "launch.sh",
 }
 
 -- tty/bin first: apps that ask for a terminal get this desktop's (bin/xdg-terminal-exec)
@@ -94,11 +94,11 @@ hl.config({
 -- A window alone on its desktop has no border: one terminal = the whole screen.
 hl.window_rule({ name = "tty-alone-no-border", match = { workspace = "w[tv1]" }, border_size = 0 })
 
--- The launcher (tty/launch.sh) is a minibuffer: a strip along the bottom of the screen.
+-- The launcher (tty/launch.sh) is a minibuffer dropping down from the top of the screen.
 hl.window_rule({
     name = "tty-minibuffer",
     match = { class = "^tty-minibuffer$" },
-    float = true, pin = true, size = "100% 30%", move = "0 70%",
+    float = true, pin = true, size = "(monitor_w*0.5) 150", move = "(monitor_w*0.25) 0",  -- then sized to its results
 })
 
 Actions = require("actions")({ programs = programs, desktops = desktops })
