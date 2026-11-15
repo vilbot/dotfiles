@@ -19,7 +19,7 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`actions.lua`, `settings.lua` + `json.lua`; `colors.lua` generated), `settings.json` (written by the settings window), `curves.json`, `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
 | `quickshell/` | Quickshell (linux, Hyprland): the shell; `services/Colors.qml` generated | `~/.config/quickshell` (linux) |
-| `tty/` | "None" desktop: tty login chooser (`chooser.sh`, from `.zprofile`) and Hyprland dressed as the console (`hyprland.lua`, `foot.ini`). Check: `tty/check.sh` | `.zprofile` → `~/.zprofile` (linux) |
+| `tty/` | "None" desktop: tty login chooser (`chooser.sh`, from `.zprofile`) and an all-terminal Hyprland (`hyprland.lua`; every terminal is `term` = foot with `foot.ini`; zsh there adds `logout`/`shutdown`/`reboot` via `zsh/.zshrc`). Check: `tty/check.sh` | `.zprofile` → `~/.zprofile` (linux) |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
@@ -35,10 +35,10 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 ## Colors: gruver16
 `theme/gruver16.yaml` is the single source of truth. To change a color:
 1. Edit `theme/gruver16.yaml` (or `theme/templates/zed.json` for zed-only details like UI alpha values).
-2. Run `python3 theme/build.py`, which regenerates the nvim palette, wezterm, ghostty, zed and jetbrains themes.
+2. Run `python3 theme/build.py`, which regenerates the nvim palette, wezterm, ghostty, foot (tty), zed and jetbrains themes.
 3. `python3 theme/build.py --check` verifies nothing is out of date.
 
-Do not hand-edit generated files (`nvim/lua/palettes/gruver16.lua`, `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `zed/themes/gruver16.json`, `jetbrains/gruver16/*`).
+Do not hand-edit generated files (`nvim/lua/palettes/gruver16.lua`, `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `tty/foot-colors.ini`, `zed/themes/gruver16.json`, `jetbrains/gruver16/*`).
 `nvim/colors/custom.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit.
 
 ## Keys (mackeys, Hyprland)

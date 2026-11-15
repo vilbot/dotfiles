@@ -22,8 +22,8 @@ apps() {
 }
 
 out=$(apps | fzf --print-query --delimiter='\t' --with-nth=1 --layout=reverse --no-info \
-    --prompt='M-x ' --pointer='>' --no-separator --no-scrollbar \
-    --color='bw,prompt:15,pointer:15,hl:15,hl+:15')
+    --prompt='> ' --pointer='>' --no-separator --no-scrollbar \
+    --color='prompt:5,pointer:5,hl:4,hl+:4,bg+:0,gutter:-1')
 query=$(sed -n 1p <<<"$out")
 pick=$(sed -n 2p <<<"$out")
 # Hyprland starts it: whatever this terminal starts itself is killed when the terminal closes.

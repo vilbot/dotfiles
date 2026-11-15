@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# A terminal of the "None" desktop: foot dressed as the console (foot.ini) with the program run
-# through console.py, so it behaves like on the real tty.
+# A terminal of the "None" desktop: foot with tty/foot.ini.
 #   term [-a APP_ID] [COMMAND [ARGS...]]      default: your login shell
 dir=$(dirname "$(readlink -f "$0")")
 app=()
 if [[ ${1:-} == -a ]]; then app=(-a "$2"); shift 2; fi
-exec foot -c "$dir/foot.ini" "${app[@]}" python3 "$dir/console.py" "$@"
+exec foot -c "$dir/foot.ini" "${app[@]}" "$@"

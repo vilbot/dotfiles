@@ -5,3 +5,4 @@ __pycache__/
 ghostty/session.ghostty
 prompts/
 keys/daemon/target/
+tty/zsh/.zcompdump*

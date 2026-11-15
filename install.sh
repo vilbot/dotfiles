@@ -76,15 +76,6 @@ if [[ $OS == linux ]]; then
   fi
 fi
 
-# "None" desktop (tty/): foot draws the console font, turned into a TrueType font here.
-if [[ $OS == linux ]]; then
-  if ls /usr/share/kbd/consolefonts/ter-v32n.* >/dev/null 2>&1 || grep -q '^FONT=' /etc/vconsole.conf 2>/dev/null; then
-    run python3 "$DOT/tty/psf2ttf.py" && run fc-cache -f "$HOME/.local/share/fonts"
-  else
-    echo "note    terminus-font missing (pacman -S terminus-font foot yazi); then re-run for tty/"
-  fi
-fi
-
 # Hide apps listed in hypr/hidden-apps.txt on Hyprland (overrides in ~/.local/share/applications).
 [[ $OS == linux ]] && run python3 "$DOT/hypr/hide-apps.py"
 
