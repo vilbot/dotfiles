@@ -19,6 +19,7 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`actions.lua`, `settings.lua` + `json.lua`; `colors.lua` generated), `settings.json` (written by the settings window), `curves.json`, `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
 | `quickshell/` | Quickshell (linux, Hyprland): the shell; `services/Colors.qml` generated | `~/.config/quickshell` (linux) |
+| `tty/` | "None" desktop: tty login chooser (`chooser.sh`, from `.zprofile`) and Hyprland dressed as the console (`hyprland.lua`, `foot.ini`). Check: `tty/check.sh` | `.zprofile` → `~/.zprofile` (linux) |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 

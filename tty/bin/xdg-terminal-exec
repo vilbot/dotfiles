@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Apps that need a terminal (Terminal=true, like yazi) open in the "None" desktop's console
+# terminal. GLib (gtk-launch, file managers) runs xdg-terminal-exec when it's on PATH, and
+# tty/hyprland.lua puts this folder first on PATH only in that desktop.
+[[ ${1:-} == -e || ${1:-} == -- ]] && shift
+exec "$(dirname "$(readlink -f "$0")")/../term" "$@"

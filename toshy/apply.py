@@ -48,13 +48,23 @@ for name, value in prefs.items():
 db.commit()
 db.close()
 
+# ---- services that stay off ---------------------------------------------------------------
+# The wlroots service is for wlroots desktops: on Hyprland it pops up "Kickstarting Toshy window
+# context" at every login, and Hyprland uses mackeys anyway. KDE uses toshy-kwin-dbus instead.
+for unit in ["toshy-wlroots-dbus.service"]:
+    on = subprocess.run(["systemctl", "--user", "is-enabled", unit], capture_output=True, text=True).stdout.strip()
+    if on == "enabled":
+        changed.append(f"service {unit}: off")
+        if not check:
+            subprocess.run(["systemctl", "--user", "disable", "--now", unit], check=False)
+
 # ---- report -------------------------------------------------------------------------------
 for c in changed:
     print(("differs " if check else "set     ") + c)
 if check:
     sys.exit(1 if changed else 0)
-if changed:
+if any(not c.startswith("service ") for c in changed):
     subprocess.run(["systemctl", "--user", "restart", "toshy-config.service"], check=False)
     print("restarted toshy-config.service")
-else:
+elif not changed:
     print("toshy up to date")

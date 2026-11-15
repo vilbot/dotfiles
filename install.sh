@@ -35,6 +35,7 @@ LINKS=(
   "kde/env/ghostty-session.sh                 $HOME/.config/plasma-workspace/env/ghostty-session.sh"
   "xdg-desktop-portal/hyprland-portals.conf   $HOME/.config/xdg-desktop-portal/hyprland-portals.conf"
   "keys/daemon/mackeys.service                $HOME/.config/systemd/user/mackeys.service"
+  ".zprofile                                  $HOME/.zprofile"
 )
 
 run() { if (( DRY )); then echo "  would: $*"; else "$@"; fi; }
@@ -72,6 +73,15 @@ if [[ $OS == linux ]]; then
     run systemctl --user daemon-reload
   else
     echo "note    cargo missing (pacman -S rust); then re-run to build keys/daemon"
+  fi
+fi
+
+# "None" desktop (tty/): foot draws the console font, turned into a TrueType font here.
+if [[ $OS == linux ]]; then
+  if ls /usr/share/kbd/consolefonts/ter-v32n.* >/dev/null 2>&1 || grep -q '^FONT=' /etc/vconsole.conf 2>/dev/null; then
+    run python3 "$DOT/tty/psf2ttf.py" && run fc-cache -f "$HOME/.local/share/fonts"
+  else
+    echo "note    terminus-font missing (pacman -S terminus-font foot yazi); then re-run for tty/"
   fi
 fi
 
