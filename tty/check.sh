@@ -26,7 +26,7 @@ fi
 if python3 theme/build.py --check >/dev/null; then ok "tty/foot-colors.ini (theme/build.py)"
 else bad "themes out of date: python3 theme/build.py"; fi
 
-for f in tty/*.sh tty/term tty/start tty/bin/*; do
+for f in tty/*.sh tty/term tty/start tty/desktops tty/bin/* tty/greeter/*.sh; do
     bash -n "$f" 2>/dev/null || bad "$f: $(bash -n "$f" 2>&1)"
 done && ok "shell scripts parse"
 
@@ -44,5 +44,24 @@ for name, tab in m.TABS.items():
         assert callable(getattr(tab, method, None)), f"{name}: no method {method}"
 PY
 ); then ok "tty/panel/panel.py"; else bad "tty/panel/panel.py: $err"; fi
+
+# the login screen: its Hyprland config (with its /etc paths pointed at a temporary copy),
+# and whether /etc/greetd/none still matches this repo (sudo tty/login.sh copies it)
+tmp=$(mktemp -d)
+cp hypr/colors.lua hypr/json.lua hypr/settings.json "$tmp/"
+sed "s|^local here = .*|local here = \"$tmp/\"|" tty/greeter/greeter.lua >"$tmp/greeter.lua"
+if out=$(Hyprland --verify-config -c "$tmp/greeter.lua" 2>&1) && grep -q "config ok" <<<"$out"
+then ok "tty/greeter/greeter.lua"; else bad "tty/greeter/greeter.lua:"$'\n'"$out"; fi
+rm -rf "$tmp"
+if python3 -c 'import ast, sys; ast.parse(open(sys.argv[1]).read())' tty/greeter/greeter.py 2>/dev/null
+then ok "tty/greeter/greeter.py parses"; else bad "tty/greeter/greeter.py doesn't parse"; fi
+copy=/etc/greetd/none
+if [[ ! -d $copy ]]; then
+    echo "--    login screen not set up (sudo tty/login.sh)"
+elif { diff -rq tty/greeter "$copy" 2>/dev/null || true; } | grep -q '^Files' ||  # || true: pipefail would hide the match
+        ! diff -rq tty/shell "$copy/shell" >/dev/null 2>&1 \
+        || ! cmp -s tty/foot-colors.ini "$copy/foot-colors.ini"; then
+    bad "the login screen's copy is out of date: sudo tty/login.sh"
+else ok "login screen copy (/etc/greetd/none) up to date"; fi
 
 exit $fail

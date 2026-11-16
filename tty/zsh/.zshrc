@@ -7,7 +7,7 @@
     ZDOTDIR=$here  # shells started from here get these commands too
 }
 
-logout()   { hyprctl eval 'hl.dispatch(hl.dsp.exit())' >/dev/null; }  # back to the login prompt
+logout()   { qs -p ~/dotfiles/tty/shell ipc call lock lock; }  # back to the login form (a lock over None)
 shutdown() { systemctl poweroff; }
 poweroff() { systemctl poweroff; }
 reboot()   { systemctl reboot; }

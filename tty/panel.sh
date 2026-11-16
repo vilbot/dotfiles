@@ -1,52 +1,50 @@
 #!/usr/bin/env bash
-# The "None" desktop's settings panel (F5): a terminal down the right side, over the windows,
-# with tabs for sound, bluetooth and network (what each shows and does: tty/panel/panel.py).
-# Same keys on every tab: j/k move, H/L (or Tab, or a click on the tab line) switch tabs,
-# q or Esc close; the tab's own keys are in the line at the bottom. F5 again also closes it.
+# The "None" desktop's settings panel (F5, or "Settings" in the launcher): a terminal down the
+# right side, over the windows, with tabs for sound, bluetooth and network (what each shows and
+# does: tty/panel/panel.py). Same keys on every tab: j/k move, H/L (or Tab, or a click on the tab
+# line) switch tabs, q or Esc close; the tab's own keys are in the lines at the bottom.
 #   panel.sh            open, or close when it's open
-#   panel.sh tab [TAB]  show TAB (default: the last one), inside the panel's terminal
+#   panel.sh run        the panel itself, inside its terminal
+#   panel.sh close      close it (sliding out)
 set -uo pipefail
 self=$(readlink -f "$0")
 dir=$(dirname "$self")
 py=$dir/panel/panel.py
-tabs=(sound bluetooth network)
-last=${XDG_RUNTIME_DIR:-/tmp}/tty-panel-tab
+# Closing slides it out first: Hyprland's own closing animation can't show a foot window (it
+# keeps only the border; foot's contents are gone the moment it closes), but a move animates.
+close() {
+    local win='window = "class:^tty-panel$"' w
+    w=$(hyprctl clients -j | jq -r '.[] | select(.class == "tty-panel") | .size[0]' | head -1)
+    [[ -n $w ]] || return 0
+    hyprctl dispatch "hl.dsp.window.move({ x = $w, y = 0, relative = true, $win })" >/dev/null
+    sleep 0.15   # the move's length (tty/hyprland.lua: 140ms)
+    hyprctl dispatch "hl.dsp.window.close({ $win })" >/dev/null
+}
 
 case "${1:-}" in
     "")
-        pkill -f -- '^foot .*-a tty-panel' && exit 0
-        exec "$dir/term" -a tty-panel "$self" tab
+        if pgrep -f -- '^foot .*-a tty-panel' >/dev/null; then close; exit 0; fi
+        exec "$dir/term" -a tty-panel "$self" run
         ;;
-    tab)
-        tab=${2:-$(cat "$last" 2>/dev/null)}
-        [[ " ${tabs[*]} " == *" $tab "* ]] || tab=${tabs[0]}
-        echo "$tab" >"$last"
-        for i in "${!tabs[@]}"; do [[ ${tabs[i]} == "$tab" ]] && n=$i; done
-        prev=${tabs[(n + ${#tabs[@]} - 1) % ${#tabs[@]}]}
-        next=${tabs[(n + 1) % ${#tabs[@]}]}
-
-        list="'$py' list $tab"
+    run)
         binds=(
-            "j:down,k:up,g:first,G:last,q:abort,esc:abort"
-            "H:become('$self' tab $prev),shift-tab:become('$self' tab $prev)"
-            "L:become('$self' tab $next),tab:become('$self' tab $next)"
-            "click-header:transform:[[ -n \$FZF_CLICK_HEADER_WORD ]] && echo \"become('$self' tab \$FZF_CLICK_HEADER_WORD)\""
-            "every(1):reload-sync:$list"
+            "j:down,k:up,g:first,G:last"
+            "q:execute-silent('$self' close),esc:execute-silent('$self' close)"
+            "H:transform('$py' go -1),shift-tab:transform('$py' go -1)"
+            "L:transform('$py' go +1),tab:transform('$py' go +1)"
+            "click-header:transform:[[ -n \$FZF_CLICK_HEADER_WORD ]] && '$py' go \$FZF_CLICK_HEADER_WORD"
+            "every(1):reload-sync('$py' list)"
+            "double-click:transform('$py' on enter {2})"
         )
-        # the tab's own keys: "name key method" from panel.py; asking ones get the terminal
-        while read -r name key method; do
-            run=execute-silent; [[ $method == ask* ]] && run=execute
-            binds+=("$key:$run('$py' do $tab $name {2})+reload-sync:$list")
-            [[ $key == enter ]] && binds+=("double-click:$run('$py' do $tab $name {2})+reload-sync:$list")
-        done < <(python3 "$py" binds "$tab")
-        bind_args=(); for b in "${binds[@]}"; do bind_args+=(--bind "$b"); done
-        eval "$list" | fzf --ansi --no-input --layout=reverse --no-info --no-separator --no-scrollbar \
+        for key in $("$py" keys); do binds+=("$key:transform('$py' on $key {2})"); done
+        args=(); for b in "${binds[@]}"; do args+=(--bind "$b"); done
+        "$py" list | fzf --ansi --no-input --layout=reverse --no-info --no-separator --no-scrollbar \
             --delimiter='\t' --with-nth=1 --track --id-nth=2 \
             --pointer='>' --gutter=' ' --header-first \
-            --header="$(python3 "$py" tabs "$tab")"$'\n ' \
-            --footer="$(python3 "$py" keys "$tab")" \
+            --header="$("$py" header)" --footer="$("$py" footer)" \
             --color='pointer:5,bg+:0,gutter:-1' \
-            "${bind_args[@]}" >/dev/null
+            "${args[@]}" >/dev/null
         ;;
+    close) close ;;
     *) sed -n '2,7p' "$self"; exit 2 ;;
 esac

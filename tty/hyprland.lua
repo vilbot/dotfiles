@@ -1,8 +1,8 @@
 -- "None" desktop: a desktop that is all terminal. Started by tty/start, the login screen's
 -- "None" (tty/login.sh).
--- Terminals everywhere (foot, tty/foot.ini: Hack + gruver16), no bar, wallpaper, gaps,
--- rounding, animations or plugins. Tiling, desktops and mackeys' keys work like on the full
--- desktop: the actions come from hypr/actions.lua, with this desktop's programs.
+-- Terminals everywhere (foot, tty/foot.ini: Hack + gruver16), no wallpaper, gaps, rounding
+-- or plugins. Tiling, desktops and mackeys' keys work like on the full desktop: the actions come
+-- from hypr/actions.lua, with this desktop's programs.
 -- Check: tty/check.sh
 
 local home = os.getenv("HOME")
@@ -14,8 +14,8 @@ package.path = hypr .. "?.lua;" .. package.path
 local term = tty .. "term"
 local programs = {
     terminal     = term,
-    launcher     = tty .. "launch.sh",
-    launcher_alt = tty .. "launch.sh",
+    launcher     = "qs -p " .. tty .. "shell ipc call launcher toggle",  -- in the bar (tty/shell)
+    launcher_alt = "qs -p " .. tty .. "shell ipc call launcher toggle",
 }
 
 -- tty/bin first: apps that ask for a terminal get this desktop's (bin/xdg-terminal-exec)
@@ -53,10 +53,11 @@ hl.on("hyprland.start", function()
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
         .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
     hl.exec_cmd("hypridle")
+    -- the bar with the launcher, volume, keyboard layout, notifications, and the lock that is the
+    -- login screen (tty/shell); first, so it locks before anything else shows
+    hl.exec_cmd("qs -p " .. tty .. "shell")
     -- The first terminal; a new one opens whenever the last window closes (tty/session.sh).
     hl.exec_cmd(tty .. "session.sh")
-    -- volume, "muted", keyboard layout and notifications, as text in the top right (tty/shell)
-    hl.exec_cmd("qs -p " .. tty .. "shell")
 end)
 
 hl.config({
@@ -72,13 +73,17 @@ hl.config({
         shadow = { enabled = false },
         blur = { enabled = false },
     },
-    animations = { enabled = false },
+    animations = { enabled = true },
     dwindle = { preserve_split = true },
     misc = {
         force_default_wallpaper = 0,
         disable_hyprland_logo = true,
         disable_splash_rendering = true,
         background_color = rgb(c.base00),
+        focus_on_activate = true,   -- clicking a notification brings its window forward
+        -- the lock (the login screen) restarted after a crash takes over again (instead of
+        -- Hyprland's "lock died" screen)
+        allow_session_lock_restore = true,
     },
     cursor = { no_warps = true, hide_on_key_press = true, inactive_timeout = 3 },
     render = { cm_auto_hdr = 0 },
@@ -96,26 +101,29 @@ hl.config({
 -- A window alone on its desktop has no border: one terminal = the whole screen.
 hl.window_rule({ name = "tty-alone-no-border", match = { workspace = "w[tv1]" }, border_size = 0 })
 
--- The launcher (tty/launch.sh) is a minibuffer dropping down from the top of the screen.
-hl.window_rule({
-    name = "tty-minibuffer",
-    match = { class = "^tty-minibuffer$" },
-    float = true, pin = true, border_size = 1,
-    size = "(monitor_w*0.5) 150", move = "(monitor_w*0.25) 0",  -- then sized to its results
-})
 
 -- The settings panel (tty/panel.sh): down the right side, over the windows.
 hl.window_rule({
     name = "tty-panel",
     match = { class = "^tty-panel$" },
-    float = true, pin = true, border_size = 1,
-    size = "(monitor_w*0.3) monitor_h", move = "(monitor_w*0.7) 0",
+    float = true, pin = true, border_size = 1, animation = "slide right",
+    size = "(monitor_w*0.3) (monitor_h-28)", move = "(monitor_w*0.7) 28",  -- under the bar (tty/shell/Ui.qml)
 })
+
+-- Motion: the shell's (tty/shell, Ui.quick): 140ms, easing out, a fade with a small move.
+-- Its own surfaces animate themselves, so Hyprland leaves layers alone.
+hl.curve("quick", { type = "bezier", points = { { 0.33, 1 }, { 0.68, 1 } } })
+hl.animation({ leaf = "global", enabled = true, speed = 1.4, bezier = "quick" })
+hl.animation({ leaf = "layers", enabled = false })
+hl.animation({ leaf = "windows", enabled = true, speed = 1.4, bezier = "quick", style = "popin 97%" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 1.4, bezier = "quick", style = "fade" })
 
 Actions = require("actions")({ programs = programs, desktops = desktops })
 -- the full desktop's panels are Quickshell's; here F5 (Settings) opens the terminal panel
 Actions["panel.settings"] = function() hl.dispatch(hl.dsp.exec_cmd(tty .. "panel.sh")) end
 Actions["panel.control"] = Actions["panel.settings"]
+-- logging out locks: the login screen is a lock over None (tty/shell/LockScreen.qml)
+Actions["session.exit"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call lock lock")) end
 
 -- Mouse: Opt + left-drag moves a window, Opt + right-drag resizes it.
 hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })

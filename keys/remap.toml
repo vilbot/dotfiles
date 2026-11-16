@@ -6,7 +6,7 @@ devices = ["NuPhy Air75"]
 desktops = 5  # also read by hypr/hyprland.lua and the bar
 
 [apps]  # Hyprland window classes
-terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient", "tty-session", "tty-minibuffer", "tty-panel"]
+terminal = ["com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm", "foot", "footclient", "tty-session", "tty-panel"]
 zed = ["dev.zed.Zed"]
 browser = ["google-chrome", "chromium", "firefox", "brave-browser"]
 
@@ -160,6 +160,11 @@ name = "desktop"
 [[layer]]
 name = "command palette"  # its own Ctrl+N/P/J/K, nothing rewritten
 when = { layer = "quickshell-palette" }
+stop = true
+
+[[layer]]
+name = "None launcher"  # the None desktop's launcher: its own Ctrl+J/K/N/P/F, nothing rewritten
+when = { layer = "tty-launcher" }
 stop = true
 
 [[layer]]

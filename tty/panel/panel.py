@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """What the settings panel (tty/panel.sh) shows and does, one tab per class below.
 
-    panel.py tabs TAB          the tab line, TAB highlighted
-    panel.py keys TAB          the key hints for the footer
-    panel.py binds TAB         "ACTION KEY METHOD" per action, for fzf's --bind
-    panel.py list TAB          rows: "what you see<TAB>id"
-    panel.py do TAB ACTION ID  run an action on a row (ACTION = a key of TAB.actions)
+The open tab is remembered in $XDG_RUNTIME_DIR/tty-panel-tab; the commands work on it.
+    panel.py header | footer   the tab line / the key hints
+    panel.py list              rows: "what you see<TAB>id"
+    panel.py keys              every key any tab uses (fzf binds each once)
+    panel.py on KEY ID         fzf actions for KEY on this tab (nothing if it has no such key)
+    panel.py go -1|+1|TAB      fzf actions that switch tabs in place
+    panel.py do ACTION ID      run an action on a row (ACTION = a key of the tab's actions)
 
 A tab is a class with list() -> [(text, id)] and actions = {name: (key, hint, method)}.
 Actions that need the terminal (asking for a password, a y/n) have "ask" in their method's name.
 """
-import json, re, subprocess, sys
+import json, os, pathlib, re, shlex, subprocess, sys
 
 GREY, YELLOW, RED, BOLD, OFF = "\x1b[90m", "\x1b[35m", "\x1b[31m", "\x1b[1m", "\x1b[0m"
 
@@ -229,32 +231,70 @@ class Network:
 
 TABS = {"sound": Sound, "bluetooth": Bluetooth, "network": Network}
 COMMON = [("j/k", "move"), ("H/L", "tab"), ("q", "close")]
+STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
+ME = shlex.quote(str(pathlib.Path(__file__).resolve()))
+
+
+def current():
+    try:
+        tab = STATE.read_text().strip()
+    except OSError:
+        tab = ""
+    return tab if tab in TABS else next(iter(TABS))
+
+
+def header(tab):
+    return "  " + "   ".join(f"{BOLD}{YELLOW}{n}{OFF}" if n == tab else f"{GREY}{n}{OFF}" for n in TABS)
+
+
+def footer(tab):
+    own = [(k if k != "enter" else "⏎", hint) for k, hint, *_ in TABS[tab].actions.values()]
+    line = lambda pairs: "  " + "  ".join(f"{YELLOW}{k}{OFF} {h}" for k, h in pairs)
+    return line(own) + "\n" + line(COMMON)
+
+
+def keys():
+    """every key some tab uses (fzf binds them all once; `on` says what they do on this tab)"""
+    return sorted({key for t in TABS.values() for key, *_ in t.actions.values()})
+
+
+def show(tab):
+    """fzf actions that turn the panel to TAB in place (no restart, so no flicker)"""
+    STATE.write_text(tab)
+    # header and footer first: after a reload fzf looks for the row it tracked and drops actions
+    return f"transform-header({ME} header)+transform-footer({ME} footer)+reload-sync({ME} list)"
 
 
 def main():
-    cmd, tab = sys.argv[1], sys.argv[2]
+    cmd, args = sys.argv[1], sys.argv[2:]
+    tab = current()
     t = TABS[tab]()
-    if cmd == "tabs":
-        print("  " + "   ".join(f"{BOLD}{YELLOW}{n}{OFF}" if n == tab else f"{GREY}{n}{OFF}" for n in TABS))
+    if cmd == "header":
+        print(header(tab))
+    elif cmd == "footer":
+        print(footer(tab))
     elif cmd == "keys":
-        own = [(k if k != "enter" else "⏎", hint) for k, hint, *_ in t.actions.values()]
-        line = lambda pairs: "  " + "  ".join(f"{YELLOW}{k}{OFF} {h}" for k, h in pairs)
-        print(line(own) + "\n" + line(COMMON))
-    elif cmd == "binds":
-        for name, (key, _, method, *_) in t.actions.items():
-            print(name, key, method)
+        print(" ".join(keys()))
     elif cmd == "list":
         try:
             for text, id in t.list():
                 print(f"{text}\t{id}")
         except Exception as e:  # a tool missing or failing: say so instead of an empty list
             print(f"  {RED}{e}{OFF}\t-")
-    elif cmd == "do":
-        action, id = sys.argv[3], sys.argv[4]
-        if id == "-":
-            return
-        _, _, method, *args = t.actions[action]
-        getattr(t, method)(id, *args)
+    elif cmd == "go":               # go -1 | go +1 | go TAB
+        names = list(TABS)
+        to = args[0] if args[0] in TABS else names[(names.index(tab) + int(args[0])) % len(names)]
+        print(show(to))
+    elif cmd == "on":               # on KEY ID: the fzf actions KEY means on this tab
+        key, id = args
+        hit = next(((name, method) for name, (k, _, method, *_) in t.actions.items() if k == key), None)
+        if hit and id != "-":
+            run = "execute" if hit[1].startswith("ask") else "execute-silent"
+            print(f"{run}({ME} do {hit[0]} {shlex.quote(id)})+reload-sync({ME} list)")
+    elif cmd == "do":               # do ACTION ID
+        action, id = args
+        _, _, method, *extra = t.actions[action]
+        getattr(t, method)(id, *extra)
 
 
 if __name__ == "__main__":
