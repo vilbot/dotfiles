@@ -8,6 +8,11 @@ The open tab is remembered in $XDG_RUNTIME_DIR/tty-panel-tab; the commands work 
     panel.py on KEY ID         fzf actions for KEY on this tab (nothing if it has no such key)
     panel.py go -1|+1|TAB      fzf actions that switch tabs in place
     panel.py do ACTION ID      run an action on a row (ACTION = a key of the tab's actions)
+    panel.py click LINE COL ID fzf actions for a click on the key hints (as that key on the row)
+    panel.py failed ID         mark ID's last change as failed (a background command did)
+
+Changes that take a while (connecting, pairing) run in the background and their row says so
+("connecting…") until the change shows, or "failed": $XDG_RUNTIME_DIR/tty-panel-pending.json.
 
 A tab is a class with list() -> [(text, id)] and actions = {name: (key, hint, method)}.
 Actions that need the terminal (asking for a password, a y/n) have "ask" in their method's name.
@@ -27,6 +32,51 @@ def sh(*cmd, check=False):
 def bg(*cmd):
     """for slow commands (connecting): the list catches up on its own"""
     subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
+PENDING = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-pending.json"
+FAILED_FOR, PENDING_FOR = 6, 45   # seconds "failed" shows / a change may take before it's dropped
+
+
+def pending():
+    """{id: [what, since]} still current"""
+    import time
+    try:
+        p = json.loads(PENDING.read_text())
+    except (OSError, ValueError):
+        p = {}
+    now = time.time()
+    return {k: v for k, v in p.items() if now - v[1] < (FAILED_FOR if v[0] == "failed" else PENDING_FOR)}
+
+
+def mark(id, what=None):
+    """set (what) or clear (None) the pending state of a row"""
+    import time
+    p = pending()
+    if what:
+        p[id] = [what, time.time()]
+    else:
+        p.pop(id, None)
+    PENDING.write_text(json.dumps(p))
+
+
+def track(id, what, *cmd):
+    """run cmd in the background; the row shows `what…` meanwhile, "failed" if cmd fails"""
+    mark(id, what)
+    fail = shlex.join([sys.executable, str(pathlib.Path(__file__).resolve()), "failed", id])
+    bg("sh", "-c", f"{shlex.join(cmd)} || {fail}")
+
+
+def state(id, now, done, idle):
+    """what a row's state column shows: a pending change until `done` says it's through"""
+    p = pending().get(id)
+    if p and p[0] == "failed":
+        return f"{RED}failed{OFF}"
+    if p and not done(p[0]):
+        return f"{YELLOW}{p[0]}…{OFF}"
+    if p:
+        mark(id)
+    return now if now else idle
 
 
 def ask(question):
@@ -70,9 +120,9 @@ class Sound:
     @staticmethod
     def row(label, name, d, is_default, id):
         pct = int(next(iter(d["volume"].values()))["value_percent"].rstrip("%"))
-        mark = YELLOW + "*" + OFF if is_default else " "
+        star = YELLOW + "*" + OFF if is_default else " "
         level = f"{GREY}muted{OFF}" if d["mute"] else f"{bar(pct)} {pct:3}%"
-        return (f"{mark} {GREY}{label:4}{OFF}{fit(name, 30)} {level}", id)
+        return (f"{star} {GREY}{label:4}{OFF}{fit(name, 30)} {level}", id)
 
     def volume(self, id, step):
         kind, name = id.split(":", 1)
@@ -109,33 +159,30 @@ class Bluetooth:
         show = sh("bluetoothctl", "show")
         on = "Powered: yes" in show
         scanning = "Discovering: yes" in show
-        state = ("on" if on else f"{GREY}off{OFF}") + (f"  {YELLOW}scanning…{OFF}" if scanning else "")
-        rows = [(f"  {GREY}bluetooth{OFF} {state}", "adapter")]
+        adapter = ("on" if on else f"{GREY}off{OFF}") + (f"  {YELLOW}scanning…{OFF}" if scanning else "")
+        rows = [(f"  {GREY}bluetooth{OFF} {adapter}", "adapter")]
         if not on:
             return rows
         paired, connected = self.macs("Paired"), self.macs("Connected")
         for mac, name in sorted(self.macs().items(), key=lambda kv: (kv[0] not in paired, kv[1].lower())):
             if mac not in paired and name.replace("-", ":") == mac:
                 continue  # found by a scan but has no name: nothing to recognise it by
-            if mac in connected:
-                state = f"{YELLOW}connected{OFF}"
-            elif mac in paired:
-                state = "paired"
-            else:
-                state = f"{GREY}new{OFF}"
-            mark = YELLOW + "*" + OFF if mac in connected else " "
-            rows.append((f"{mark} {fit(name, 34)} {state}", mac))
+            on = mac in connected
+            plain = f"{YELLOW}connected{OFF}" if on else "paired" if mac in paired else f"{GREY}new{OFF}"
+            shown = state(mac, plain, lambda what: on == (what != "disconnecting"), plain)
+            star = YELLOW + "*" + OFF if on else " "
+            rows.append((f"{star} {fit(name, 34)} {shown}", mac))
         return rows
 
     def connect(self, id):
         if id == "adapter":
             return self.power(id)
         if id in self.macs("Connected"):
-            bg("bluetoothctl", "disconnect", id)
+            track(id, "disconnecting", "bluetoothctl", "disconnect", id)
         elif id in self.macs("Paired"):
-            bg("bluetoothctl", "connect", id)
+            track(id, "connecting", "bluetoothctl", "connect", id)
         else:
-            bg("sh", "-c", f"bluetoothctl pair {id} && bluetoothctl trust {id} && bluetoothctl connect {id}")
+            track(id, "pairing", "sh", "-c", f"bluetoothctl pair {id} && bluetoothctl trust {id} && bluetoothctl connect {id}")
 
     SCAN = ["bluetoothctl", "--timeout", "30", "scan", "on"]  # only this process can stop its scan
 
@@ -169,13 +216,14 @@ class Network:
 
     def list(self):
         rows = []
-        for dev, kind, state, con in nm("-f", "DEVICE,TYPE,STATE,CONNECTION", "device"):
+        for dev, kind, st, con in nm("-f", "DEVICE,TYPE,STATE,CONNECTION", "device"):
             if kind not in ("ethernet", "wifi"):
                 continue
-            on = state.startswith("connected")
+            on = st.startswith("connected")
             label = "wired" if kind == "ethernet" else "wifi"
-            what = f"{YELLOW}{con}{OFF}" if on else f"{GREY}{state}{OFF}"
-            rows.append((f"{YELLOW + '*' + OFF if on else ' '} {GREY}{label:6}{OFF}{fit(dev, 12)} {what}", f"dev:{dev}"))
+            plain = f"{YELLOW}{con}{OFF}" if on else f"{GREY}{st}{OFF}"
+            shown = state(f"dev:{dev}", plain, lambda what: on == (what != "disconnecting"), plain)
+            rows.append((f"{YELLOW + '*' + OFF if on else ' '} {GREY}{label:6}{OFF}{fit(dev, 12)} {shown}", f"dev:{dev}"))
         radio = sh("nmcli", "radio", "wifi").strip() == "enabled"
         rows.append((f"  {GREY}wifi{OFF}  {'on' if radio else GREY + 'off' + OFF}", "radio"))
         if radio:
@@ -185,9 +233,11 @@ class Network:
                 if not ssid or ssid in seen:
                     continue
                 seen.add(ssid)
-                mark = YELLOW + "*" + OFF if use == "*" else " "
-                note = "saved" if ssid in saved else "" if security in ("", "--") else "locked"
-                rows.append((f"{mark}   {fit(ssid, 30)} {bar(int(signal or 0), 6)} {GREY}{note}{OFF}", f"ssid:{ssid}"))
+                on = use == "*"
+                note = f"{GREY}{'saved' if ssid in saved else '' if security in ('', '--') else 'locked'}{OFF}"
+                shown = state(f"ssid:{ssid}", "", lambda what, on=on: on == (what != "disconnecting"), note)
+                star = YELLOW + "*" + OFF if on else " "
+                rows.append((f"{star}   {fit(ssid, 30)} {bar(int(signal or 0), 6)} {shown}", f"ssid:{ssid}"))
         return rows
 
     def ask_connect(self, id):
@@ -195,25 +245,23 @@ class Network:
             return self.wifi(id)
         kind, name = id.split(":", 1)
         if kind == "dev":
-            state = next((s for d, s in nm("-f", "DEVICE,STATE", "device") if d == name), "")
-            sh("nmcli", "device", "disconnect" if state.startswith("connected") else "connect", name)
+            st = next((s for d, s in nm("-f", "DEVICE,STATE", "device") if d == name), "")
+            if st.startswith("connected"):
+                track(id, "disconnecting", "nmcli", "device", "disconnect", name)
+            else:
+                track(id, "connecting", "nmcli", "device", "connect", name)
             return
         if any(u == "*" and s == name for u, s in nm("-f", "IN-USE,SSID", "device", "wifi", "list", "--rescan", "no")):
-            sh("nmcli", "connection", "down", "id", name)
+            track(id, "disconnecting", "nmcli", "connection", "down", "id", name)
         elif any(n == name for n, in nm("-f", "NAME", "connection", "show")):
-            print(f"\n  connecting to {name}…", flush=True)
-            sh("nmcli", "connection", "up", "id", name)
+            track(id, "connecting", "nmcli", "connection", "up", "id", name)
         else:
             security = next((sec for s, sec in nm("-f", "SSID,SECURITY", "device", "wifi", "list", "--rescan", "no") if s == name), "")
             cmd = ["nmcli", "device", "wifi", "connect", name]
             if security not in ("", "--"):
                 import getpass
                 cmd += ["password", getpass.getpass(f"\n  password for {name}: ")]
-            print(f"  connecting…", flush=True)
-            r = subprocess.run(cmd, capture_output=True, text=True)
-            if r.returncode:
-                print(f"  {r.stderr.strip()}\n  (any key)", flush=True)
-                sys.stdin.readline()
+            track(id, "connecting", *cmd)
 
     def wifi(self, id):
         on = sh("nmcli", "radio", "wifi").strip() == "enabled"
@@ -251,6 +299,18 @@ def footer(tab):
     own = [(k if k != "enter" else "⏎", hint) for k, hint, *_ in TABS[tab].actions.values()]
     line = lambda pairs: "  " + "  ".join(f"{YELLOW}{k}{OFF} {h}" for k, h in pairs)
     return line(own) + "\n" + line(COMMON)
+
+
+def footer_spans(tab):
+    """[(line, first column, last column, key)] of the hints, as fzf counts (from 1)"""
+    spans = []
+    for line, pairs in enumerate([[(k, h) for k, h, *_ in TABS[tab].actions.values()], COMMON], 1):
+        col = 3
+        for k, h in pairs:
+            text = f"{'⏎' if k == 'enter' else k} {h}"
+            spans.append((line, col, col + len(text) - 1, k))
+            col += len(text) + 2
+    return spans
 
 
 def keys():
@@ -291,6 +351,18 @@ def main():
         if hit and id != "-":
             run = "execute" if hit[1].startswith("ask") else "execute-silent"
             print(f"{run}({ME} do {hit[0]} {shlex.quote(id)})+reload-sync({ME} list)")
+    elif cmd == "click":            # click LINE COL ID: a click on the key hints
+        line, col, id = int(args[0]), int(args[1]), args[2]
+        key = next((k for l, a, b, k in footer_spans(tab) if l == line and a <= col <= b), None)
+        if key == "H/L":
+            print(show(list(TABS)[(list(TABS).index(tab) + 1) % len(TABS)]))
+        elif key == "q":
+            print(f"execute-silent({shlex.quote(str(pathlib.Path(__file__).resolve().parent.parent / 'panel.sh'))} close)")
+        elif key and key != "j/k":
+            sys.argv = [sys.argv[0], "on", key, id]
+            main()
+    elif cmd == "failed":           # failed ID
+        mark(args[0], "failed")
     elif cmd == "do":               # do ACTION ID
         action, id = args
         _, _, method, *extra = t.actions[action]

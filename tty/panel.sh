@@ -2,7 +2,8 @@
 # The "None" desktop's settings panel (F5, or "Settings" in the launcher): a terminal down the
 # right side, over the windows, with tabs for sound, bluetooth and network (what each shows and
 # does: tty/panel/panel.py). Same keys on every tab: j/k move, H/L (or Tab, or a click on the tab
-# line) switch tabs, q or Esc close; the tab's own keys are in the lines at the bottom.
+# line) switch tabs, q or Esc close; the tab's own keys are in the lines at the bottom, and a
+# click on one of those hints does what its key does.
 #   panel.sh            open, or close when it's open
 #   panel.sh run        the panel itself, inside its terminal
 #   panel.sh close      close it (sliding out)
@@ -35,6 +36,7 @@ case "${1:-}" in
             "click-header:transform:[[ -n \$FZF_CLICK_HEADER_WORD ]] && '$py' go \$FZF_CLICK_HEADER_WORD"
             "every(1):reload-sync('$py' list)"
             "double-click:transform('$py' on enter {2})"
+            "click-footer:transform('$py' click \$FZF_CLICK_FOOTER_LINE \$FZF_CLICK_FOOTER_COLUMN {2})"
         )
         for key in $("$py" keys); do binds+=("$key:transform('$py' on $key {2})"); done
         args=(); for b in "${binds[@]}"; do args+=(--bind "$b"); done
