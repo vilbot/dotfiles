@@ -21,7 +21,15 @@ local programs = {
 }
 
 -- tty/bin first: apps that ask for a terminal get this desktop's (bin/xdg-terminal-exec)
-hl.env("PATH", tty .. "bin:" .. os.getenv("PATH"))
+-- plus what ~/.zshrc adds (~/.local/bin; nvim from bob), so programs None starts itself (the
+-- launcher) find them too, not only shells
+do
+    local path = os.getenv("PATH")
+    for _, dir in ipairs({ home .. "/.local/share/bob/nvim-bin", home .. "/.local/bin", tty .. "bin" }) do
+        if not (":" .. path .. ":"):find(":" .. dir .. ":", 1, true) then path = dir .. ":" .. path end
+    end
+    hl.env("PATH", path)   -- only what's missing: a config reload starts from this PATH again
+end
 -- zsh gets logout, shutdown and reboot on top of ~/.zshrc (tty/zsh/.zshrc)
 hl.env("ZDOTDIR", tty .. "zsh")
 
