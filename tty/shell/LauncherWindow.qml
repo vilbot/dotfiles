@@ -9,7 +9,7 @@ import Quickshell.Hyprland
 Scope {
     id: launcher
     readonly property var screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-    readonly property int rows: Launcher.open ? Math.max(1, Launcher.results.length) : 0
+    readonly property int rows: Launcher.open ? Math.max(1, Math.min(12, Launcher.results.length)) : 0
 
     // a click anywhere else closes it
     PanelWindow {
@@ -30,7 +30,7 @@ Scope {
         anchors.top: true
         exclusionMode: ExclusionMode.Ignore
         implicitWidth: Ui.centerWidth
-        implicitHeight: Ui.barHeight + Ui.row * Math.max(1, Launcher.results.length) + 2
+        implicitHeight: Ui.barHeight + Ui.row * 12 + 2
         color: "transparent"
         mask: Region { item: body }
         WlrLayershell.layer: WlrLayer.Overlay
@@ -71,7 +71,7 @@ Scope {
                     Keys.onEnterPressed: Launcher.run(Launcher.current)
                     Keys.onUpPressed: Launcher.move(-1)
                     Keys.onDownPressed: Launcher.move(1)
-                    Keys.onTabPressed: Launcher.move(1)
+                    Keys.onTabPressed: Launcher.complete()
                     Keys.onBacktabPressed: Launcher.move(-1)
                     // physical Ctrl arrives as Super (Meta) through mackeys, as Ctrl without it
                     Keys.onPressed: event => {
@@ -87,7 +87,9 @@ Scope {
                 Connections {
                     target: Launcher
                     function onOpenChanged() { if (Launcher.open) input.forceActiveFocus() }
-                    function onQueryChanged() { if (input.text !== Launcher.query) input.text = Launcher.query }
+                    function onQueryChanged() {
+                        if (input.text !== Launcher.query) { input.text = Launcher.query; input.cursorPosition = input.text.length }
+                    }
                 }
             }
 
@@ -102,46 +104,51 @@ Scope {
                 border { color: Colors.base03; width: height > 0 ? 1 : 0 }
                 Behavior on height { NumberAnimation { duration: Ui.quick; easing.type: Easing.OutCubic } }
 
-                Column {
+                ListView {   // 12 rows show; a longer list (a folder) scrolls with the pick
                     x: 1; y: 1
                     width: parent.width - 2
-                    Repeater {
-                        model: Launcher.results
-                        Rectangle {
-                            id: row
-                            required property var modelData
-                            required property int index
-                            readonly property bool picked: index === Launcher.current
-                            width: parent.width
-                            height: Ui.row
-                            color: picked ? Colors.base02 : "transparent"
-                            Text {
-                                anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
-                                text: (row.picked ? "> " : "  ") + (Launcher.favorites.includes(row.modelData.id) ? "* " : "  ") + row.modelData.name
-                                font: row.picked ? Ui.bold : Ui.font
-                                color: row.picked ? Colors.base07 : Colors.base06
-                            }
-                            Text {
-                                anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
-                                text: row.modelData.detail
-                                font: Ui.font
-                                color: Colors.base04
-                                elide: Text.ElideRight
-                                width: Math.min(implicitWidth, parent.width / 2)
-                            }
-                            MouseArea {
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                onEntered: Launcher.current = row.index
-                                onClicked: Launcher.run(row.index)
-                            }
+                    height: Ui.row * Math.min(12, Math.max(1, count))
+                    model: Launcher.results
+                    currentIndex: Launcher.current
+                    highlightMoveDuration: 0
+                    boundsBehavior: Flickable.StopAtBounds
+                    onCurrentIndexChanged: positionViewAtIndex(currentIndex, ListView.Contain)
+                    delegate: Rectangle {
+                        id: row
+                        required property var modelData
+                        required property int index
+                        readonly property bool picked: index === Launcher.current
+                        width: ListView.view.width
+                        height: Ui.row
+                        color: picked ? Colors.base02 : "transparent"
+                        Text {
+                            anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+                            text: (row.picked ? "> " : "  ") + (Launcher.favorites.includes(row.modelData.id) ? "* " : "  ") + row.modelData.name
+                            font: row.picked ? Ui.bold : Ui.font
+                            color: row.modelData.isDir ? Colors.base0D : row.picked ? Colors.base07 : Colors.base06
+                        }
+                        Text {
+                            readonly property bool asking: Launcher.confirming === row.modelData.id
+                            anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
+                            text: asking ? "⏎ again to confirm" : row.modelData.detail
+                            font: asking ? Ui.bold : Ui.font
+                            color: asking ? Colors.base08 : Colors.base04
+                            elide: Text.ElideRight
+                            width: Math.min(implicitWidth, parent.width / 2)
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onEntered: Launcher.current = row.index
+                            onClicked: Launcher.run(row.index)
                         }
                     }
                 }
                 Text {  // typed something that matches nothing: Enter runs it
                     visible: Launcher.results.length === 0
                     anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
-                    text: Launcher.query.trim() === "" ? "no favorites yet: Ctrl+F on an app" : "⏎ runs it as a command"
+                    text: Launcher.query.trim() === "" ? "no favorites yet: Ctrl+F on an app"
+                        : Launcher.pathQuery ? "nothing here" : "⏎ runs it as a command"
                     font: Ui.font
                     color: Colors.base04
                 }
