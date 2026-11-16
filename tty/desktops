@@ -4,6 +4,10 @@
 # Picking Hyprland or KDE in the form ends None; this starts that one, and None (locked) again
 # when you log out of it. If desktops keep dying right away, this gives up and greetd shows its
 # login screen (tty/greeter) instead.
+# Everything this and the desktops print goes to the journal (journalctl -t none-session), not to
+# tty1: the first visible text on tty1 makes the kernel's console take over the screen and draw
+# what boot left there, for a moment, between the boot splash and None.
+exec > >(exec systemd-cat -t none-session) 2>&1
 tty=$(dirname "$(readlink -f "$0")")
 run=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 next=$run/tty-next   # the form writes the desktop to start here

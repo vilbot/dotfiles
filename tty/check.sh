@@ -45,6 +45,15 @@ for name, tab in m.TABS.items():
 PY
 ); then ok "tty/panel/panel.py"; else bad "tty/panel/panel.py: $err"; fi
 
+# the boot splash and Limine's colours generate (into a temporary folder / from a sample config)
+tmp=$(mktemp -d)
+printf 'timeout: 3\nwallpaper: boot():/x.png\n/Entry\n    kernel_path: boot():/vmlinuz\n' >"$tmp/limine.conf"
+if err=$(python3 tty/boot/plymouth.py "$tmp/ply" 2>&1 && python3 tty/boot/limine.py "$tmp/limine.conf" 2>&1) \
+        && [[ -f $tmp/ply/none.script && -f $tmp/ply/block7.png ]] && grep -q '^term_palette: ' "$tmp/limine.conf" \
+        && ! grep -q wallpaper "$tmp/limine.conf" && grep -q '^/Entry' "$tmp/limine.conf"
+then ok "tty/boot (plymouth theme, limine colours)"; else bad "tty/boot: $err"; fi
+rm -rf "$tmp"
+
 # the login screen: its Hyprland config (with its /etc paths pointed at a temporary copy),
 # and whether /etc/greetd/none still matches this repo (sudo tty/login.sh copies it)
 tmp=$(mktemp -d)
