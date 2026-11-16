@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The "None" desktop's settings panel (F5, or "Settings" in the launcher): a terminal down the
-# right side, over the windows, with tabs for sound, bluetooth and network (what each shows and
+# right side, over the windows, with tabs for sound, bluetooth, network and help (what each shows and
 # does: tty/panel/panel.py). Same keys on every tab: j/k move, H/L (or Tab, or a click on the tab
 # line) switch tabs, q or Esc close; the tab's own keys are in the lines at the bottom, and a
 # click on one of those hints does what its key does.
@@ -28,6 +28,8 @@ case "${1:-}" in
         exec "$dir/term" -a tty-panel "$self" run
         ;;
     run)
+        # the help tab is its own program (keys and the support chat); it comes back here for the others
+        [[ $(cat "${XDG_RUNTIME_DIR:-/tmp}/tty-panel-tab" 2>/dev/null) == help ]] && exec "$dir/panel/help.py"
         binds=(
             "j:down,k:up,g:first,G:last"
             "q:execute-silent('$self' close),esc:execute-silent('$self' close)"

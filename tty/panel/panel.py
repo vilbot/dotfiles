@@ -280,7 +280,15 @@ class Network:
             sh("nmcli", "connection", "delete", "id", name)
 
 
-TABS = {"sound": Sound, "bluetooth": Bluetooth, "network": Network}
+class Help:   # its own program in the panel's terminal (help.py): keys and a support chat
+    actions = {}
+
+    def list(self):
+        return []
+
+
+TABS = {"sound": Sound, "bluetooth": Bluetooth, "network": Network, "help": Help}
+HELP = shlex.quote(str(pathlib.Path(__file__).resolve().with_name("help.py")))
 COMMON = [("j/k", "move"), ("H/L", "tab"), ("q", "close")]
 STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
 ME = shlex.quote(str(pathlib.Path(__file__).resolve()))
@@ -334,6 +342,8 @@ def keys():
 def show(tab):
     """fzf actions that turn the panel to TAB in place (no restart, so no flicker)"""
     STATE.write_text(tab)
+    if tab == "help":   # not a list: the help program takes over the terminal
+        return f"become({HELP})"
     # header and footer first: after a reload fzf looks for the row it tracked and drops actions
     return f"transform-header({ME} header)+transform-footer({ME} footer)+reload-sync({ME} list)"
 

@@ -1,0 +1,8 @@
+# The help tab's robot (tty/panel/help.py): which model answers.
+#   backend = "claude"   Claude Code's CLI (`claude`), with `model` (haiku, sonnet, opus, or a full id).
+#                        It may only read files (None's, to find answers), never change them.
+#   backend = "command"  any program: it gets the instructions + question on stdin and prints the
+#                        answer (no memory between questions), e.g. command = "ollama run llama3.2"
+backend = "claude"
+model = "haiku"
+# command = "ollama run llama3.2"
