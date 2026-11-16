@@ -122,6 +122,9 @@ Actions = require("actions")({ programs = programs, desktops = desktops })
 -- the full desktop's panels are Quickshell's; here F5 (Settings) opens the terminal panel
 Actions["panel.settings"] = function() hl.dispatch(hl.dsp.exec_cmd(tty .. "panel.sh")) end
 Actions["panel.control"] = Actions["panel.settings"]
+-- F1 / F2: the brightness of None's own shell (the full desktop's isn't running here)
+Actions["brightness.down"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call brightness down")) end
+Actions["brightness.up"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call brightness up")) end
 -- logging out locks: the login screen is a lock over None (tty/shell/LockScreen.qml)
 Actions["session.exit"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call lock lock")) end
 

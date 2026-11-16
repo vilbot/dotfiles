@@ -9,7 +9,7 @@ import Quickshell.Services.Notifications
 
 PanelWindow {
     screen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
-    readonly property bool wanted: Status.volumeShown || Status.layoutShown || Notes.listOpen || Notes.popups.count > 0
+    readonly property bool wanted: Status.volumeShown || Brightness.shown || Status.layoutShown || Notes.listOpen || Notes.popups.count > 0
     visible: wanted || linger.running   // stays up while the last box fades out
     onWantedChanged: if (!wanted) linger.restart()
     Timer { id: linger; interval: Ui.quick + 40 }
@@ -31,6 +31,7 @@ PanelWindow {
         move: Transition { NumberAnimation { properties: "y"; duration: Ui.quick; easing.type: Easing.OutCubic } }
 
         Line { anchors.right: parent.right; text: Status.volume; shown: Status.volumeShown }
+        Line { anchors.right: parent.right; text: Brightness.text; shown: Brightness.shown }
         Line { anchors.right: parent.right; text: Status.layout; shown: Status.layoutShown }
 
         // ---- the list: drops down like the launcher's results ----

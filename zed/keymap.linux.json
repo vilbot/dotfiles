@@ -1548,6 +1548,131 @@
     }
   },
   {
+    "context": "Terminal",
+    "bindings": {
+      "super-a": [
+        "terminal::SendKeystroke",
+        "ctrl-a"
+      ],
+      "super-b": [
+        "terminal::SendKeystroke",
+        "ctrl-b"
+      ],
+      "super-c": [
+        "terminal::SendKeystroke",
+        "ctrl-c"
+      ],
+      "super-d": [
+        "terminal::SendKeystroke",
+        "ctrl-d"
+      ],
+      "super-e": [
+        "terminal::SendKeystroke",
+        "ctrl-e"
+      ],
+      "super-f": [
+        "terminal::SendKeystroke",
+        "ctrl-f"
+      ],
+      "super-g": [
+        "terminal::SendKeystroke",
+        "ctrl-g"
+      ],
+      "super-h": [
+        "terminal::SendKeystroke",
+        "ctrl-h"
+      ],
+      "super-i": [
+        "terminal::SendKeystroke",
+        "ctrl-i"
+      ],
+      "super-j": [
+        "terminal::SendKeystroke",
+        "ctrl-j"
+      ],
+      "super-k": [
+        "terminal::SendKeystroke",
+        "ctrl-k"
+      ],
+      "super-l": [
+        "terminal::SendKeystroke",
+        "ctrl-l"
+      ],
+      "super-m": [
+        "terminal::SendKeystroke",
+        "ctrl-m"
+      ],
+      "super-n": [
+        "terminal::SendKeystroke",
+        "ctrl-n"
+      ],
+      "super-o": [
+        "terminal::SendKeystroke",
+        "ctrl-o"
+      ],
+      "super-p": [
+        "terminal::SendKeystroke",
+        "ctrl-p"
+      ],
+      "super-q": [
+        "terminal::SendKeystroke",
+        "ctrl-q"
+      ],
+      "super-r": [
+        "terminal::SendKeystroke",
+        "ctrl-r"
+      ],
+      "super-s": [
+        "terminal::SendKeystroke",
+        "ctrl-s"
+      ],
+      "super-t": [
+        "terminal::SendKeystroke",
+        "ctrl-t"
+      ],
+      "super-u": [
+        "terminal::SendKeystroke",
+        "ctrl-u"
+      ],
+      "super-v": [
+        "terminal::SendKeystroke",
+        "ctrl-v"
+      ],
+      "super-w": [
+        "terminal::SendKeystroke",
+        "ctrl-w"
+      ],
+      "super-x": [
+        "terminal::SendKeystroke",
+        "ctrl-x"
+      ],
+      "super-y": [
+        "terminal::SendKeystroke",
+        "ctrl-y"
+      ],
+      "super-z": [
+        "terminal::SendKeystroke",
+        "ctrl-z"
+      ],
+      "super-[": [
+        "terminal::SendKeystroke",
+        "ctrl-["
+      ],
+      "super-]": [
+        "terminal::SendKeystroke",
+        "ctrl-]"
+      ],
+      "super-\\": [
+        "terminal::SendKeystroke",
+        "ctrl-\\"
+      ],
+      "super-space": [
+        "terminal::SendKeystroke",
+        "ctrl-space"
+      ]
+    }
+  },
+  {
     "use_key_equivalents": true,
     "bindings": {
       "f4": "debugger::Start",

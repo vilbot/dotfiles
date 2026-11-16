@@ -11,7 +11,7 @@ Zed's Linux defaults are its own ctrl-based set. So keymap.linux.json:
      keymap (keymap.json), with each keystroke translated to what Zed receives through mackeys:
          cmd -> ctrl,  ctrl -> super,  alt -> alt,  shift -> shift
 Result: Cmd+P, Cmd+D, ... do what they do on the Mac, and the physical Ctrl key is vim's
-Ctrl (Ctrl+D/U/O/W ...), exactly like on the Mac.
+Ctrl (Ctrl+D/U/O/W ...), exactly like on the Mac; in the terminal it is the shell's Ctrl (2b).
 
 Edit keymap.json (the Mac keymap, the source of truth), never keymap.linux.json.
 After a Zed upgrade, refresh upstream/ from the matching tag (see upstream/VERSION).
@@ -81,6 +81,13 @@ for name in ("default-macos.json", "vim.json"):
              if (sec.get("context"), k, json.dumps(v)) not in removed}
         if b:
             binds.append(section(sec, b))
+
+# 2b. the terminal gets the physical Ctrl keys, as on the Mac. There Zed passes any ctrl key it
+#     has no binding for to the shell; here they arrive as super (mackeys), which Zed doesn't pass,
+#     so each one is sent on explicitly. First, so Zed's own bindings (super-c, super-r) win.
+passthrough = [chr(c) for c in range(ord("a"), ord("z") + 1)] + ["[", "]", "\\", "space"]
+binds.insert(0, {"context": "Terminal", "bindings": {
+    f"super-{k}": ["terminal::SendKeystroke", f"ctrl-{k}"] for k in passthrough}})
 
 # 3. your Mac keymap, translated (its unbinds were applied in step 2) --------------------------
 for sec in user:

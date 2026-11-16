@@ -25,7 +25,6 @@ autoload -Uz compinit && compinit -C
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
 
 bindkey -e
-bindkey '^[f' vi-forward-word
 
 if (( is_mac )) && [[ -f "$(brew --prefix)/etc/profile.d/z.sh" ]]; then
     source "$(brew --prefix)/etc/profile.d/z.sh"
