@@ -182,6 +182,25 @@ class Help:
             t.update(line=THINKING[t["i"]], next=now + 1.4)
 
     # ---- input ----
+    SEQUENCES = {"[A": curses.KEY_UP, "OA": curses.KEY_UP, "[B": curses.KEY_DOWN, "OB": curses.KEY_DOWN,
+                 "[5~": curses.KEY_PPAGE, "[6~": curses.KEY_NPAGE, "[Z": curses.KEY_BTAB}
+
+    def escape(self):
+        """an Esc with more right behind it is a key curses didn't recognise (an arrow in the other
+        cursor mode): that key, or "" to ignore it; a lone Esc: None"""
+        self.scr.nodelay(True)
+        rest = ""
+        try:
+            while len(rest) < 6:
+                ch = self.scr.get_wch()
+                rest += ch if isinstance(ch, str) else ""
+        except curses.error:
+            pass
+        finally:
+            self.scr.timeout(150)
+        if not rest:
+            return None
+        return self.SEQUENCES.get(rest, "")
     def go(self, tab):
         STATE.write_text(tab)
         os.execv(str(PANEL), [str(PANEL), "run"])
@@ -196,8 +215,10 @@ class Help:
                 continue
             h, w = self.scr.getmaxyx()
             if k == "\x1b":
-                subprocess.run([str(PANEL), "close"])
-                return
+                k = self.escape()
+                if k is None:   # a lone Esc
+                    subprocess.run([str(PANEL), "close"])
+                    return
             if k in ("\t", curses.KEY_BTAB):
                 self.go(TABS[0] if k == "\t" else TABS[-2])
             elif k in ("\n", "\r", curses.KEY_ENTER):
@@ -236,6 +257,12 @@ class Help:
 
 
 def main():
+    # from the other tabs, fzf hands over its own input (the list's pipe) and output (/dev/null):
+    # draw on, and read from, the terminal itself
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        tty = os.open("/dev/tty", os.O_RDWR)
+        os.dup2(tty, 0)
+        os.dup2(tty, 1)
     os.environ.setdefault("ESCDELAY", "80")   # an arrow key is Esc + more: wait for the rest
     curses.wrapper(lambda scr: Help(scr).run())
 
