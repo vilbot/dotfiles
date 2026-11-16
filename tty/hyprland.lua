@@ -38,7 +38,7 @@ end
 -- Monitors: the modes chosen in the full desktop's settings window (hypr/settings.json); only
 -- those, none of its looks.
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
-hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto", scale = 1, mirror = "DP-4" })
+hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto", scale = 1, mirror = "desc:Samsung Electric Company LS27FG53x" })  -- by description: connector names change (DP-4 became DP-1 with NVIDIA loading early)
 for output, m in pairs((require("json").read(hypr .. "settings.json") or {}).monitors or {}) do
     hl.monitor({ output = output, mode = m.mode, position = m.position or "auto", scale = m.scale or "auto" })
 end

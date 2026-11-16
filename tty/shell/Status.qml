@@ -27,7 +27,9 @@ Singleton {
     Connections {
         target: root.sink?.audio ?? null
         function onVolumeChanged() {
-            root.volume = "vol " + root.bar(root.sink.audio.volume) + " " + String(root.percent).padStart(3) + "%"
+            // from the volume itself: `percent` (a binding) may not have caught up yet
+            const v = root.sink.audio.volume
+            root.volume = "vol " + root.bar(v) + " " + String(Math.round(v * 100)).padStart(3) + "%"
             root.volumeShown = true
             volumeTimer.restart()
         }

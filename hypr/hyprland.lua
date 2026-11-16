@@ -39,7 +39,7 @@ local programs = {
 -- applied at the end of this file).
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
 -- The TV mirrors the Samsung (one set of desktops, shown on both).
-hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto", scale = 1, mirror = "DP-4" })
+hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto", scale = 1, mirror = "desc:Samsung Electric Company LS27FG53x" })  -- by description: connector names change (DP-4 became DP-1 with NVIDIA loading early)
 
 -------------------
 ---- AUTOSTART ----

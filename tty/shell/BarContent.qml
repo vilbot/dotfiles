@@ -27,7 +27,7 @@ Item {
 
         Rectangle {
             readonly property var cell: cells.count > 0 ? cells.itemAt(desks.focusedIndex) : null  // count: redo once they exist
-            visible: content.here && cell
+            visible: content.here && cell && desks.focusedIndex >= 0 && desks.focusedIndex < Ui.desktops
             x: cell?.x ?? 0
             width: cell?.width ?? 0
             height: row.height
@@ -38,7 +38,7 @@ Item {
             id: row
             Repeater {
                 id: cells
-                model: Math.max(5, ...Hyprland.workspaces.values.map(w => w.id))
+                model: Ui.desktops
                 Text {
                     required property int index
                     readonly property int wsId: index + 1

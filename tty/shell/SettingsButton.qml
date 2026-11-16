@@ -9,8 +9,9 @@ Item {
     implicitHeight: row.implicitHeight
     // icons from a Nerd Font (Hack has none): the speaker shows the volume (low, medium, high),
     // muted and offline replace it in red
-    readonly property var problems: [Status.muted ? "\u{f0581}" : "", Status.online ? "" : "\u{f0318}"].filter(p => p)
-    readonly property string speaker: Status.percent < 34 ? "\u{f057f}" : Status.percent < 67 ? "\u{f0580}" : "\u{f057e}"
+    // Font Awesome's speakers: one speaker size, the waves added (Material's resize the speaker)
+    readonly property var problems: [Status.muted ? "\u{eee8}" : "", Status.online ? "" : "\u{f0318}"].filter(p => p)
+    readonly property string speaker: Status.percent < 34 ? "\u{f026}" : Status.percent < 67 ? "\u{f027}" : "\u{f028}"
     readonly property var icons: problems.length ? problems : [speaker]
 
     Row {
@@ -21,7 +22,12 @@ Item {
         Text {
             required property string modelData
             text: modelData
-            font { family: "MesloLGS Nerd Font Mono"; pixelSize: 15 }
+            font { family: "MesloLGS Nerd Font Mono"; pixelSize: 17 }
+            // one width and size for every icon: the volume levels' glyphs differ
+            width: 18
+            height: 18
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
             color: button.problems.length ? Colors.base08 : mouse.containsMouse ? Colors.base06 : Colors.base04
             // comes in like the launcher: a fade with a small slide
             opacity: 0
