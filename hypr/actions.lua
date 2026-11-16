@@ -119,6 +119,9 @@ return function(opts)
     -- Session
     A["session.reload"] = run(hl.dsp.reload_config())
     A["session.exit"] = run(hl.dsp.exit())
+    -- only where there's a lock screen and sleep (the None desktop passes programs.lock / .sleep)
+    A["session.lock"] = P.lock and exec(P.lock) or function() end
+    A["session.sleep"] = P.sleep and exec(P.sleep) or function() end
 
     return A
 end

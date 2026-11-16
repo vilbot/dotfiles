@@ -10,10 +10,12 @@ Rectangle {
     property color ink: Colors.base06
     property int maxWidth: parent?.width ?? 460
     property bool shown: true
+    property var buttons: []          // notification actions: [{ text }]; a click sends pressed(i)
     signal clicked()
+    signal pressed(int index)
 
-    width: Math.min(maxWidth, words.implicitWidth + 24)
-    height: words.implicitHeight + 12
+    width: Math.min(maxWidth, Math.max(words.implicitWidth, buttons.length ? buttonRow.width : 0) + 24)
+    height: words.implicitHeight + 12 + (buttons.length ? buttonRow.height + 4 : 0)
     color: flash.running ? Colors.base0D : mouse.containsMouse ? Colors.base01 : Colors.base00
     border { color: Colors.base03; width: 1 }
     opacity: shown ? 1 : 0
@@ -35,6 +37,25 @@ Rectangle {
         text: (line.title ? "<b>" + esc(line.title) + "</b>" + (line.text ? "<br>" : "") : "")
               + esc(line.text).replace(/\n/g, "<br>")
         function esc(s) { return (s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;") }
+    }
+    Row {   // the buttons, as text: [Run Cachy-Update]  [Close]
+        id: buttonRow
+        visible: line.buttons.length > 0
+        x: 12
+        y: words.y + words.implicitHeight + 4
+        z: 1
+        spacing: 12
+        Repeater {
+            model: line.buttons
+            Text {
+                required property var modelData
+                required property int index
+                text: "[" + modelData.text + "]"
+                font: Ui.font
+                color: hover.containsMouse ? Colors.base07 : Colors.base0D
+                MouseArea { id: hover; anchors.fill: parent; hoverEnabled: true; onClicked: line.pressed(parent.index) }
+            }
+        }
     }
     MouseArea {
         id: mouse

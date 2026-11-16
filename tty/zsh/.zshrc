@@ -7,7 +7,8 @@
     ZDOTDIR=$here  # shells started from here get these commands too
 }
 
-logout()   { qs -p ~/dotfiles/tty/shell ipc call lock lock; }  # back to the login form (a lock over None)
+logout()   { qs -p ~/dotfiles/tty/shell ipc call lock logout; }  # back to the login form (a lock over None)
+lock()     { qs -p ~/dotfiles/tty/shell ipc call lock lock; }    # locked: only your password opens it
 shutdown() { systemctl poweroff; }
 poweroff() { systemctl poweroff; }
 reboot()   { systemctl reboot; }

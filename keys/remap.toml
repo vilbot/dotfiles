@@ -156,6 +156,8 @@ name = "desktop"
 [layer.actions.Session]
 "session.reload" = { keys = [], label = "Reload Hyprland config" }
 "session.exit" = { keys = "opt+shift+esc", label = "Log out" }
+"session.lock" = { keys = "ctrl+cmd+q", label = "Lock" }
+"session.sleep" = { keys = [], label = "Sleep" }
 
 [[layer]]
 name = "command palette"  # its own Ctrl+N/P/J/K, nothing rewritten

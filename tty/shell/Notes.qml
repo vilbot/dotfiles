@@ -34,11 +34,18 @@ Singleton {
             if (popups.get(i).nid === nid) { popups.remove(i); return }
     }
 
-    // The app's own "open" action brings the right window forward (Chrome: the tab; foot: the
+    // The app's own action brings the right window forward (Chrome: the tab; foot: the
     // terminal that rang, focus_on_activate in tty/hyprland.lua). Without one: its app's window.
+    // Without a "default" action, the first button that isn't a dismiss ("Run Cachy-Update").
+    function main(n) {
+        const dismissal = /^(close|dismiss|ignore|cancel|later|no)$/i
+        return n.actions.find(a => a.identifier === "default")
+            ?? n.actions.find(a => !dismissal.test(a.identifier) && !dismissal.test(a.text)) ?? null
+    }
+    function invoke(n, act) { act.invoke(); n.dismiss(); listOpen = false }   // one of its buttons
     function open(n) {
-        const act = n.actions.find(a => a.identifier === "default")
-        if (act) { act.invoke(); n.dismiss(); listOpen = false; return }
+        const act = main(n)
+        if (act) return invoke(n, act)
         const names = [n.desktopEntry, n.appName].filter(s => s).map(s => s.toLowerCase())
         const win = Hyprland.toplevels.values.find(t => {
             const cls = (t.lastIpcObject?.class || t.wayland?.appId || "").toLowerCase()
@@ -52,6 +59,7 @@ Singleton {
         target: "notifications"
         function toggle(): void { root.listOpen = !root.listOpen }
         function clear(): void { root.clear() }
+        function open(): void { if (root.list.length) root.open(root.list[0]) }   // the newest, as a click
     }
     function clear() { for (const n of server.trackedNotifications.values.slice()) n.dismiss() }
 }

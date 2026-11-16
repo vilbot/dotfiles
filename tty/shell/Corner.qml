@@ -89,7 +89,9 @@ PanelWindow {
                         border.width: 0
                         title: modelData.appName ? modelData.appName + ": " + modelData.summary : modelData.summary
                         text: modelData.body
+                        buttons: modelData.actions.filter(a => a.identifier !== "default")
                         onClicked: Notes.open(modelData)
+                        onPressed: i => Notes.invoke(modelData, buttons[i])
                     }
                 }
             }
@@ -108,6 +110,8 @@ PanelWindow {
                 Component.onCompleted: shown = Qt.binding(() => !pop.leaving && !Notes.listOpen)
                 title: n ? (n.appName ? n.appName + ": " + n.summary : n.summary) : ""
                 text: n?.body ?? ""
+                buttons: n ? n.actions.filter(a => a.identifier !== "default") : []
+                onPressed: i => { if (n) Notes.invoke(n, buttons[i]) }
                 ink: n?.urgency === NotificationUrgency.Critical ? Colors.base08 : Colors.base06
                 onClicked: if (n) Notes.open(n)
                 Timer {   // the popup leaves; the notification stays in the list

@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Claude Code's Notification hook (in ~/.claude/settings.json), for None's terminal (foot): a
+# desktop notification that, clicked, brings back the terminal Claude Code runs in. Claude Code's
+# own notifications don't know foot ("auto" picks nothing for it), and foot's own (OSC 777) can't
+# focus its window from a click under Quickshell (no activation token), so this does both itself.
+# Only while that terminal isn't the focused window. Elsewhere (Ghostty) Claude Code notifies itself.
+[[ $TERM == foot* ]] || exit 0
+message=$(jq -r '.message // empty' 2>/dev/null)
+title="Claude Code${PWD:+: ${PWD/#$HOME/\~}}"
+
+# the terminal window: the first parent process that is foot
+pid=$$ term=""
+while [[ -z $term && $pid -gt 1 ]]; do
+    pid=$(ps -o ppid= -p "$pid" | tr -d ' ')
+    [[ $(ps -o comm= -p "$pid" 2>/dev/null) == foot ]] && term=$pid
+done
+[[ -n $term ]] || exit 0
+[[ $(hyprctl activewindow -j 2>/dev/null | jq -r .pid) == "$term" ]] && exit 0   # you're looking at it
+
+# in the background, so Claude Code doesn't wait for the click
+(
+    action=$(notify-send --app-name "Claude Code" --action=default=Open --wait \
+        "$title" "${message:-needs your attention}" 2>/dev/null)
+    [[ $action == default ]] && hyprctl dispatch "hl.dsp.focus({ window = 'pid:$term' })" >/dev/null
+) </dev/null >/dev/null 2>&1 &
+disown
+exit 0

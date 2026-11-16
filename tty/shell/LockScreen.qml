@@ -1,4 +1,4 @@
-// The login screen, as a lock over None: you're logged in from boot (greetd starts tty/desktops),
+// The login screen, as a lock over None (and, in "lock" mode, the plain lock: only the password): you're logged in from boot (greetd starts tty/desktops),
 // and None waits locked behind this form until your password opens it. Unlocking needs no new
 // session, so there's no black between the form and the desktop. Logging out of None locks it
 // again (session.exit and zsh's `logout`, tty/hyprland.lua and tty/zsh/.zshrc).
@@ -24,7 +24,10 @@ Scope {
     readonly property string run: Quickshell.env("XDG_RUNTIME_DIR")
 
     property bool locked: false
-    property int field: 2                 // 0 desktop, 1 login, 2 password
+    // "login": the whole form (boot, logging out); "lock": only the password, for you, back to None
+    property string mode: "login"
+    readonly property bool locking: mode === "lock"
+    property int field: 2                 // 0 desktop, 1 login, 2 password (always, locking)
     property int pick: 0
     property string login: Quickshell.env("USER") ?? ""
     property string password: ""
@@ -33,10 +36,17 @@ Scope {
 
     FileView { id: marker; path: lock.run + "/tty-locked"; blockLoading: true; printErrors: false }
     FileView { id: next; path: lock.run + "/tty-next"; printErrors: false }
-    Component.onCompleted: locked = marker.text().trim() === "locked"
+    // the marker: "locked" (the login form; tty/desktops writes it at boot) or "lock"
+    Component.onCompleted: {
+        const m = marker.text().trim()
+        mode = m === "lock" ? "lock" : "login"
+        locked = m === "locked" || m === "lock"
+    }
 
-    function lockNow() {
-        marker.setText("locked")
+    function lockNow(how) {
+        mode = how
+        marker.setText(how === "lock" ? "lock" : "locked")
+        login = Quickshell.env("USER") ?? ""
         field = 2; pick = 0; password = ""; message = ""
         locked = true
     }
@@ -48,7 +58,7 @@ Scope {
         if (!pam.start()) { checking = false; message = "can't check passwords (PAM)" }
     }
     function opened() {   // the password was right
-        const to = desktops[pick]
+        const to = locking ? "None" : desktops[pick]
         password = ""
         if (to === "None") {
             marker.setText("")
@@ -77,7 +87,8 @@ Scope {
 
     IpcHandler {
         target: "lock"
-        function lock(): void { lock.lockNow() }
+        function lock(): void { lock.lockNow("lock") }       // Ctrl+Cmd+Q, `lock`, before sleep
+        function logout(): void { lock.lockNow("login") }    // Opt+Shift+Esc, `logout`
     }
 
     WlSessionLock {
@@ -111,6 +122,8 @@ Scope {
                     const text = lock.field === 1 ? "login" : "password"
                     if (k === Qt.Key_Return || k === Qt.Key_Enter) {
                         if (lock.field === 2) lock.submit(); else lock.field++
+                    } else if (lock.locking && [Qt.Key_Up, Qt.Key_Down, Qt.Key_Tab, Qt.Key_Backtab].includes(k)) {
+                        // locked: only the password
                     } else if (k === Qt.Key_Up || k === Qt.Key_Backtab) {
                         lock.field = Math.max(0, lock.field - 1)
                     } else if (k === Qt.Key_Down || k === Qt.Key_Tab) {
@@ -137,6 +150,7 @@ Scope {
                 Column {
                     y: term.line   // a blank first line, as a fresh terminal has its prompt there
                     Row {
+                        visible: !lock.locking
                         height: term.line
                         Text { text: "  "; font: term.font }
                         Label { text: "desktop"; on: lock.field === 0 }
@@ -180,14 +194,15 @@ Scope {
                     width: term.cell
                     height: term.line
                     color: Colors.base06
-                    y: term.line * (1 + lock.field)
+                    y: term.line * (1 + lock.field - (lock.locking ? 1 : 0))
                     x: term.cell * (2 + 10 + (lock.field === 0
                         ? lock.desktops.slice(0, lock.pick).reduce((n, d) => n + d.length + 4, 0) + 1
                         : lock.field === 1 ? lock.login.length : lock.password.length))
                 }
                 Text {
                     anchors { bottom: parent.bottom; bottomMargin: 6 }
-                    text: "  ↑↓ line   ←→ desktop   ⏎ " + (lock.field === 2 ? "log in" : "next")
+                    text: lock.locking ? "  ⏎ unlock"
+                        : "  ↑↓ line   ←→ desktop   ⏎ " + (lock.field === 2 ? "log in" : "next")
                     font: term.font
                     color: Colors.base04
                 }

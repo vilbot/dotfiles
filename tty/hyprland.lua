@@ -16,6 +16,8 @@ local programs = {
     terminal     = term,
     launcher     = "qs -p " .. tty .. "shell ipc call launcher toggle",  -- in the bar (tty/shell)
     launcher_alt = "qs -p " .. tty .. "shell ipc call launcher toggle",
+    lock         = "qs -p " .. tty .. "shell ipc call lock lock",   -- only the password (tty/shell/LockScreen.qml)
+    sleep        = "systemctl suspend",   -- tty/hypridle.conf locks first
 }
 
 -- tty/bin first: apps that ask for a terminal get this desktop's (bin/xdg-terminal-exec)
@@ -52,7 +54,7 @@ hl.on("hyprland.start", function()
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
         .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
-    hl.exec_cmd("hypridle")
+    hl.exec_cmd("hypridle -c " .. tty .. "hypridle.conf")
     -- the bar with the launcher, volume, keyboard layout, notifications, and the lock that is the
     -- login screen (tty/shell); first, so it locks before anything else shows
     hl.exec_cmd("qs -p " .. tty .. "shell")
@@ -126,7 +128,7 @@ Actions["panel.control"] = Actions["panel.settings"]
 Actions["brightness.down"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call brightness down")) end
 Actions["brightness.up"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call brightness up")) end
 -- logging out locks: the login screen is a lock over None (tty/shell/LockScreen.qml)
-Actions["session.exit"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call lock lock")) end
+Actions["session.exit"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call lock logout")) end
 
 -- Mouse: Opt + left-drag moves a window, Opt + right-drag resizes it.
 hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })
