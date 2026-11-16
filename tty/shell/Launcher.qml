@@ -98,11 +98,17 @@ Singleton {
         names.sort((a, b) => (b.endsWith("/") - a.endsWith("/"))
             || (b.toLowerCase().startsWith(pre) - a.toLowerCase().startsWith(pre)) || a.localeCompare(b))
         const how = pathCmds[pq.cmd]
-        return names.map(n => {
+        const rows = names.map(n => {
             const shown = pq.folder + n, dir = n.endsWith("/")
             return { id: "path:" + shown, name: shown, detail: dir ? "folder" : "", isPath: true, isDir: dir,
                      run: exec(how.open(expand(shown), dir)) }
         })
+        // a path ending in "/" means that folder: it comes first (and is picked), so Enter opens
+        // what the prompt says; what's inside follows
+        if (pq.prefix === "")
+            rows.unshift({ id: "path:" + pq.folder, name: pq.folder, detail: "this folder", isPath: true, isDir: true,
+                           run: exec(how.open(expand(pq.folder), true)) })
+        return rows
     }
 
     // ---- search --------------------------------------------------------------------------
@@ -137,11 +143,20 @@ Singleton {
     function move(by) { if (results.length) current = (current + by + results.length) % results.length }
     function toggle() { if (desk) return; if (open) close(); else { query = ""; current = 0; listedFolder = ""; open = true } }
     function close() { open = false; confirming = ""; query = "" }
-    function complete() {
+    // what Tab makes of the query: the picked path (a folder: its contents list next), or the
+    // picked entry's name (`Files ~/` for the entries that list folders)
+    function completion() {
         const e = results[current]
-        if (!e) return
-        if (pathQuery) query = pathQuery.word + " " + e.name   // a folder: its contents list next
-        else query = e.pathCmd ? e.pathCmd + " ~/" : e.name
+        if (!e) return query
+        if (pathQuery) return pathQuery.word + " " + e.name
+        return e.pathCmd ? e.pathCmd + " ~/" : e.name
+    }
+    function complete() { query = completion() }
+    // the rest of it, shown dimmed after what you typed (when it continues what you typed)
+    readonly property string ghost: {
+        const c = completion()
+        return query !== "" && c.length > query.length && c.toLowerCase().startsWith(query.toLowerCase())
+            ? c.slice(query.length) : ""
     }
     function run(i) {
         const e = results[i]

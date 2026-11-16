@@ -1,6 +1,7 @@
 // The launcher's text field, the same in the bar (LauncherWindow.qml) and on an empty desktop
 // (EmptyDesk.qml): what you type is Launcher.query; Enter runs, Tab completes, Up/Down (or
 // Ctrl+J/K/N/P) move, Ctrl+F adds or removes a favorite, Esc closes (on a desktop: clears).
+// What Tab would add shows dimmed after the text (Launcher.ghost); → at the end takes it too.
 import QtQuick
 
 TextInput {
@@ -23,6 +24,18 @@ TextInput {
     Keys.onUpPressed: Launcher.move(-1)
     Keys.onDownPressed: Launcher.move(1)
     Keys.onTabPressed: Launcher.complete()
+    Keys.onRightPressed: event => {
+        if (cursorPosition === text.length && Launcher.ghost !== "") Launcher.complete()
+        else event.accepted = false
+    }
+    Text {   // the ghost: where the text ends, under the cursor's block like a terminal's
+        x: input.contentWidth
+        anchors.verticalCenter: parent.verticalCenter
+        visible: input.cursorPosition === input.text.length
+        text: Launcher.ghost
+        font: input.font
+        color: Colors.base04
+    }
     Keys.onBacktabPressed: Launcher.move(-1)
     // physical Ctrl arrives as Super (Meta) through mackeys, as Ctrl without it
     Keys.onPressed: event => {
