@@ -18,6 +18,7 @@ Singleton {
     property string query: ""
     property int current: 0
     property string confirming: ""        // the id of a command waiting for its second Enter
+    property bool desk: false             // an empty desktop shows it (EmptyDesk.qml); Cmd+Space does nothing then
 
     readonly property string tty: Quickshell.shellDir + "/.."
     readonly property string home: Quickshell.env("HOME")
@@ -131,8 +132,8 @@ Singleton {
     onQueryChanged: confirming = ""
 
     function move(by) { if (results.length) current = (current + by + results.length) % results.length }
-    function toggle() { if (open) close(); else { query = ""; current = 0; listedFolder = ""; open = true } }
-    function close() { open = false; confirming = "" }
+    function toggle() { if (desk) return; if (open) close(); else { query = ""; current = 0; listedFolder = ""; open = true } }
+    function close() { open = false; confirming = ""; query = "" }
     function complete() {
         const e = results[current]
         if (!e) return
@@ -151,7 +152,7 @@ Singleton {
     IpcHandler {
         target: "launcher"
         function toggle(): void { root.toggle() }
-        function search(text: string): void { root.open = true; root.query = text }
+        function search(text: string): void { if (!root.desk) root.open = true; root.query = text }
         function complete(): void { root.complete() }   // Tab, for testing
     }
 }

@@ -58,38 +58,15 @@ Scope {
                     font: Ui.bold
                     color: Colors.base0E
                 }
-                TextInput {
+                LauncherInput {
                     id: input
                     anchors { left: caret.right; leftMargin: 8; right: parent.right; verticalCenter: parent.verticalCenter }
                     font: Ui.font
-                    color: Colors.base07
-                    selectionColor: Colors.base02
-                    cursorDelegate: Rectangle { width: 8; color: Colors.base06; visible: input.activeFocus }
-                    onTextEdited: Launcher.query = text
-                    Keys.onEscapePressed: Launcher.close()
-                    Keys.onReturnPressed: Launcher.run(Launcher.current)
-                    Keys.onEnterPressed: Launcher.run(Launcher.current)
-                    Keys.onUpPressed: Launcher.move(-1)
-                    Keys.onDownPressed: Launcher.move(1)
-                    Keys.onTabPressed: Launcher.complete()
-                    Keys.onBacktabPressed: Launcher.move(-1)
-                    // physical Ctrl arrives as Super (Meta) through mackeys, as Ctrl without it
-                    Keys.onPressed: event => {
-                        if (!(event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) return
-                        const k = event.key
-                        if (k === Qt.Key_J || k === Qt.Key_N) Launcher.move(1)
-                        else if (k === Qt.Key_K || k === Qt.Key_P) Launcher.move(-1)
-                        else if (k === Qt.Key_F) Launcher.toggleFavorite(Launcher.results[Launcher.current])
-                        else return
-                        event.accepted = true
-                    }
+                    onCancelled: Launcher.close()
                 }
                 Connections {
                     target: Launcher
                     function onOpenChanged() { if (Launcher.open) input.forceActiveFocus() }
-                    function onQueryChanged() {
-                        if (input.text !== Launcher.query) { input.text = Launcher.query; input.cursorPosition = input.text.length }
-                    }
                 }
             }
 

@@ -58,8 +58,7 @@ hl.on("hyprland.start", function()
     -- the bar with the launcher, volume, keyboard layout, notifications, and the lock that is the
     -- login screen (tty/shell); first, so it locks before anything else shows
     hl.exec_cmd("qs -p " .. tty .. "shell")
-    -- The first terminal; a new one opens whenever the last window closes (tty/session.sh).
-    hl.exec_cmd(tty .. "session.sh")
+    -- no terminal: an empty desktop is the launcher's prompt (tty/shell/EmptyDesk.qml)
 end)
 
 hl.config({
