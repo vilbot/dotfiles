@@ -9,6 +9,9 @@ The open tab is remembered in $XDG_RUNTIME_DIR/tty-panel-tab; the commands work 
     panel.py go -1|+1|TAB      fzf actions that switch tabs in place
     panel.py do ACTION ID      run an action on a row (ACTION = a key of the tab's actions)
     panel.py click LINE COL ID fzf actions for a click on the key hints (as that key on the row)
+    panel.py tab-at COL        fzf actions for a click on the tab line at column COL (from 1)
+    panel.py refresh           (every second, in the background) the list again, as fzf actions;
+                               nothing if the tab changed meanwhile (it would put the old one back)
     panel.py failed ID         mark ID's last change as failed (a background command did)
 
 Changes that take a while (connecting, pairing) run in the background and their row says so
@@ -291,6 +294,16 @@ def current():
     return tab if tab in TABS else next(iter(TABS))
 
 
+def tab_at(col):
+    """the tab whose name is at column COL of the tab line ("  sound   bluetooth   network")"""
+    start = 3
+    for n in TABS:
+        if start <= col < start + len(n):
+            return n
+        start += len(n) + 3
+    return None
+
+
 def header(tab):
     return "  " + "   ".join(f"{BOLD}{YELLOW}{n}{OFF}" if n == tab else f"{GREY}{n}{OFF}" for n in TABS)
 
@@ -361,6 +374,16 @@ def main():
         elif key and key != "j/k":
             sys.argv = [sys.argv[0], "on", key, id]
             main()
+    elif cmd == "refresh":
+        cache = STATE.with_name("tty-panel-list")
+        rows = "".join(f"{text}\t{id}\n" for text, id in t.list())
+        if current() == tab:   # still the same tab
+            cache.write_text(rows)
+            print(f"reload-sync(cat {shlex.quote(str(cache))})")
+    elif cmd == "tab-at":           # tab-at COL: a click on the tab line (fzf's clicked "word" is
+        to = tab_at(int(args[0]))   # the whole line: the rows' tab delimiter applies to it too)
+        if to:
+            print(show(to))
     elif cmd == "failed":           # failed ID
         mark(args[0], "failed")
     elif cmd == "do":               # do ACTION ID

@@ -33,8 +33,9 @@ case "${1:-}" in
             "q:execute-silent('$self' close),esc:execute-silent('$self' close)"
             "H:transform('$py' go -1),shift-tab:transform('$py' go -1)"
             "L:transform('$py' go +1),tab:transform('$py' go +1)"
-            "click-header:transform:[[ -n \$FZF_CLICK_HEADER_WORD ]] && '$py' go \$FZF_CLICK_HEADER_WORD"
-            "every(1):reload-sync('$py' list)"
+            "click-header:transform('$py' tab-at \$FZF_CLICK_HEADER_COLUMN)"
+            # the list again every second, built in the background so keys and clicks never wait
+            "every(1):bg-transform('$py' refresh)"
             "double-click:transform('$py' on enter {2})"
             "click-footer:transform('$py' click \$FZF_CLICK_FOOTER_LINE \$FZF_CLICK_FOOTER_COLUMN {2})"
         )
