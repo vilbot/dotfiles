@@ -65,7 +65,8 @@ Singleton {
     // ---- paths: "Files ~/Doc" lists ~/ for names starting with "Doc" -------------------------
     readonly property var pathCmds: ({
         files: { open: (p, dir) => dir ? [term, "yazi", p] : ["xdg-open", p] },
-        nvim: { open: (p, dir) => [term, "nvim", p] },
+        // nvim runs in the folder (a file's own folder), so its working directory is that
+        nvim: { open: (p, dir) => ["sh", "-c", 'cd "$1" && exec "$2" nvim "$3"', "_", dir ? p : p.replace(/\/[^/]*$/, "/"), term, dir ? "." : p] },
         terminal: { open: (p, dir) => ["sh", "-c", 'cd "$1" && exec "$2"', "_", dir ? p : p.replace(/\/[^/]*$/, "/"), term] },
     })
     readonly property var pathQuery: {
