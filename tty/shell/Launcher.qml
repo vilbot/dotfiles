@@ -5,8 +5,14 @@
 //   Files <path>    the folder's contents: Enter opens a folder in yazi, a file in its app
 //   nvim <path>     the same, Enter opens it in nvim (its terminal closes with it)
 //   Terminal <path> the same, Enter opens a terminal there
-// Tab completes: the picked file or folder (and goes into a folder), or the picked entry's name
-// (`Files ~/` for the three above). Enter starts the pick, or runs what you typed as a command.
+//   Google Chrome <text>  (or `chrome <text>`) websites: nothing typed yet, a new window (picked), then
+//                   the common ones (tty/sites.txt) and the ones you go to most; typing, what you typed (an
+//                   address, or a search), Chrome's history and Google's suggestions, as Chrome's
+//                   own address bar does. Enter opens it in Chrome,
+//                   Cmd+N in a new window, Cmd+Shift+N in a new incognito one (also on Google Chrome itself)
+// Tab completes: the picked file or folder (and goes into a folder), the picked site or
+// suggestion, or the picked entry's name (`Files ~/` for the three above, `Google Chrome `).
+// Enter starts the pick, or runs what you typed as a command.
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -46,7 +52,8 @@ Singleton {
     readonly property var entries: own.concat(DesktopEntries.applications.values
         .filter(e => !e.noDisplay)
         .map(e => ({ id: e.id, name: e.name, detail: e.genericName || "", words: (e.keywords ?? []).join(" "),
-                     run: app(e.id) })))
+                     webCmd: e.id === "google-chrome" ? e.name : undefined,
+                     run: e.id === "google-chrome" ? chromeApp(app(e.id)) : app(e.id) })))
 
     // ---- favorites -----------------------------------------------------------------------
     FileView {
@@ -57,7 +64,7 @@ Singleton {
     }
     readonly property var favorites: favFile.text().split("\n").filter(l => l !== "")
     function toggleFavorite(e) {
-        if (!e || e.isPath) return
+        if (!e || e.isPath || e.isWeb) return
         const favs = favorites.includes(e.id) ? favorites.filter(f => f !== e.id) : favorites.concat([e.id])
         favFile.setText(favs.join("\n") + "\n")
     }
@@ -111,6 +118,103 @@ Singleton {
         return rows
     }
 
+    // ---- websites: "Google Chrome you" lists sites and searches for "you" ---------------------
+    readonly property var webQuery: {
+        const m = query.match(/^(google chrome|chrome)\s(.*)$/i)
+        return m ? { word: m[1], text: m[2].trim() } : null
+    }
+    // how: "" (a tab in Chrome's window), "incognito" or "window" (a new one)
+    function chromeFlags(how) { return how === "incognito" ? ["--incognito"] : how === "window" ? ["--new-window"] : [] }
+    function chrome(url) {
+        return how => Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how), [url]))
+    }
+    // Google Chrome itself: Enter as any app, Cmd+N / Cmd+Shift+N a new (incognito) window
+    function chromeApp(plain) {
+        return how => how ? Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how))) : plain()
+    }
+    // can the pick open in a new Chrome window (Cmd+N)?
+    function chromePick() { const e = results[current]; return !!e && (e.isWeb || e.id === "google-chrome") }
+    // an address (has a dot or a scheme, no spaces) or words to search for
+    function webTarget(text) {
+        if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text) || /^(localhost|[^\s\/]+\.[^\s\/]{2,})(:\d+)?(\/\S*)?$/i.test(text))
+            return { url: /^[a-z][a-z0-9+.-]*:\/\//i.test(text) ? text : "https://" + text, search: false }
+        return { url: "https://www.google.com/search?q=" + encodeURIComponent(text), search: true }
+    }
+    function host(url) { return url.replace(/^[a-z]+:\/\/(www\.)?/i, "").replace(/\/.*$/, "") }
+    FileView {
+        id: sitesFile
+        path: root.tty + "/sites.txt"
+        watchChanges: true
+        onFileChanged: reload()
+    }
+    readonly property var sites: sitesFile.text().split("\n").filter(l => l.trim() !== "")
+        .map(l => { const i = l.lastIndexOf(" "); return { title: l.slice(0, i).trim(), url: l.slice(i + 1).trim() } })
+    // Chrome's history (read-only: Chrome keeps it locked) and Google's suggestions, fetched a
+    // moment after typing stops; an answer for text that has changed since is dropped
+    property var history: []              // [{ title, url }]
+    property var suggestions: []          // ["text"]
+    property var fetchedFor: null         // the text the lists are for (null: none yet)
+    readonly property string historyDb: home + "/.config/google-chrome/Default/History"
+    onWebQueryChanged: if (webQuery && webQuery.text !== fetchedFor) fetchTimer.restart()
+    Timer {
+        id: fetchTimer
+        interval: 120
+        onTriggered: {
+            if (!root.webQuery) return
+            const t = root.webQuery.text
+            root.fetchedFor = t
+            const like = "%" + t.replace(/'/g, "''") + "%"
+            const where = t === "" ? "" : ` and (url like '${like}' or title like '${like}')`
+            historyProc.wanted = t
+            historyProc.exec(["sqlite3", "-readonly", "-separator", "\t", `file:${root.historyDb}?immutable=1`,
+                `select url, title from urls where hidden = 0${where} order by typed_count desc, visit_count desc limit ${t === "" ? 8 : 5}`])
+            if (t === "") { root.suggestions = []; return }
+            suggestProc.wanted = t
+            suggestProc.exec(["curl", "-s", "--max-time", "2", "--get", "--data-urlencode", "q=" + t,
+                "https://suggestqueries.google.com/complete/search?client=chrome"])
+        }
+    }
+    Process {
+        id: historyProc
+        property string wanted
+        stdout: StdioCollector {
+            onStreamFinished: if (root.webQuery && root.webQuery.text === historyProc.wanted)
+                root.history = text.split("\n").filter(l => l).map(l => { const [url, title] = l.split("\t"); return { url: url, title: title || "" } })
+        }
+    }
+    Process {
+        id: suggestProc
+        property string wanted
+        stdout: StdioCollector {
+            onStreamFinished: {
+                if (!root.webQuery || root.webQuery.text !== suggestProc.wanted) return
+                try { root.suggestions = JSON.parse(text)[1].slice(0, 6) } catch (e) { root.suggestions = [] }
+            }
+        }
+    }
+    function webEntries(wq) {
+        const rows = [], seen = new Set()
+        const add = (name, detail, url, done) => {
+            const key = url.replace(/^[a-z]+:\/\/(www\.)?/i, "").replace(/\/$/, "")   // one row per page
+            if (seen.has(key)) return
+            seen.add(key)
+            rows.push({ id: "web:" + url, name: name, detail: detail, isWeb: true, complete: done, run: chrome(url) })
+        }
+        if (wq.text !== "") {
+            const t = webTarget(wq.text)
+            add(wq.text, t.search ? "Google search" : "open", t.url, wq.text)
+        } else {
+            add("New window", "empty", "chrome://newtab", "")   // first, so Enter on `Google Chrome ` opens nothing else
+            // Enter and Cmd+N: a new window on a new tab; Cmd+Shift+N: incognito
+            rows[0].run = how => Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how || "window")))
+            for (const s of sites) add(s.title, host(s.url), s.url, host(s.url))
+        }
+        for (const h of history) add(h.title || host(h.url), host(h.url), h.url, h.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))
+        if (wq.text !== "")
+            for (const s of suggestions) { const t = webTarget(s); add(s, t.search ? "search" : "open", t.url, s) }
+        return rows.slice(0, 12)
+    }
+
     // ---- search --------------------------------------------------------------------------
     // the name starting with it > a word in the name starting with it > anywhere in the name >
     // its letters in order > the extra words (keywords, generic name)
@@ -127,6 +231,7 @@ Singleton {
     }
     readonly property var results: {
         if (pathQuery) return pathEntries(pathQuery)
+        if (webQuery) return webEntries(webQuery)
         const q = query.trim().toLowerCase()
         if (q === "")
             return favorites.map(id => entries.find(e => e.id === id)).filter(e => e)
@@ -142,14 +247,15 @@ Singleton {
 
     function move(by) { if (results.length) current = (current + by + results.length) % results.length }
     function toggle() { if (desk) return; if (open) close(); else { query = ""; current = 0; listedFolder = ""; open = true } }
-    function close() { open = false; confirming = ""; query = "" }
+    function close() { open = false; confirming = ""; query = ""; fetchedFor = null }
     // what Tab makes of the query: the picked path (a folder: its contents list next), or the
     // picked entry's name (`Files ~/` for the entries that list folders)
     function completion() {
         const e = results[current]
         if (!e) return query
         if (pathQuery) return pathQuery.word + " " + e.name
-        return e.pathCmd ? e.pathCmd + " ~/" : e.name
+        if (webQuery) return webQuery.word + " " + e.complete
+        return e.pathCmd ? e.pathCmd + " ~/" : e.webCmd ? e.webCmd + " " : e.name
     }
     function complete() { query = completion() }
     // the rest of it, shown dimmed after what you typed (when it continues what you typed)
@@ -158,10 +264,11 @@ Singleton {
         return query !== "" && c.length > query.length && c.toLowerCase().startsWith(query.toLowerCase())
             ? c.slice(query.length) : ""
     }
-    function run(i) {
+    // how: "" (Enter), "incognito" (Cmd+Shift+N) or "window" (Cmd+N): only Chrome's rows use it
+    function run(i, how) {
         const e = results[i]
         if (e && e.confirm && confirming !== e.id) { confirming = e.id; return }   // once more to do it
-        if (e) e.run()
+        if (e) e.run(how || "")
         else if (pathQuery) exec(pathCmds[pathQuery.cmd].open(expand(pathQuery.typed), pathQuery.typed.endsWith("/")))()
         else if (query.trim() !== "") Quickshell.execDetached(["sh", "-c", query])
         close()

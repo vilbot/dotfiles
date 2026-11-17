@@ -18,6 +18,7 @@ refs=$(git grep --untracked -nP '(?<![\w.])tty/' -- . ':!tty/' ':!.gitignore' ':
 if [[ -z $refs ]]; then ok "nothing outside tty/ depends on it"; else bad "files outside tty/ use it:"$'\n'"$refs"; fi
 
 if command -v foot >/dev/null; then
+    python3 tty/theme.py ensure   # foot.ini includes the current theme's colours
     if err=$(foot -c tty/foot.ini --check-config 2>&1); then ok "tty/foot.ini"; else bad "tty/foot.ini: $err"; fi
 else
     bad "foot not installed (pacman -S foot)"
@@ -44,6 +45,20 @@ for name, tab in m.TABS.items():
         assert callable(getattr(tab, method, None)), f"{name}: no method {method}"
 PY
 ); then ok "tty/panel/panel.py"; else bad "tty/panel/panel.py: $err"; fi
+
+# every theme has its 16 colours (tty/theme.py), and the panel's programs parse
+if err=$(python3 - <<'PY' 2>&1
+import ast, importlib.util
+spec = importlib.util.spec_from_file_location("theme", "tty/theme.py")
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+assert "gruver16" in m.names(), "no gruver16"
+for n in m.names():
+    t = m.load(n)
+    assert len(m.ansi(t)) == 16, n
+for f in ("tty/panel/update.py", "tty/panel/help.py", "tty/theme.py"):
+    ast.parse(open(f).read(), f)
+PY
+); then ok "themes (theme/*.yaml), tty/panel/update.py, help.py"; else bad "themes / panel programs: $err"; fi
 
 # the boot splash and Limine's colours generate (into a temporary folder / from a sample config)
 tmp=$(mktemp -d)

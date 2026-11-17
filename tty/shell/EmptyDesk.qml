@@ -64,11 +64,14 @@ PanelWindow {
                 color: picked ? Colors.base02 : "transparent"
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width - detail.width - 26   // long names (a page's title) stop short of the detail
+                    elide: Text.ElideRight
                     text: (Launcher.favorites.includes(row.modelData.id) ? "* " : "  ") + row.modelData.name
                     font: row.picked ? desk.bold : desk.font
                     color: row.modelData.isDir ? Colors.base0D : row.picked ? Colors.base07 : Colors.base06
                 }
                 Text {
+                    id: detail
                     readonly property bool asking: Launcher.confirming === row.modelData.id
                     anchors { right: parent.right; rightMargin: 10; verticalCenter: parent.verticalCenter }
                     text: asking ? "⏎ again to confirm" : row.modelData.detail

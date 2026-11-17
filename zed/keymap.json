@@ -31,6 +31,24 @@
       "ctrl-shift-tab": "pane::ActivatePreviousItem"
     }
   },
+  // Tab switching also from the file tree and other docks (they are not in "Pane"):
+  // Ctrl+Tab = next tab instead of the tab switcher, Cmd+{ / Cmd+} = previous / next tab.
+  {
+    "context": "Workspace",
+    "unbind": {
+      "ctrl-tab": "tab_switcher::Toggle",
+      "ctrl-shift-tab": ["tab_switcher::Toggle", { "select_last": true }]
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-tab": "pane::ActivateNextItem",
+      "ctrl-shift-tab": "pane::ActivatePreviousItem",
+      "cmd-{": "pane::ActivatePreviousItem",
+      "cmd-}": "pane::ActivateNextItem"
+    }
+  },
   {
     "context": "Workspace",
     "unbind": {

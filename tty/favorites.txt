@@ -3,3 +3,4 @@ dev.zed.Zed
 tty:files
 tty:terminal
 tty:nvim
+steam

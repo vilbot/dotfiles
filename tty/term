@@ -2,6 +2,8 @@
 # A terminal of the "None" desktop: foot with tty/foot.ini.
 #   term [-a APP_ID] [COMMAND [ARGS...]]      default: your login shell
 dir=$(dirname "$(readlink -f "$0")")
+# the theme's colours (foot.ini includes them): written on the first start
+[[ -f ~/.local/state/none/foot-colors.ini ]] || "$dir/theme.py" ensure
 app=()
 if [[ ${1:-} == -a ]]; then app=(-a "$2"); shift 2; fi
 exec foot -c "$dir/foot.ini" "${app[@]}" "$@"

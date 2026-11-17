@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""What the settings panel (tty/panel.sh) shows and does, one tab per class below.
+"""What the settings panel (tty/panel.sh) shows and does, one tab per class below. Two tabs
+are programs of their own in the panel's terminal: help (help.py), and update while an update
+runs or until you've seen how it ended (update.py).
 
 The open tab is remembered in $XDG_RUNTIME_DIR/tty-panel-tab; the commands work on it.
     panel.py header | footer   the tab line / the key hints
@@ -13,6 +15,9 @@ The open tab is remembered in $XDG_RUNTIME_DIR/tty-panel-tab; the commands work 
     panel.py refresh           (every second, in the background) the list again, as fzf actions;
                                nothing if the tab changed meanwhile (it would put the old one back)
     panel.py failed ID         mark ID's last change as failed (a background command did)
+    panel.py landed            fzf actions for when a tab's list is in (where the cursor starts)
+    panel.py moved ID          (j/k and the arrows) fzf actions for moving onto ID: on the theme
+                               tab, switching to that theme
 
 Changes that take a while (connecting, pairing) run in the background and their row says so
 ("connecting…") until the change shows, or "failed": $XDG_RUNTIME_DIR/tty-panel-pending.json.
@@ -280,6 +285,85 @@ class Network:
             sh("nmcli", "connection", "delete", "id", name)
 
 
+# ---- update --------------------------------------------------------------------------------
+# What cachy-update (arch-update) last found: its timer checks every day, `r` now. Enter starts
+# the update, which update.py runs (it goes on when the panel closes) and the tab then shows.
+UPDATES = pathlib.Path.home() / ".local/state/arch-update"
+UPDATE_PY = shlex.quote(str(pathlib.Path(__file__).resolve().with_name("update.py")))
+
+
+class Update:
+    actions = {
+        "start": ("enter", "update", "start"),
+        "check": ("r", "check now", "check"),
+    }
+
+    @staticmethod
+    def read(name):
+        try:
+            return (UPDATES / name).read_text()
+        except OSError:
+            return ""
+
+    def list(self):
+        import time
+        packages = [l.split() for l in self.read("last_updates_check").splitlines() if l.strip()]
+        checked = (self.read("last_updates_check_time").splitlines() or ["", ""])[-1][:16]
+        try:
+            checked_at = (UPDATES / "last_updates_check_time").stat().st_mtime
+        except OSError:
+            checked_at = 0
+        p = pending().get("status")
+        if p and p[0] == "failed":
+            status = f"{RED}checking failed{OFF}"
+        elif p and checked_at < p[1]:
+            status = f"{YELLOW}checking…{OFF}"
+        else:
+            if p:
+                mark("status")
+            n = len(packages)
+            status = (f"{YELLOW}{n} update{'s' if n != 1 else ''}{OFF}" if n else "up to date") + \
+                f"  {GREY}checked {checked or 'never'}{OFF}"
+        rows = [(f"  {status}", "status")]
+        for name, *rest in packages:
+            old, new = (rest[0], rest[2]) if len(rest) >= 3 else ("", " ".join(rest))
+            rows.append((f"  {fit(name, 28)} {GREY}{fit(old, 16)}{OFF} {new}", f"pkg:{name}"))
+        return rows
+
+    def start(self, id):
+        subprocess.run([sys.executable, str(pathlib.Path(__file__).resolve().with_name("update.py")), "start"])
+
+    def check(self, id):
+        track("status", "checking", "arch-update", "--check")
+
+
+# ---- theme ---------------------------------------------------------------------------------
+# None's colours (tty/theme.py): moving onto a theme switches to it, everywhere at once.
+THEME_PY = pathlib.Path(__file__).resolve().parent.parent / "theme.py"
+
+
+class Theme:
+    actions = {
+        "use": ("enter", "use", "use"),
+    }
+
+    def list(self):
+        sys.path.insert(0, str(THEME_PY.parent))
+        import theme
+        now = theme.current()["name"]
+        rows = []
+        for name in theme.names():
+            t = theme.load(name)
+            swatch = "".join("\x1b[48;2;{};{};{}m  ".format(*(int(t[s][i:i + 2], 16) for i in (1, 3, 5)))
+                             for s in ("base00", "base02", "base04", "base07", "base08", "base0B", "base0D", "base0E"))
+            star = YELLOW + "*" + OFF if name == now else " "
+            rows.append((f"{star} {fit(name, 22)} {swatch}{OFF}  {GREY}{t['variant']}{OFF}", name))
+        return rows
+
+    def use(self, id):
+        subprocess.run([str(THEME_PY), "set", id])
+
+
 class Help:   # its own program in the panel's terminal (help.py): keys and a support chat
     actions = {}
 
@@ -287,7 +371,7 @@ class Help:   # its own program in the panel's terminal (help.py): keys and a su
         return []
 
 
-TABS = {"sound": Sound, "bluetooth": Bluetooth, "network": Network, "help": Help}
+TABS = {"sound": Sound, "bluetooth": Bluetooth, "network": Network, "update": Update, "theme": Theme, "help": Help}
 HELP = shlex.quote(str(pathlib.Path(__file__).resolve().with_name("help.py")))
 COMMON = [("j/k", "move"), ("H/L", "tab"), ("q", "close")]
 STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
@@ -339,13 +423,21 @@ def keys():
     return sorted({key for t in TABS.values() for key, *_ in t.actions.values()})
 
 
+def update_active():
+    import update   # update.py, next to this file
+    return update.running() or bool(update.state())
+
+
 def show(tab):
     """fzf actions that turn the panel to TAB in place (no restart, so no flicker)"""
     STATE.write_text(tab)
     if tab == "help":   # not a list: the help program takes over the terminal
         return f"become({HELP})"
+    if tab == "update" and update_active():   # an update to show: update.py takes over
+        return f"become({UPDATE_PY} attach)"
     # header and footer first: after a reload fzf looks for the row it tracked and drops actions
-    return f"transform-header({ME} header)+transform-footer({ME} footer)+reload-sync({ME} list)"
+    # (so the cursor's place comes from the load event, panel.py landed)
+    return f"transform-header({ME} header)+transform-footer({ME} footer)+rebind(load)+reload-sync({ME} list)"
 
 
 def main():
@@ -373,7 +465,8 @@ def main():
         hit = next(((name, method) for name, (k, _, method, *_) in t.actions.items() if k == key), None)
         if hit and id != "-":
             run = "execute" if hit[1].startswith("ask") else "execute-silent"
-            print(f"{run}({ME} do {hit[0]} {shlex.quote(id)})+reload-sync({ME} list)")
+            after = f"become({UPDATE_PY} attach)" if (tab, hit[0]) == ("update", "start") else f"reload-sync({ME} list)"
+            print(f"{run}({ME} do {hit[0]} {shlex.quote(id)})+{after}")
     elif cmd == "click":            # click LINE COL ID: a click on the key hints
         line, col, id = int(args[0]), int(args[1]), args[2]
         key = next((k for l, a, b, k in footer_spans(tab) if l == line and a <= col <= b), None)
@@ -394,6 +487,17 @@ def main():
         to = tab_at(int(args[0]))   # the whole line: the rows' tab delimiter applies to it too)
         if to:
             print(show(to))
+    elif cmd == "landed":           # the list is in: the theme tab starts on the current theme
+        if tab == "theme":
+            sys.path.insert(0, str(THEME_PY.parent))
+            import theme
+            ids = [id for _, id in t.list()]
+            now = theme.current()["name"]
+            if now in ids:
+                print(f"pos({ids.index(now) + 1})")
+    elif cmd == "moved":            # moved ID: j/k onto a row
+        if tab == "theme" and args and args[0] in [id for _, id in t.list()]:
+            print(f"execute-silent({shlex.quote(str(THEME_PY))} set {shlex.quote(args[0])})+reload-sync({ME} list)")
     elif cmd == "failed":           # failed ID
         mark(args[0], "failed")
     elif cmd == "do":               # do ACTION ID

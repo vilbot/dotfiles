@@ -67,3 +67,7 @@ fi
 unset zsh_plugins
 export ANDROID_HOME=/home/vilgot/Android/Sdk
 export PATH=/home/vilgot/.local/bin:/home/vilgot/.local/share/bob/nvim-bin:/home/vilgot/.local/bin:/home/vilgot/.local/share/bob/nvim-bin:/home/vilgot/.local/bin:/home/vilgot/.local/share/bob/nvim-bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/emulator:/platform-tools
+
+
+# Added by Antigravity CLI installer
+export PATH="/home/vilgot/.local/bin:$PATH"

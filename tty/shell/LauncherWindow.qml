@@ -100,11 +100,14 @@ Scope {
                         color: picked ? Colors.base02 : "transparent"
                         Text {
                             anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
+                            width: parent.width - 12 - 12 - detail.width - 16   // long names (a page's title) stop short of the detail
+                            elide: Text.ElideRight
                             text: (row.picked ? "> " : "  ") + (Launcher.favorites.includes(row.modelData.id) ? "* " : "  ") + row.modelData.name
                             font: row.picked ? Ui.bold : Ui.font
                             color: row.modelData.isDir ? Colors.base0D : row.picked ? Colors.base07 : Colors.base06
                         }
                         Text {
+                            id: detail
                             readonly property bool asking: Launcher.confirming === row.modelData.id
                             anchors { right: parent.right; rightMargin: 12; verticalCenter: parent.verticalCenter }
                             text: asking ? "⏎ again to confirm" : row.modelData.detail
@@ -125,7 +128,7 @@ Scope {
                     visible: Launcher.results.length === 0
                     anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
                     text: Launcher.query.trim() === "" ? "no favorites yet: Ctrl+F on an app"
-                        : Launcher.pathQuery ? "nothing here" : "⏎ runs it as a command"
+                        : Launcher.pathQuery ? "nothing here" : Launcher.webQuery ? "type an address or a search" : "⏎ runs it as a command"
                     font: Ui.font
                     color: Colors.base04
                 }

@@ -7,9 +7,12 @@ Keys on top (mackeys' shortcut sheet, ~/.local/state/mackeys/keymap.json), the c
 question, Enter asks. Up/Down scroll the keys, PgUp/PgDn the chat, Tab (or a click on a tab name)
 another tab, Esc closes the panel. The robot is a model of your choosing (help.toml), allowed to
 read None's files and nothing more; while it thinks, it narrates (funny-lines.txt, in order from
-a random line; a long think ends on one of the file's last two lines).
+a random line; a long think ends on one of the file's last two lines). The chat stays when the
+panel closes ($XDG_RUNTIME_DIR/tty-help-chat.json, until you log out), and so does a question
+being answered: the robot answers in a process of its own (`help.py answer`), which adds the
+answer to that file; the tab picks it up whenever it's open.
 """
-import curses, json, os, pathlib, random, shlex, subprocess, sys, textwrap, threading, time, tomllib
+import curses, json, os, pathlib, random, shlex, subprocess, sys, textwrap, time, tomllib
 
 HERE = pathlib.Path(__file__).resolve().parent
 TTY = HERE.parent
@@ -17,7 +20,10 @@ DOTFILES = TTY.parent
 PANEL = TTY / "panel.sh"
 STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
 KEYMAP = pathlib.Path.home() / ".local/state/mackeys/keymap.json"
-TABS = ["sound", "bluetooth", "network", "help"]   # as panel.py's, plus this one
+sys.path.insert(0, str(HERE))
+from panel import TABS as _TABS   # the tab line, as the other tabs draw it
+TABS = list(_TABS)
+CHAT = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-help-chat.json"
 CONFIG = tomllib.loads((HERE / "help.toml").read_text())
 LINES = [l.strip() for l in (HERE / "funny-lines.txt").read_text().splitlines() if l.strip()]
 ENDERS, THINKING = LINES[-2:], LINES[:-2]   # the last two end a long think
@@ -80,6 +86,7 @@ class Help:
         self.scr, self.bot = scr, Bot()
         self.keys, self.keys_top = keys_rows(), 0
         self.chat = [("bot", "Hi! I'm None's support robot. Ask me anything! I'll do my best. Probably.")]
+        self.load()
         self.chat_up = 0            # lines scrolled up from the bottom
         self.text = ""
         self.thinking = None        # {"since", "line", "next"} while the bot works
@@ -153,30 +160,63 @@ class Help:
         s.move(h - 2, min(w - 2, 4 + len(self.text)))
         s.refresh()
 
+    # ---- the chat, kept across the panel closing ----
+    def load(self):
+        saved = read_chat()
+        if not saved:
+            return
+        self.chat = [tuple(m) for m in saved["chat"]] or self.chat
+        self.bot.session = saved.get("session")
+        if self.chat[-1][0] == "you":
+            if alive(saved.get("pending")):   # still answering, from before the panel closed
+                self.think()
+            else:
+                self.chat.append(("bot", "Oh! I lost my place there. Could you ask that again?"))
+
+    def save(self, pending=None):
+        try:
+            CHAT.write_text(json.dumps({"chat": self.chat, "session": self.bot.session, "pending": pending}))
+        except OSError:
+            pass
+
     # ---- thinking ----
-    def ask(self, q):
-        self.chat.append(("you", q))
-        self.chat_up = 0
+    def think(self):
         i = random.randrange(len(THINKING))
         self.thinking = {"since": time.time(), "i": i, "line": THINKING[i], "next": time.time() + 1.4, "ending": False}
 
-        def work():
-            try:
-                self.answer = ("bot", self.bot.ask(q) or "…I forgot what I was going to say.")
-            except Exception as e:
-                self.answer = ("bot", f"Oops, I broke. ({str(e)[:200]})")
-        threading.Thread(target=work, daemon=True).start()
+    def ask(self, q):
+        self.chat.append(("you", q))
+        self.save(pending=True)   # the question first: the answering process reads it
+        worker = subprocess.Popen([sys.executable, str(pathlib.Path(__file__).resolve()), "answer"],
+                                  stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                  start_new_session=True)
+        self.save(pending=worker.pid)
+        self.chat_up = 0
+        self.think()
+
+    def arrived(self):
+        """the answer, once the answering process has written it"""
+        saved = read_chat()
+        if saved and len(saved["chat"]) > len(self.chat) and saved["chat"][-1][0] == "bot":
+            self.bot.session = saved.get("session")
+            return tuple(saved["chat"][-1])
+        if saved and not alive(saved.get("pending")) and not self.answer:   # it died
+            return ("bot", "Oops, I broke. (my answer got lost)")
+        return None
 
     def tick(self):
         t = self.thinking
         if not t:
             return
+        if not self.answer:
+            self.answer = self.arrived()
         now = time.time()
         if self.answer and not t["ending"] and now - t["since"] > 6:
             t.update(ending=True, line=random.choice(ENDERS), next=now + 0.9)   # a long think ends
         elif self.answer and now >= t["next"] or self.answer and not t["ending"]:
             self.chat.append(self.answer)
             self.answer, self.thinking = None, None
+            self.save()
         elif now >= t["next"] and not t["ending"]:
             t["i"] = (t["i"] + 1) % len(THINKING)   # the next line: they're written to follow on
             t.update(line=THINKING[t["i"]], next=now + 1.4)
@@ -256,7 +296,42 @@ class Help:
                 self.text += k
 
 
+def read_chat():
+    try:
+        saved = json.loads(CHAT.read_text())
+        return saved if isinstance(saved.get("chat"), list) and saved["chat"] else None
+    except (OSError, ValueError, AttributeError):
+        return None
+
+
+def alive(pid):
+    if pid is True:   # just asked: the process is starting
+        return True
+    try:
+        os.kill(int(pid), 0)
+        return True
+    except (TypeError, ValueError, OSError):
+        return False
+
+
+def answer():
+    """`help.py answer`: answer the chat's last question, and add the answer to the chat"""
+    saved = read_chat()
+    bot = Bot()
+    bot.session = saved.get("session")
+    try:
+        reply = bot.ask(saved["chat"][-1][1]) or "…I forgot what I was going to say."
+    except Exception as e:
+        reply = f"Oops, I broke. ({str(e)[:200]})"
+    saved = read_chat() or saved   # as it is now
+    saved["chat"].append(["bot", reply])
+    saved.update(session=bot.session, pending=None)
+    CHAT.write_text(json.dumps(saved))
+
+
 def main():
+    if sys.argv[1:] == ["answer"]:
+        return answer()
     # from the other tabs, fzf hands over its own input (the list's pipe) and output (/dev/null):
     # draw on, and read from, the terminal itself
     if not (sys.stdin.isatty() and sys.stdout.isatty()):

@@ -1,0 +1,23 @@
+# gruver16-light — a light gruver16, made to test the "None" desktop's theme switching.
+# Same slots and roles as gruver16.yaml (read its comment); the greys run the other way
+# (base00 = the light background, base07 = the dark text) and the accents are darker, so they
+# read on paper. Only None uses it: theme/build.py still builds every app from gruver16.yaml.
+scheme: "gruver16-light"
+author: "vilgot"
+variant: "light"
+base00: "f4f0ec"
+base01: "e9e5e1"
+base02: "dcd8d5"
+base03: "b3b5bb"
+base04: "8c909b"
+base05: "5d6270"
+base06: "3e4148"
+base07: "282828"
+base08: "c4321f"
+base09: "6b5fa3"
+base0A: "5b7468"
+base0B: "4a7f3a"
+base0C: "3f7564"
+base0D: "4d6599"
+base0E: "a26c12"
+base0F: "8a5a40"

@@ -4,15 +4,27 @@ if vim.fn.exists("syntax_on") then
 end
 vim.g.colors_name = "custom"
 
-local c = require("palettes.gruver16")
+local c = require("palettes.current") -- gruver16, or the "None" desktop's current theme
 local hl = vim.api.nvim_set_hl
+vim.o.background = c.variant == "light" and "light" or "dark"
 
--- Zed's alpha colors, flattened over the editor background
+-- `color` at `alpha` (0-255) over the editor background, as Zed draws its see-through colors
+local function over(color, alpha)
+  local function ch(hex, i) return tonumber(hex:sub(i, i + 1), 16) end
+  local a = alpha / 255
+  local out = "#"
+  for _, i in ipairs({ 2, 4, 6 }) do
+    out = out .. string.format("%02x", math.floor(ch(c.base00, i) + (ch(color, i) - ch(c.base00, i)) * a + 0.5))
+  end
+  return out
+end
+
+-- Zed's alpha colors (theme/templates/zed.json), flattened over the editor background
 local blend = {
-  active_line = "#303134", -- editor.active_line.background
-  selection = "#42464e",   -- players[0].selection
-  match = "#545a68",       -- search.match_background
-  active_match = "#6e5a3b", -- search.active_match_background
+  active_line = over(c.base01, 0xbf),  -- editor.active_line.background
+  selection = over(c.base0D, 0x3d),    -- players[0].selection
+  match = over(c.base0D, 0x66),        -- search.match_background
+  active_match = over(c.base0E, 0x66), -- search.active_match_background
 }
 
 hl(0, "Normal",         { fg = c.base07, bg = c.base00 })

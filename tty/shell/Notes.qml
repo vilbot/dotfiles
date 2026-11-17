@@ -61,5 +61,6 @@ Singleton {
         function clear(): void { root.clear() }
         function open(): void { if (root.list.length) root.open(root.list[0]) }   // the newest, as a click
     }
-    function clear() { for (const n of server.trackedNotifications.values.slice()) n.dismiss() }
+    // clearing closes the list too: with nothing left, the [n] that toggles it is gone from the bar
+    function clear() { for (const n of server.trackedNotifications.values.slice()) n.dismiss(); listOpen = false }
 }

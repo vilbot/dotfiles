@@ -4,8 +4,19 @@ return {
 		"folke/snacks.nvim",
 		init = function()
 			local function set_hl()
-				vim.api.nvim_set_hl(0, "SnacksIndent", { fg = "#444444" })
-				vim.api.nvim_set_hl(0, "SnacksIndentScope", { fg = "#575757" })
+				-- faint text over the background (any theme, light too: palettes/current.lua);
+				-- on gruver16 these come out as the old #444444 and #575757
+				local c = require("palettes.current")
+				local function faint(a)
+					local out = "#"
+					for i = 2, 6, 2 do
+						local bg, fg = tonumber(c.base00:sub(i, i + 1), 16), tonumber(c.base07:sub(i, i + 1), 16)
+						out = out .. string.format("%02x", math.floor(bg + (fg - bg) * a + 0.5))
+					end
+					return out
+				end
+				vim.api.nvim_set_hl(0, "SnacksIndent", { fg = faint(0.14) })
+				vim.api.nvim_set_hl(0, "SnacksIndentScope", { fg = faint(0.24) })
 			end
 			set_hl()
 			-- Keep these colors when the colorscheme changes

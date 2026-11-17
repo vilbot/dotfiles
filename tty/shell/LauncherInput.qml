@@ -1,6 +1,7 @@
 // The launcher's text field, the same in the bar (LauncherWindow.qml) and on an empty desktop
 // (EmptyDesk.qml): what you type is Launcher.query; Enter runs, Tab completes, Up/Down (or
-// Ctrl+J/K/N/P) move, Ctrl+F adds or removes a favorite, Esc closes (on a desktop: clears).
+// Ctrl+J/K/N/P) move, Ctrl+F adds or removes a favorite, Ctrl+C erases what's typed, Esc closes (on a desktop: clears).
+// On a Chrome row (a site, a search, Google Chrome itself) Cmd+N opens it in a new window, Cmd+Shift+N incognito.
 // What Tab would add shows dimmed after the text (Launcher.ghost); → at the end takes it too.
 import QtQuick
 
@@ -41,7 +42,15 @@ TextInput {
     Keys.onPressed: event => {
         if (!(event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) return
         const k = event.key
-        if (k === Qt.Key_J || k === Qt.Key_N) Launcher.move(1)
+        // Cmd+N (Cmd arrives as Ctrl through mackeys): a new window; Ctrl+N (Super) still moves
+        if (k === Qt.Key_N && (event.modifiers & Qt.ControlModifier) && Launcher.chromePick())
+            Launcher.run(Launcher.current, event.modifiers & Qt.ShiftModifier ? "incognito" : "window")
+        else if (k === Qt.Key_C) {
+            // Cmd+C (Ctrl here) with text selected still copies
+            if ((event.modifiers & Qt.ControlModifier) && input.selectedText !== "") return
+            Launcher.query = ""
+        }
+        else if (k === Qt.Key_J || k === Qt.Key_N) Launcher.move(1)
         else if (k === Qt.Key_K || k === Qt.Key_P) Launcher.move(-1)
         else if (k === Qt.Key_F) Launcher.toggleFavorite(Launcher.results[Launcher.current])
         else return

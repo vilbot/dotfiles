@@ -1,5 +1,5 @@
-// What the bar's settings button and the corner show: the volume (a popup while it changes),
-// muted, online, and the keyboard layout (a popup when it changes). A popup's text stays after
+// What the bar's settings icons and the corner show: the volume (a popup while it changes),
+// muted, online, updates, and the keyboard layout (a popup when it changes). A popup's text stays after
 // it hides, so it can fade out with its words still on it.
 pragma Singleton
 import QtQuick
@@ -44,6 +44,23 @@ Singleton {
         stdout: StdioCollector { onStreamFinished: root.online = text.trim() === "full" || text.trim() === "unknown" }
     }
     Timer { interval: 3000; running: true; repeat: true; triggeredOnStart: true; onTriggered: connectivity.running = true }
+
+    // ---- updates: the update tab's state (tty/panel/update.py) and cachy-update's own last check
+    //   "failed" (red, until you've seen it), "waiting" (yellow: it asks you something),
+    //   "available" (green), "" (nothing to do)
+    property string update: ""
+    Process {
+        id: updates
+        command: ["sh", "-c", 'cat "$XDG_RUNTIME_DIR/none-update/state" 2>/dev/null; echo; cat ~/.local/state/arch-update/tray_icon 2>/dev/null']
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const [ours, tray] = [text.split("\n")[0].trim(), text.split("\n").slice(1).join("")]
+                root.update = ours.startsWith("failed") ? "failed" : ours === "waiting" ? "waiting"
+                    : tray.includes("updates-available") ? "available" : ""
+            }
+        }
+    }
+    Timer { interval: 1500; running: true; repeat: true; triggeredOnStart: true; onTriggered: updates.running = true }
 
     // ---- the keyboard layout --------------------------------------------------------------
     // Every keyboard reports its layout, and a Bluetooth headset's media buttons count as one (it

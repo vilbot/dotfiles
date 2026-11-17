@@ -2705,13 +2705,6 @@
       "super-alt-ctrl-p": "settings_profile_selector::Toggle",
       "ctrl-t": "project_symbols::Toggle",
       "ctrl-p": "file_finder::Toggle",
-      "super-shift-tab": [
-        "tab_switcher::Toggle",
-        {
-          "select_last": true
-        }
-      ],
-      "super-tab": "tab_switcher::Toggle",
       "ctrl-shift-p": "command_palette::Toggle",
       "ctrl-shift-m": "diagnostics::Deploy",
       "ctrl-shift-e": "project_panel::ToggleFocus",
@@ -5937,6 +5930,15 @@
     "bindings": {
       "super-tab": "pane::ActivateNextItem",
       "super-shift-tab": "pane::ActivatePreviousItem"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "super-tab": "pane::ActivateNextItem",
+      "super-shift-tab": "pane::ActivatePreviousItem",
+      "ctrl-{": "pane::ActivatePreviousItem",
+      "ctrl-}": "pane::ActivateNextItem"
     }
   },
   {
