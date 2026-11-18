@@ -125,8 +125,14 @@ Singleton {
     }
     // how: "" (a tab in Chrome's window), "incognito" or "window" (a new one)
     function chromeFlags(how) { return how === "incognito" ? ["--incognito"] : how === "window" ? ["--new-window"] : [] }
+    // A tab goes into Chrome's last window, but Chrome can't bring it forward itself (no
+    // activation token), so focus that window: the most recently focused one that isn't incognito.
+    readonly property string focusChrome: "a=$(hyprctl clients -j | jq -r '[.[] | select(.class == \"google-chrome\" "
+        + "and (.title | endswith(\"(Incognito)\") | not))] | sort_by(.focusHistoryID) | .[0].address // empty'); "
+        + "[ -n \"$a\" ] && hyprctl dispatch \"hl.dsp.focus({ window = \\\"address:$a\\\" })\" >/dev/null"
     function chrome(url) {
-        return how => Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how), [url]))
+        return how => how ? Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how), [url]))
+                          : Quickshell.execDetached(["sh", "-c", focusChrome + "; exec google-chrome-stable \"$1\"", "sh", url])
     }
     // Google Chrome itself: Enter as any app, Cmd+N / Cmd+Shift+N a new (incognito) window
     function chromeApp(plain) {

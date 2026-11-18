@@ -3,7 +3,8 @@
 # right side, over the windows, with tabs for sound, bluetooth, network, update, theme and help
 # (what each shows and does: tty/panel/panel.py). Same keys on every tab: j/k move, H/L (or Tab, or a click on the tab
 # line) switch tabs, q or Esc close; the tab's own keys are in the lines at the bottom, and a
-# click on one of those hints does what its key does.
+# click on one of those hints does what its key does. On the sound tab the mouse wheel changes the
+# volume of the row the cursor is on.
 #   panel.sh            open, or close when it's open
 #   panel.sh TAB        open on TAB (the bar's icons); close when it's open on TAB already
 #   panel.sh open TAB   open on TAB, or switch to it (never closes)
@@ -74,6 +75,12 @@ case "${1:-}" in
         # (`transform:` takes the rest of the bind, parentheses and all: one bind per key)
         for key in j:down k:up down:down up:up; do
             binds+=("$key+transform:[ \"\$(cat '$tabfile')\" = theme ] && '$py' moved {2} || true")
+        done
+        # the mouse wheel: on the sound tab, the volume of the row the cursor is on (as l/h; a
+        # click puts the cursor on a row); on the others, the cursor (as k/j)
+        for w in scroll-up:up:l scroll-down:down:h; do
+            IFS=: read -r ev move key <<<"$w"
+            binds+=("$ev:transform([ \"\$(cat '$tabfile')\" = sound ] && '$py' on $key {2} || echo $move)")
         done
         for key in $("$py" keys); do binds+=("$key:transform('$py' on $key {2})"); done
         args=(); for b in "${binds[@]}"; do args+=(--bind "$b"); done

@@ -179,8 +179,16 @@ class Bluetooth:
             plain = f"{YELLOW}connected{OFF}" if on else "paired" if mac in paired else f"{GREY}new{OFF}"
             shown = state(mac, plain, lambda what: on == (what != "disconnecting"), plain)
             star = YELLOW + "*" + OFF if on else " "
-            rows.append((f"{star} {fit(name, 34)} {shown}", mac))
+            pct = self.battery(mac) if on else None
+            level = f"  {bar(pct, 6)} {pct:3}%" if pct is not None else ""
+            rows.append((f"{star} {fit(name, 34)} {shown}{level}", mac))
         return rows
+
+    @staticmethod
+    def battery(mac):
+        """the device's battery in %, if it tells (bluetoothctl info: "Battery Percentage: 0x1e (30)")"""
+        m = re.search(r"Battery Percentage: \S+ \((\d+)\)", sh("bluetoothctl", "info", mac))
+        return int(m.group(1)) if m else None
 
     def connect(self, id):
         if id == "adapter":

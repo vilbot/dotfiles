@@ -23,6 +23,9 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
+## prompts/ (gitignored)
+The user's messages and task lists for agents. The "None" desktop (`tty/`) and the other Hyprland desktop, called **Gallery** (`hypr/` + `quickshell/`), each have a folder: `prompts/none/`, `prompts/gallery/`. Each has a `todo.md`; its `## Patches` section holds the fixes asked for ("implement the patch" = the open item there), then new features and ideas. Tick an item (`- [x]`) once it's done.
+
 `install.sh` (mac and linux) and `install.ps1` (windows) create all links. When adding a new app config, add it to both scripts if it applies.
 
 ## OS-specific code
