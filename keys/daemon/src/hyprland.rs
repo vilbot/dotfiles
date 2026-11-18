@@ -37,13 +37,28 @@ pub fn overview_open() -> bool {
     request("hymission-overview-state").is_ok_and(|r| r.contains("\"active\":true"))
 }
 
+/// Our virtual keyboard as Hyprland names it ("mackeys-virtual-keyboard"): all typing goes
+/// through it, so its layout is the one that counts.
+fn keyboard() -> String {
+    crate::devices::VIRTUAL_NAME.to_lowercase().replace(' ', "-")
+}
+
+/// The layout our keyboard has now ("" when Hyprland doesn't say).
+pub fn layout() -> String {
+    let devices: serde_json::Value = request("j/devices").ok().and_then(|r| serde_json::from_str(&r).ok()).unwrap_or_default();
+    let ours = devices["keyboards"].as_array().and_then(|ks| ks.iter().find(|k| k["name"] == keyboard().as_str()).cloned());
+    ours.and_then(|k| k["active_keymap"].as_str().map(String::from)).unwrap_or_default()
+}
+
 pub enum Event {
     Focus(String),
+    /// Our keyboard switched layout.
+    Layout(String),
     LayerOpened(String),
     LayerClosed(String),
 }
 
-/// Calls `on_event` for every focus change and layer opening/closing. Returns when Hyprland exits.
+/// Calls `on_event` for every focus change, layer opening/closing and layout switch. Returns when Hyprland exits.
 pub fn watch(mut on_event: impl FnMut(Event)) -> Result<()> {
     let stream = UnixStream::connect(socket(".socket2.sock")?)?;
     for line in BufReader::new(stream).lines() {
@@ -53,6 +68,14 @@ pub fn watch(mut on_event: impl FnMut(Event)) -> Result<()> {
             "activewindow" => on_event(Event::Focus(data.split_once(',').map_or(data, |(class, _title)| class).to_string())),
             "openlayer" => on_event(Event::LayerOpened(data.to_string())),
             "closelayer" => on_event(Event::LayerClosed(data.to_string())),
+            // "activelayout>>KEYBOARD,LAYOUT" (every keyboard reports; only ours counts)
+            "activelayout" => {
+                if let Some((kb, layout)) = data.rsplit_once(',') {
+                    if kb == keyboard() {
+                        on_event(Event::Layout(layout.to_string()))
+                    }
+                }
+            }
             _ => {}
         }
     }

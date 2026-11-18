@@ -1,6 +1,7 @@
 # mackeys (keys/daemon): what each physical key on the Mac keyboard sends on Hyprland.
 # Left side of a mapping: physical keys (cmd, opt, ctrl, shift; lopt / ropt for one side).
-# Right side: what apps get (ctrl, alt, super, shift). Saved changes apply within a second.
+# Right side: what apps get (ctrl, alt, super, shift; altgr = right Alt, the layout's third level).
+# Saved changes apply within a second.
 
 devices = ["NuPhy Air75"]
 desktops = 5  # also read by hypr/hyprland.lua and the bar
@@ -23,7 +24,7 @@ tap_ms = 1000
 
 # Layers, top to bottom: the first applying layer that has the pressed keys wins.
 # `when`: app / not_app (a group above), layer / not_layer (an open layer-shell namespace),
-# overview (mission control is open). `let_through`: while the layer applies, other keys no layer
+# overview (mission control is open), layout (the keyboard layout, as Hyprland names it). `let_through`: while the layer applies, other keys no layer
 # maps are dropped.
 # `map`: keys -> keys apps get. `actions`: desktop actions (hypr/actions.lua) by section, with
 # their keys and a label for the shortcut sheet (Opt+?); `{n}` = desktops 1..N, `{dir}` = h j k l.
@@ -61,6 +62,21 @@ when = { overview = true }
 [layer.actions."Mission control"]
 "overview.desktop.next" = { keys = "opt+tab", label = "Next desktop, its leftmost window" }
 "overview.desktop.prev" = { keys = "opt+shift+tab", label = "Previous desktop, its leftmost window" }
+
+# Swerty: Opt types the symbols on ö ä å and the key after it, as on a Mac (right Opt is AltGr
+# anyway: lv3:ralt_switch in the Hyprland configs). Only these keys: Opt stays Alt elsewhere.
+[[layer]]
+name = "swerty"
+when = { layout = "Sweden - Swerty" }
+[layer.map]
+"opt+;" = "altgr+;"              # ;
+"opt+shift+;" = "altgr+shift+;"  # :
+"opt+'" = "altgr+'"              # '
+"opt+shift+'" = "altgr+shift+'"  # "
+"opt+[" = "altgr+["              # [
+"opt+shift+[" = "altgr+shift+["  # {
+"opt+]" = "altgr+]"              # ]
+"opt+shift+]" = "altgr+shift+]"  # }
 
 [[layer]]
 name = "desktop"

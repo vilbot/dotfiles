@@ -23,6 +23,8 @@ pub enum OutMod {
     Alt,
     Super,
     Shift,
+    /// The right Alt key, whichever side triggered it: the layout's third level (swerty's ;:'"[]{}).
+    AltGr,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug)]
@@ -75,6 +77,7 @@ impl OutMod {
             (OutMod::Super, Side::Right) => KeyCode::KEY_RIGHTMETA,
             (OutMod::Shift, Side::Left) => KeyCode::KEY_LEFTSHIFT,
             (OutMod::Shift, Side::Right) => KeyCode::KEY_RIGHTSHIFT,
+            (OutMod::AltGr, _) => KeyCode::KEY_RIGHTALT,
         }
     }
 
@@ -84,7 +87,8 @@ impl OutMod {
             "alt" => OutMod::Alt,
             "super" => OutMod::Super,
             "shift" => OutMod::Shift,
-            _ => bail!("unknown modifier {name:?} (ctrl, alt, super or shift)"),
+            "altgr" => OutMod::AltGr,
+            _ => bail!("unknown modifier {name:?} (ctrl, alt, super, shift or altgr)"),
         })
     }
 }

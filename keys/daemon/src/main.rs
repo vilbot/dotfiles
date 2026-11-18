@@ -40,6 +40,7 @@ enum Msg {
 
 struct Desktop {
     app: String,
+    layout: String,
     /// Open layer-shell surfaces by namespace (one per screen for some).
     layers: HashMap<String, usize>,
     /// False once Hyprland said mission control is closed, until an action runs (only actions
@@ -53,6 +54,9 @@ impl World for Desktop {
     }
     fn layer_open(&self, namespace: &str) -> bool {
         self.layers.get(namespace).is_some_and(|n| *n > 0)
+    }
+    fn layout(&self) -> &str {
+        &self.layout
     }
     fn overview_open(&self) -> bool {
         let open = self.overview_maybe_open.get() && hyprland::overview_open();
@@ -97,6 +101,7 @@ fn run(config_path: PathBuf) -> Result<()> {
 
     let desktop = Desktop {
         app: hyprland::active_class().unwrap_or_default(),
+        layout: hyprland::layout(),
         layers: HashMap::new(),
         overview_maybe_open: Cell::new(true),
     };
@@ -117,6 +122,7 @@ fn run(config_path: PathBuf) -> Result<()> {
                 d.perform(out)?;
             }
             Some(Msg::Hyprland(hyprland::Event::Focus(class))) => d.desktop.app = class,
+            Some(Msg::Hyprland(hyprland::Event::Layout(layout))) => d.desktop.layout = layout,
             Some(Msg::Hyprland(hyprland::Event::LayerOpened(ns))) => {
                 *d.desktop.layers.entry(ns.clone()).or_default() += 1;
                 if d.waiting.as_ref().is_some_and(|(layer, _)| *layer == ns) {

@@ -123,7 +123,7 @@ hl.config({
         kb_variant = ",swerty",
         -- Caps is Esc / Ctrl (keys/remap.toml) and never Caps Lock, even when the raw keyboard
         -- reaches Hyprland (while mackeys starts or restarts).
-        kb_options = "ctrl:nocaps,srvrkeys:none",
+        kb_options = "ctrl:nocaps,srvrkeys:none,lv3:ralt_switch",   -- right Opt = AltGr (swerty's ;:'"[]{})
         -- Click to focus, like a Mac: hovering doesn't focus windows (scrolling still goes to the
         -- window under the pointer), and keyboard focus changes (Cmd+Tab, Opt+H/J/K/L) never move
         -- the pointer.

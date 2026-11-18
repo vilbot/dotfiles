@@ -84,6 +84,9 @@ hl.on("hyprland.start", function()
     -- the bar with the launcher, volume, keyboard layout, notifications, and the lock that is the
     -- login screen (tty/shell); first, so it locks before anything else shows
     hl.exec_cmd("qs -p " .. tty .. "shell")
+    -- the keyboard layout at the text cursor when it changes (an input method that types nothing;
+    -- built with `cargo build --release` in tty/caret)
+    hl.exec_cmd(tty .. "caret/target/release/none-caret")
     -- no terminal: an empty desktop is the launcher's prompt (tty/shell/EmptyDesk.qml)
 end)
 
@@ -119,7 +122,7 @@ hl.config({
     input = {
         kb_layout = "us,se",
         kb_variant = ",swerty",
-        kb_options = "ctrl:nocaps",
+        kb_options = "ctrl:nocaps,lv3:ralt_switch",   -- right Opt = AltGr: swerty's ;:'"[]{} (the US layout's Alt_R otherwise wins)
         follow_mouse = 2,
         sensitivity = 0,
     },

@@ -77,9 +77,14 @@ Singleton {
             if (keyboard !== root.typingKeyboard || name === root.current) return
             root.current = name
             root.layout = name
+            // a text cursor shows it instead (tty/caret: the box at the cursor; it writes 1 while
+            // a text field is focused); read now, so a stale state can't hide it
+            caretFile.reload()
+            if (caretFile.text().trim() === "1") return
             root.layoutShown = true
             layoutTimer.restart()
         }
     }
+    FileView { id: caretFile; path: Quickshell.env("XDG_RUNTIME_DIR") + "/none-caret"; blockLoading: true; printErrors: false }
     Timer { id: layoutTimer; interval: 1200; onTriggered: root.layoutShown = false }
 }

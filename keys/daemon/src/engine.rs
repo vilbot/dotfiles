@@ -21,6 +21,10 @@ pub trait World {
     /// Whether mission control is open. Asked only when a layer that depends on it has the
     /// pressed key, or drops keys it doesn't list (`let_through`).
     fn overview_open(&self) -> bool;
+    /// The keyboard layout typing goes through now, as Hyprland names it ("Sweden - Swerty").
+    fn layout(&self) -> &str {
+        ""
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -298,6 +302,7 @@ fn applies(layer: &Layer, config: &Config, world: &dyn World) -> bool {
         && w.layer.as_deref().is_none_or(|l| world.layer_open(l))
         && !w.not_layer.as_deref().is_some_and(|l| world.layer_open(l))
         && w.overview.is_none_or(|want| world.overview_open() == want)
+        && w.layout.as_deref().is_none_or(|l| world.layout() == l)
 }
 
 /// What each physical modifier sends right now: the first applying layer that sets one wins,

@@ -88,6 +88,8 @@ pub struct When {
     pub not_layer: Option<String>,
     /// Mission control (hymission) is open.
     pub overview: Option<bool>,
+    /// This keyboard layout is on (Hyprland's name for it, e.g. "Sweden - Swerty").
+    pub layout: Option<String>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -172,6 +174,7 @@ struct FileWhen {
     layer: Option<String>,
     not_layer: Option<String>,
     overview: Option<bool>,
+    layout: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -239,7 +242,7 @@ impl Config {
         for l in &file.layers {
             layers.push(layer(l, &file.apps, file.desktops)?);
             let w = &l.when;
-            let in_mode = w.app.is_some() || w.not_app.is_some() || w.layer.is_some() || w.not_layer.is_some() || w.overview.is_some();
+            let in_mode = w.app.is_some() || w.not_app.is_some() || w.layer.is_some() || w.not_layer.is_some() || w.overview.is_some() || w.layout.is_some();
             for (title, actions) in &l.actions {
                 let rows = actions.iter().map(|(name, a)| Row { action: Some(name.clone()), label: a.label.clone(), keys: a.keys.list() });
                 section(if in_mode { &mut modes } else { &mut sheet }, title).rows.extend(rows);
@@ -346,7 +349,7 @@ fn layer(l: &FileLayer, apps: &HashMap<String, Vec<String>>, desktops: u32) -> R
         .with_context(|| format!("{}: let_through", ctx()))?;
 
     let w = &l.when;
-    let when = When { app: w.app.clone(), not_app: w.not_app.clone(), layer: w.layer.clone(), not_layer: w.not_layer.clone(), overview: w.overview };
+    let when = When { app: w.app.clone(), not_app: w.not_app.clone(), layer: w.layer.clone(), not_layer: w.not_layer.clone(), overview: w.overview, layout: w.layout.clone() };
     Ok(Layer { name: l.name.clone(), when, modifiers, map, stop: l.stop, let_through })
 }
 

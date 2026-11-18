@@ -10,6 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 struct Desk {
     app: &'static str,
+    layout: &'static str,
     layers: &'static [&'static str],
     overview: bool,
 }
@@ -24,10 +25,13 @@ impl World for Desk {
     fn overview_open(&self) -> bool {
         self.overview
     }
+    fn layout(&self) -> &str {
+        self.layout
+    }
 }
 
 const fn app(app: &'static str) -> Desk {
-    Desk { app, layers: &[], overview: false }
+    Desk { app, layout: "English (US)", layers: &[], overview: false }
 }
 const CHROME: Desk = app("google-chrome");
 const GHOSTTY: Desk = app("com.mitchellh.ghostty");
@@ -284,4 +288,25 @@ fn shortcuts_page_edits_keep_the_file_and_refuse_clashes() {
     let err = format!("{:#}", set("window.float", &["opt+f"]).unwrap_err());
     assert!(err.contains("twice") && err.contains("opt+f"), "{err}");
     assert!(set("no.such.action", &["opt+w"]).is_err());
+}
+
+#[test]
+fn swerty_opt_types_the_symbols_on_the_swedish_letters() {
+    let swerty = Desk { layout: "Sweden - Swerty", ..GHOSTTY };
+    // ö -> ; (AltGr is the right Alt key; the left one is let go first)
+    assert_eq!(run(&mut engine(), &swerty, "+opt +semicolon -semicolon -opt"), "+leftalt -leftalt +rightalt +semicolon -semicolon -rightalt");
+    // Shift+Opt+ä -> "
+    assert_eq!(
+        run(&mut engine(), &swerty, "+opt +shift +apostrophe -apostrophe -shift -opt"),
+        // Shift let go while Opt is still held: plain Alt again until Opt goes up
+        "+leftalt +leftshift -leftalt +rightalt +apostrophe -apostrophe -leftshift -rightalt +leftalt -leftalt"
+    );
+    // å and the key after it -> [ ]
+    assert_eq!(run(&mut engine(), &swerty, "+opt +leftbrace -leftbrace +rightbrace -rightbrace -opt"),
+        "+leftalt -leftalt +rightalt +leftbrace -leftbrace +rightbrace -rightbrace -rightalt");
+    // Opt stays Alt elsewhere, and desktop keys still work
+    assert_eq!(run(&mut engine(), &swerty, "+opt +b -b -opt"), "+leftalt +b -b -leftalt");
+    assert_eq!(run(&mut engine(), &swerty, "+opt +h -h -opt"), "+leftalt run:window.focus.left -leftalt");
+    // on the US layout Opt+; is Alt+;
+    assert_eq!(run(&mut engine(), &GHOSTTY, "+opt +semicolon -semicolon -opt"), "+leftalt +semicolon -semicolon -leftalt");
 }

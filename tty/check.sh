@@ -88,4 +88,10 @@ elif { diff -rq tty/greeter "$copy" 2>/dev/null || true; } | grep -q '^Files' ||
     bad "the login screen's copy is out of date: sudo tty/login.sh"
 else ok "login screen copy (/etc/greetd/none) up to date"; fi
 
+# tty/caret (the layout at the text cursor): built, and not older than its source
+bin=tty/caret/target/release/none-caret
+if [[ ! -x $bin ]]; then bad "tty/caret isn't built: (cd tty/caret && cargo build --release)"
+elif [[ -n $(find tty/caret/src tty/caret/Cargo.toml -newer "$bin") ]]; then bad "tty/caret changed since it was built: (cd tty/caret && cargo build --release)"
+else ok "tty/caret built"; fi
+
 exit $fail

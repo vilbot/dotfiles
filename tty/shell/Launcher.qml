@@ -53,7 +53,7 @@ Singleton {
         .filter(e => !e.noDisplay)
         .map(e => ({ id: e.id, name: e.name, detail: e.genericName || "", words: (e.keywords ?? []).join(" "),
                      webCmd: e.id === "google-chrome" ? e.name : undefined,
-                     run: e.id === "google-chrome" ? chromeApp(app(e.id)) : app(e.id) })))
+                     run: e.id === "google-chrome" ? chromeApp(exec(chromeCmd)) : app(e.id) })))
 
     // ---- favorites -----------------------------------------------------------------------
     FileView {
@@ -123,6 +123,10 @@ Singleton {
         const m = query.match(/^(google chrome|chrome)\s(.*)$/i)
         return m ? { word: m[1], text: m[2].trim() } : null
     }
+    // Chrome as the launcher starts it: telling input methods where its text cursor is, so the
+    // keyboard layout shows there (tty/caret). Only the first start of Chrome counts: a running
+    // Chrome keeps the flags it started with.
+    readonly property var chromeCmd: ["google-chrome-stable", "--enable-wayland-ime"]
     // how: "" (a tab in Chrome's window), "incognito" or "window" (a new one)
     function chromeFlags(how) { return how === "incognito" ? ["--incognito"] : how === "window" ? ["--new-window"] : [] }
     // A tab goes into Chrome's last window, but Chrome can't bring it forward itself (no
@@ -131,12 +135,13 @@ Singleton {
         + "and (.title | endswith(\"(Incognito)\") | not))] | sort_by(.focusHistoryID) | .[0].address // empty'); "
         + "[ -n \"$a\" ] && hyprctl dispatch \"hl.dsp.focus({ window = \\\"address:$a\\\" })\" >/dev/null"
     function chrome(url) {
-        return how => how ? Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how), [url]))
-                          : Quickshell.execDetached(["sh", "-c", focusChrome + "; exec google-chrome-stable \"$1\"", "sh", url])
+        return how => how ? Quickshell.execDetached(chromeCmd.concat(chromeFlags(how), [url]))
+                          : Quickshell.execDetached(["sh", "-c", focusChrome + "; exec \"$@\"", "sh"].concat(chromeCmd, [url]))
     }
-    // Google Chrome itself: Enter as any app, Cmd+N / Cmd+Shift+N a new (incognito) window
+    // Google Chrome itself: Enter starts it (with chromeCmd's flag, not through gtk-launch),
+    // Cmd+N / Cmd+Shift+N a new (incognito) window
     function chromeApp(plain) {
-        return how => how ? Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how))) : plain()
+        return how => how ? Quickshell.execDetached(chromeCmd.concat(chromeFlags(how))) : plain()
     }
     // can the pick open in a new Chrome window (Cmd+N)?
     function chromePick() { const e = results[current]; return !!e && (e.isWeb || e.id === "google-chrome") }
@@ -212,7 +217,7 @@ Singleton {
         } else {
             add("New window", "empty", "chrome://newtab", "")   // first, so Enter on `Google Chrome ` opens nothing else
             // Enter and Cmd+N: a new window on a new tab; Cmd+Shift+N: incognito
-            rows[0].run = how => Quickshell.execDetached(["google-chrome-stable"].concat(chromeFlags(how || "window")))
+            rows[0].run = how => Quickshell.execDetached(chromeCmd.concat(chromeFlags(how || "window")))
             for (const s of sites) add(s.title, host(s.url), s.url, host(s.url))
         }
         for (const h of history) add(h.title || host(h.url), host(h.url), h.url, h.url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, ""))
