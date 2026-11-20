@@ -1,34 +1,10 @@
-//! What the real keys/remap.toml does, key by key.
-//!
-//! `run` takes physical events ("+cmd +c -c -cmd", "*f12" = auto-repeat, "wait:1500") and
-//! returns what apps get and which actions run ("+leftctrl +c -c -leftctrl", "run:window.close").
+//! What the full desktop's keys/remap.toml does, key by key (harness: common/mod.rs).
 
+mod common;
+use common::*;
 use mackeys::config::Config;
-use mackeys::engine::{Engine, Out, World};
-use mackeys::keys::{key_name, parse_key};
+use mackeys::engine::Engine;
 use std::collections::{BTreeMap, BTreeSet};
-
-struct Desk {
-    app: &'static str,
-    layout: &'static str,
-    layers: &'static [&'static str],
-    overview: bool,
-}
-
-impl World for Desk {
-    fn app(&self) -> &str {
-        self.app
-    }
-    fn layer_open(&self, namespace: &str) -> bool {
-        self.layers.contains(&namespace)
-    }
-    fn overview_open(&self) -> bool {
-        self.overview
-    }
-    fn layout(&self) -> &str {
-        self.layout
-    }
-}
 
 const fn app(app: &'static str) -> Desk {
     Desk { app, layout: "English (US)", layers: &[], overview: false }
@@ -39,44 +15,6 @@ const ZED: Desk = app("dev.zed.Zed");
 
 fn engine() -> Engine {
     Engine::new(Config::parse(include_str!("../../remap.toml")).expect("remap.toml parses"))
-}
-
-/// Physical key names in tests: Mac modifier names, the rest as in remap.toml.
-fn physical(name: &str) -> evdev::KeyCode {
-    let kernel = match name {
-        "cmd" => "leftmeta",
-        "opt" => "leftalt",
-        "ropt" => "rightalt",
-        "ctrl" => "leftctrl",
-        "shift" => "leftshift",
-        "caps" => "capslock",
-        other => other,
-    };
-    parse_key(kernel).unwrap()
-}
-
-fn run(e: &mut Engine, world: &Desk, events: &str) -> String {
-    let mut now = 0;
-    let mut out = Vec::new();
-    for ev in events.split_whitespace() {
-        if let Some(ms) = ev.strip_prefix("wait:") {
-            now += ms.parse::<u64>().unwrap();
-            continue;
-        }
-        now += 10;
-        let (kind, name) = ev.split_at(1);
-        let result = match kind {
-            "*" => e.repeat(physical(name)),
-            _ => e.key(physical(name), kind == "+", now, world),
-        };
-        for o in result {
-            out.push(match o {
-                Out::Key(key, down) => format!("{}{}", if down { '+' } else { '-' }, key_name(key)),
-                Out::Run(action) => format!("run:{action}"),
-            });
-        }
-    }
-    out.join(" ")
 }
 
 #[test]
@@ -260,7 +198,7 @@ fn config_errors_say_where() {
 #[test]
 fn sheet_lists_actions_with_mac_keys() {
     let config = Config::parse(include_str!("../../remap.toml")).unwrap();
-    let sheet: serde_json::Value = serde_json::from_str(&mackeys::sheet::json(&config)).unwrap();
+    let sheet: serde_json::Value = serde_json::from_str(&mackeys::sheet::json(&config, "remap.toml")).unwrap();
     let rows: Vec<&serde_json::Value> = sheet["groups"].as_array().unwrap().iter().flat_map(|g| g["rows"].as_array().unwrap()).collect();
     let label = |action: &str| rows.iter().find(|r| r["action"] == action).map(|r| r["keysLabel"].clone()).unwrap();
     assert_eq!(label("window.focus.{dir}"), serde_json::json!(["⌥ H J K L"]));

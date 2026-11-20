@@ -1,6 +1,6 @@
 // The launcher on screen: a see-through strip lying exactly on the middle of the bar, where the
 // app's name fades out and the prompt fades in, with the results dropping down below it.
-// Its own surface ("tty-launcher") so mackeys knows when it's open (keys/remap.toml).
+// Its own surface ("tty-launcher") so mackeys knows when it's open (tty/keys.toml).
 import QtQuick
 import Quickshell
 import Quickshell.Wayland
@@ -127,7 +127,7 @@ Scope {
                 Text {  // typed something that matches nothing: Enter runs it
                     visible: Launcher.results.length === 0
                     anchors { left: parent.left; leftMargin: 12; verticalCenter: parent.verticalCenter }
-                    text: Launcher.query.trim() === "" ? "no favorites yet: Ctrl+F on an app"
+                    text: Launcher.query.trim() === "" ? "no favorites yet: " + (AppKeys.label("launcher.favorite") || "launcher.favorite") + " on an app"
                         : Launcher.pathQuery ? "nothing here" : Launcher.webQuery ? "type an address or a search" : "⏎ runs it as a command"
                     font: Ui.font
                     color: Colors.base04

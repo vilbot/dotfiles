@@ -1,6 +1,6 @@
 // The launcher (Cmd+Space): typed into the middle of the bar, results drop down below it.
-//   empty           the favorites (tty/favorites.txt; Ctrl+F adds or removes one)
-//   a name          apps, None's own entries (Settings, Files, Neovim, Terminal) and commands (Lock, Sleep,
+//   empty           the favorites (tty/favorites.txt; launcher.favorite in tty/keys.toml adds or removes one)
+//   a name          apps, None's own entries (Settings, Control center, Files, Neovim, Terminal) and commands (Lock, Sleep,
 //                   Log out, Reboot, Shut down; the last two ask for a second Enter)
 //   Files <path>    the folder's contents: Enter opens a folder in yazi, a file in its app
 //   nvim <path>     the same, Enter opens it in nvim (its terminal closes with it)
@@ -38,14 +38,17 @@ Singleton {
     // ---- what can be found ---------------------------------------------------------------
     // pathCmd: the word that lists a folder with this entry (Tab on the entry writes it)
     readonly property var own: [
-        { id: "tty:terminal", name: "Terminal", detail: "Opt+Enter", pathCmd: "Terminal", run: exec([term]) },
-        { id: "tty:settings", name: "Settings", detail: "sound, bluetooth, network (F5)", run: sh(tty + "/panel.sh") },
+        { id: "tty:terminal", name: "Terminal", detail: AppKeys.label("terminal"), pathCmd: "Terminal", run: exec([term]) },
+        { id: "tty:settings", name: "Settings", detail: "shortcuts, theme, keyboard & mouse", words: "preferences keys colors",
+          run: exec([tty + "/settings.sh"]) },
+        { id: "tty:control", name: "Control center", detail: "sound, bluetooth, network, update (" + AppKeys.label("panel.control") + ")",
+          run: sh(tty + "/panel.sh") },
         { id: "tty:files", name: "Files", detail: "yazi", pathCmd: "Files", run: exec([term, "yazi"]) },
         // nvim comes from bob (a version manager), which installs no app entry of its own
         { id: "tty:nvim", name: "Neovim", detail: "nvim", words: "vim editor", pathCmd: "nvim", run: exec([term, "nvim"]) },
-        { id: "cmd:lock", name: "Lock", detail: "Ctrl+Cmd+Q", run: ipc("lock", "lock") },
+        { id: "cmd:lock", name: "Lock", detail: AppKeys.label("session.lock"), run: ipc("lock", "lock") },
         { id: "cmd:sleep", name: "Sleep", detail: "locks first", run: exec(["systemctl", "suspend"]) },
-        { id: "cmd:logout", name: "Log out", detail: "Opt+Shift+Esc", run: ipc("lock", "logout") },
+        { id: "cmd:logout", name: "Log out", detail: AppKeys.label("session.exit"), run: ipc("lock", "logout") },
         { id: "cmd:reboot", name: "Reboot", detail: "", confirm: true, run: exec(["systemctl", "reboot"]) },
         { id: "cmd:shutdown", name: "Shut down", detail: "", confirm: true, run: exec(["systemctl", "poweroff"]) },
     ]

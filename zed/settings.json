@@ -72,6 +72,12 @@
     "include_warnings": true
   },
   "agent_servers": {
+    "codex-acp": {
+      "default_config_options": {
+        "reasoning_effort": "medium"
+      },
+      "type": "registry"
+    },
     "claude-acp": {
       "default_config_options": {
         "mode": "acceptEdits",

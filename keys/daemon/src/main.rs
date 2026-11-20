@@ -1,7 +1,11 @@
 //! mackeys: a Mac keyboard on Hyprland.
 //!
-//!   mackeys <remap.toml>                    run (the systemd service)
-//!   mackeys set <remap.toml> <changes.json> change actions' keys: {"window.close": ["cmd+q"]}
+//!   mackeys <keymap.toml>                    run (the systemd service, with the desktop's keymap:
+//!                                            $MACKEYS_KEYMAP, set by the desktop's hyprland.lua)
+//!   mackeys set <keymap.toml> <changes.json> change actions' keys: {"window.close": ["cmd+q"]}
+//!
+//! $XDG_RUNTIME_DIR/mackeys.sock takes lines: `record` (the next keys pressed are answered as
+//! `keys opt+shift+1`, or `cancelled` after Esc twice, and do nothing else) and `cancel`.
 //!
 //! Running: one thread per grabbed keyboard, one watching Hyprland's events, one looking for new
 //! keyboards and config changes. They send `Msg`s to the main loop, which owns the engine and
@@ -20,6 +24,9 @@ use evdev::KeyCode;
 use evdev::uinput::VirtualDevice;
 use mackeys::config::Config;
 use mackeys::engine::{Engine, Out, World};
+use mackeys::record::{Recorder, Step};
+use std::io::{BufRead, BufReader, Write};
+use std::os::unix::net::{UnixListener, UnixStream};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::cell::Cell;
@@ -29,6 +36,8 @@ use std::time::{Duration, Instant, SystemTime};
 
 /// How long keys wait for a layer an action opens.
 const LAYER_WAIT: Duration = Duration::from_millis(1000);
+/// How long recording waits for a second Esc (which cancels) before recording Esc.
+const ESC_WAIT: Duration = Duration::from_millis(400);
 
 enum Msg {
     Keys(Vec<(KeyCode, Press, u64)>),
@@ -36,6 +45,9 @@ enum Msg {
     Hyprland(hyprland::Event),
     ConfigChanged,
     HyprlandExited,
+    /// Record the next keys; answer on this connection.
+    Record(UnixStream),
+    CancelRecording,
 }
 
 struct Desktop {
@@ -74,6 +86,16 @@ struct Daemon {
     /// Keys are held back until this layer opens or the time is up.
     waiting: Option<(String, Instant)>,
     held_back: Keys,
+    recording: Option<Recording>,
+    /// Keys that went down while recording: their ups (and repeats) are recording's too.
+    swallowed: HashSet<KeyCode>,
+}
+
+struct Recording {
+    recorder: Recorder,
+    reply: UnixStream,
+    /// Esc was pressed once; Esc it is when this passes.
+    esc_until: Option<Instant>,
 }
 
 fn main() -> Result<()> {
@@ -96,7 +118,7 @@ fn set(path: &Path, changes: &str) -> Result<()> {
 fn run(config_path: PathBuf) -> Result<()> {
     let config = load(&config_path)?;
     let device_names = config.devices.clone();
-    write_sheet(&config);
+    write_sheet(&config, &config_path);
     check_actions(&config);
 
     let desktop = Desktop {
@@ -105,15 +127,24 @@ fn run(config_path: PathBuf) -> Result<()> {
         layers: HashMap::new(),
         overview_maybe_open: Cell::new(true),
     };
-    let mut d = Daemon { engine: Engine::new(config), output: devices::virtual_keyboard()?, desktop, waiting: None, held_back: Vec::new() };
+    let mut d = Daemon {
+        engine: Engine::new(config),
+        output: devices::virtual_keyboard()?,
+        desktop,
+        waiting: None,
+        held_back: Vec::new(),
+        recording: None,
+        swallowed: HashSet::new(),
+    };
 
     let (tx, rx) = channel();
     spawn_hyprland_watcher(tx.clone());
+    spawn_socket(tx.clone());
     spawn_scanner(tx, device_names, config_path.clone());
 
-    while let Some(msg) = next(&rx, d.waiting.as_ref().map(|(_, until)| *until)) {
+    while let Some(msg) = next(&rx, d.deadline()) {
         match msg {
-            None => d.stop_waiting()?,
+            None => d.timeout()?,
             Some(Msg::Keys(keys)) => d.keys(keys)?,
             Some(Msg::KeyboardGone(path)) => {
                 eprintln!("keyboard gone: {}", path.display());
@@ -135,7 +166,7 @@ fn run(config_path: PathBuf) -> Result<()> {
             }
             Some(Msg::ConfigChanged) => match load(&config_path) {
                 Ok(config) => {
-                    write_sheet(&config);
+                    write_sheet(&config, &config_path);
                     check_actions(&config);
                     let out = d.engine.reload(config);
                     d.perform(out)?;
@@ -143,6 +174,12 @@ fn run(config_path: PathBuf) -> Result<()> {
                 }
                 Err(e) => eprintln!("not reloading, {e:#}"),
             },
+            Some(Msg::Record(reply)) => {
+                d.end_recording("cancelled");
+                let recorder = Recorder::new(d.engine.config().tap_hold.as_ref());
+                d.recording = Some(Recording { recorder, reply, esc_until: None });
+            }
+            Some(Msg::CancelRecording) => d.end_recording("cancelled"),
             Some(Msg::HyprlandExited) => {
                 let out = d.engine.release_all();
                 d.perform(out)?;
@@ -167,8 +204,69 @@ fn next(rx: &Receiver<Msg>, until: Option<Instant>) -> Option<Option<Msg>> {
 }
 
 impl Daemon {
+    /// When `timeout` is due: a layer that didn't open, or no second Esc while recording.
+    fn deadline(&self) -> Option<Instant> {
+        let esc = self.recording.as_ref().and_then(|r| r.esc_until);
+        [self.waiting.as_ref().map(|(_, until)| *until), esc].into_iter().flatten().min()
+    }
+
+    fn timeout(&mut self) -> Result<()> {
+        let now = Instant::now();
+        if let Some(r) = self.recording.as_mut().filter(|r| r.esc_until.is_some_and(|t| t <= now)) {
+            let step = r.recorder.esc_timeout();
+            self.recorded(step);
+        }
+        if self.waiting.as_ref().is_some_and(|(_, until)| *until <= now) {
+            self.stop_waiting()?;
+        }
+        Ok(())
+    }
+
+    /// While recording, keys pressed go to the recorder; keys that were down before go on to
+    /// the engine, so their ups aren't lost.
+    fn record(&mut self, key: KeyCode, press: Press) -> bool {
+        if press == Press::Down && self.recording.is_some() {
+            self.swallowed.insert(key);
+        }
+        if !self.swallowed.contains(&key) {
+            return false;
+        }
+        if press == Press::Up {
+            self.swallowed.remove(&key);
+        }
+        if let Some(r) = self.recording.as_mut() {
+            if press != Press::Repeat {
+                let step = r.recorder.key(key, press == Press::Down);
+                self.recorded(step);
+            }
+        }
+        true
+    }
+
+    fn recorded(&mut self, step: Step) {
+        match step {
+            Step::Waiting => {}
+            Step::EscWait => {
+                if let Some(r) = self.recording.as_mut() {
+                    r.esc_until = Some(Instant::now() + ESC_WAIT);
+                }
+            }
+            Step::Done(keys) => self.end_recording(&format!("keys {keys}")),
+            Step::Cancelled => self.end_recording("cancelled"),
+        }
+    }
+
+    fn end_recording(&mut self, answer: &str) {
+        if let Some(mut r) = self.recording.take() {
+            let _ = writeln!(r.reply, "{answer}");
+        }
+    }
+
     fn keys(&mut self, keys: Keys) -> Result<()> {
         for (key, press, ms) in keys {
+            if self.record(key, press) {
+                continue;
+            }
             if self.waiting.is_some() {
                 self.held_back.push((key, press, ms));
                 continue;
@@ -228,16 +326,52 @@ fn load(path: &Path) -> Result<Config> {
     Config::parse(&text).with_context(|| format!("in {}", path.display()))
 }
 
-/// The sheet for Quickshell: $XDG_STATE_HOME/mackeys/keymap.json (~/.local/state/...).
-fn write_sheet(config: &Config) {
+/// The sheet for the shells: $XDG_STATE_HOME/mackeys/keymap.json (~/.local/state/...).
+fn write_sheet(config: &Config, path: &Path) {
+    let path = std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
     let state = std::env::var_os("XDG_STATE_HOME")
         .map(PathBuf::from)
         .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".local/state")));
     let Some(dir) = state.map(|s| s.join("mackeys")) else { return };
-    let result = std::fs::create_dir_all(&dir).and_then(|_| std::fs::write(dir.join("keymap.json"), mackeys::sheet::json(config)));
+    let result = std::fs::create_dir_all(&dir).and_then(|_| std::fs::write(dir.join("keymap.json"), mackeys::sheet::json(config, &path.to_string_lossy())));
     if let Err(e) = result {
         eprintln!("writing {}: {e}", dir.join("keymap.json").display());
     }
+}
+
+/// $XDG_RUNTIME_DIR/mackeys.sock: a thread per connection reading its lines.
+fn spawn_socket(tx: Sender<Msg>) {
+    let Some(dir) = std::env::var_os("XDG_RUNTIME_DIR") else { return };
+    let path = PathBuf::from(dir).join("mackeys.sock");
+    let _ = std::fs::remove_file(&path);
+    let listener = match UnixListener::bind(&path) {
+        Ok(l) => l,
+        Err(e) => return eprintln!("{}: {e}", path.display()),
+    };
+    std::thread::spawn(move || {
+        for stream in listener.incoming().flatten() {
+            let tx = tx.clone();
+            std::thread::spawn(move || {
+                let Ok(reader) = stream.try_clone() else { return };
+                for line in BufReader::new(reader).lines() {
+                    let Ok(line) = line else { break };
+                    let msg = match line.trim() {
+                        "record" => match stream.try_clone() {
+                            Ok(s) => Msg::Record(s),
+                            Err(_) => break,
+                        },
+                        "cancel" => Msg::CancelRecording,
+                        _ => continue,
+                    };
+                    if tx.send(msg).is_err() {
+                        return;
+                    }
+                }
+                // the app went away: it isn't waiting for keys anymore
+                let _ = tx.send(Msg::CancelRecording);
+            });
+        }
+    });
 }
 
 fn spawn_hyprland_watcher(tx: Sender<Msg>) {

@@ -1,4 +1,5 @@
-# mackeys (keys/daemon): what each physical key on the Mac keyboard sends on Hyprland.
+# mackeys (keys/daemon): what each physical key on the Mac keyboard sends on the full Hyprland
+# desktop (the None desktop has a keymap of its own).
 # Left side of a mapping: physical keys (cmd, opt, ctrl, shift; lopt / ropt for one side).
 # Right side: what apps get (ctrl, alt, super, shift; altgr = right Alt, the layout's third level).
 # Saved changes apply within a second.
@@ -178,11 +179,6 @@ name = "desktop"
 [[layer]]
 name = "command palette"  # its own Ctrl+N/P/J/K, nothing rewritten
 when = { layer = "quickshell-palette" }
-stop = true
-
-[[layer]]
-name = "None launcher"  # the None desktop's launcher: its own Ctrl+J/K/N/P/F, nothing rewritten
-when = { layer = "tty-launcher" }
 stop = true
 
 [[layer]]

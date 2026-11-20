@@ -3,6 +3,7 @@
 `variant: light` for a light one), switched live, everywhere at once.
 
     theme.py list         the themes, one name per line
+    theme.py themes       every theme with its colours, as JSON (the Settings app's Appearance page)
     theme.py get          the current one
     theme.py set NAME     switch to it
     theme.py ensure       write the files a new terminal needs if they're missing (tty/term)
@@ -165,6 +166,8 @@ def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "list":
         print("\n".join(names()))
+    elif cmd == "themes":
+        print(json.dumps([load(n) for n in names()]))
     elif cmd == "get":
         print(current()["name"])
     elif cmd == "ensure":

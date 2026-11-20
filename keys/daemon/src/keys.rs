@@ -187,3 +187,50 @@ pub fn key_name(key: KeyCode) -> String {
     let debug = format!("{key:?}");
     debug.strip_prefix("KEY_").unwrap_or(&debug).to_ascii_lowercase()
 }
+
+/// How remap.toml writes a key: the short form parse_key takes ("[" for leftbrace, "1", "esc").
+pub fn key_text(key: KeyCode) -> String {
+    let name = key_name(key);
+    let short = match name.as_str() {
+        "leftbrace" => "[",
+        "rightbrace" => "]",
+        "grave" => "`",
+        "dot" => ".",
+        "comma" => ",",
+        "minus" => "-",
+        "equal" => "=",
+        "slash" => "/",
+        "semicolon" => ";",
+        "apostrophe" => "'",
+        "backslash" => "\\",
+        other => other,
+    };
+    short.to_string()
+}
+
+impl Trigger {
+    /// The one way of writing these keys: modifiers in the Mac's order (ctrl, opt, shift, cmd;
+    /// "ropt" for one side), then the key. Two triggers are the same keys when this is the same.
+    pub fn text(&self) -> String {
+        let mut mods = self.mods.clone();
+        mods.sort_by_key(|(m, _)| match m {
+            Mod::Ctrl => 0,
+            Mod::Opt => 1,
+            Mod::Shift => 2,
+            Mod::Cmd => 3,
+        });
+        let mut parts: Vec<String> = mods
+            .iter()
+            .map(|(m, side)| {
+                let side = match side {
+                    Some(Side::Left) => "l",
+                    Some(Side::Right) => "r",
+                    None => "",
+                };
+                format!("{side}{}", format!("{m:?}").to_lowercase())
+            })
+            .collect();
+        parts.push(key_text(self.key));
+        parts.join("+")
+    }
+}

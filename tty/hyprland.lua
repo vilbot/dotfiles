@@ -1,21 +1,19 @@
 -- "None" desktop: a desktop that is all terminal. Started by tty/start, the login screen's
 -- "None" (tty/login.sh).
 -- Terminals everywhere (foot, tty/foot.ini: Hack + gruver16), no wallpaper, gaps, rounding
--- or plugins. Tiling, desktops and mackeys' keys work like on the full desktop: the actions come
--- from hypr/actions.lua, with this desktop's programs.
+-- or plugins. Its own keys (tty/keys.toml, through mackeys) and actions (tty/actions.lua).
 -- Check: tty/check.sh
 
 local home = os.getenv("HOME")
 local hypr = home .. "/.config/hypr/"
 local tty = home .. "/dotfiles/tty/"
-package.path = hypr .. "?.lua;" .. package.path
+package.path = tty .. "?.lua;" .. hypr .. "?.lua;" .. package.path   -- tty/ first: its own actions.lua
 
 -- every terminal here is tty/term (foot with tty/foot.ini)
 local term = tty .. "term"
 local programs = {
     terminal     = term,
     launcher     = "qs -p " .. tty .. "shell ipc call launcher toggle",  -- in the bar (tty/shell)
-    launcher_alt = "qs -p " .. tty .. "shell ipc call launcher toggle",
     lock         = "qs -p " .. tty .. "shell ipc call lock lock",   -- only the password (tty/shell/LockScreen.qml)
     sleep        = "systemctl suspend",   -- tty/hypridle.conf locks first
 }
@@ -47,10 +45,10 @@ do
 end
 local rgb = function(hex) return "rgba(" .. hex .. "ff)" end
 
--- how many desktops: `desktops = N` in keys/remap.toml, like the full desktop
+-- how many desktops: `desktops = N` in tty/keys.toml
 local desktops = 5
 do
-    local f = io.open(home .. "/dotfiles/keys/remap.toml")
+    local f = io.open(tty .. "keys.toml")
     local n = f and f:read("a"):match("\ndesktops%s*=%s*(%d+)")
     if f then f:close() end
     desktops = tonumber(n) or desktops
@@ -75,10 +73,11 @@ hl.env("SDL_GAMECONTROLLERCONFIG", "03000000952e00004e43000011010000,Gaming SCUF
 require("kde")                 -- KDE apps look and work right (hypr/kde.lua)
 
 hl.on("hyprland.start", function()
-    -- systemd user services see this session; mackeys takes the keyboard (as in hypr/hyprland.lua)
+    -- systemd user services see this session; mackeys takes the keyboard, with None's keys
     hl.exec_cmd("dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP "
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
+        .. "&& systemctl --user set-environment MACKEYS_KEYMAP=" .. tty .. "keys.toml "
         .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
     hl.exec_cmd("hypridle -c " .. tty .. "hypridle.conf")
     -- the bar with the launcher, volume, keyboard layout, notifications, and the lock that is the
@@ -148,15 +147,11 @@ hl.animation({ leaf = "layers", enabled = false })
 hl.animation({ leaf = "windows", enabled = true, speed = 1.4, bezier = "quick", style = "popin 97%" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 1.4, bezier = "quick", style = "fade" })
 
-Actions = require("actions")({ programs = programs, desktops = desktops })
--- the full desktop's panels are Quickshell's; here F5 (Settings) opens the terminal panel
-Actions["panel.settings"] = function() hl.dispatch(hl.dsp.exec_cmd(tty .. "panel.sh")) end
-Actions["panel.control"] = Actions["panel.settings"]
--- F1 / F2: the brightness of None's own shell (the full desktop's isn't running here)
-Actions["brightness.down"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call brightness down")) end
-Actions["brightness.up"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call brightness up")) end
--- logging out locks: the login screen is a lock over None (tty/shell/LockScreen.qml)
-Actions["session.exit"] = function() hl.dispatch(hl.dsp.exec_cmd("qs -p " .. tty .. "shell ipc call lock logout")) end
+Actions = require("actions")({ tty = tty, programs = programs, desktops = desktops })
+
+-- what the Settings app changed (tty/settings.json): over everything above
+NoneOptions = require("options")
+NoneOptions.load(tty .. "settings.json")
 
 -- Mouse: Opt + left-drag moves a window, Opt + right-drag resizes it.
 hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })

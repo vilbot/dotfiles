@@ -4,6 +4,7 @@
 #   - the full desktop doesn't depend on tty/: only the theme generator (which writes
 #     tty/foot-colors.ini) may mention it, so this experiment can't break or change the other desktops
 #   - foot accepts tty/foot.ini, and its generated colours are up to date
+#   - None's keys (tty/keys.toml) parse and do what keys/daemon/tests/none.rs says; mackeys is built
 set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
@@ -13,8 +14,9 @@ ok() { echo "ok    $*"; }
 out=$(Hyprland --verify-config -c tty/hyprland.lua 2>&1 | sed -n '/parsing result/,$p' | tail -n +2)
 if grep -q "config ok" <<<"$out"; then ok "tty/hyprland.lua"; else bad "tty/hyprland.lua:$out"; fi
 
+# (mackeys' tests read tty/keys.toml: a test, nothing the other desktops run)
 refs=$(git grep --untracked -nP '(?<![\w.])tty/' -- . ':!tty/' ':!.gitignore' ':!theme/build.py' \
-    ':!prompts/' ':!nvim_old/' ':!AGENTS.md' ':!README*' 2>/dev/null)
+    ':!prompts/' ':!nvim_old/' ':!AGENTS.md' ':!README*' ':!keys/daemon/tests/none.rs' 2>/dev/null)
 if [[ -z $refs ]]; then ok "nothing outside tty/ depends on it"; else bad "files outside tty/ use it:"$'\n'"$refs"; fi
 
 if command -v foot >/dev/null; then
@@ -87,6 +89,14 @@ elif { diff -rq tty/greeter "$copy" 2>/dev/null || true; } | grep -q '^Files' ||
         || ! cmp -s tty/foot-colors.ini "$copy/foot-colors.ini"; then
     bad "the login screen's copy is out of date: sudo tty/login.sh"
 else ok "login screen copy (/etc/greetd/none) up to date"; fi
+
+# None's keymap (tty/keys.toml): mackeys' tests for it, and mackeys built from its current source
+if err=$(cd keys/daemon && cargo test --release -q --test none 2>&1); then ok "tty/keys.toml (keys/daemon/tests/none.rs)"
+else bad "tty/keys.toml:"$'\n'"$(tail -n 20 <<<"$err")"; fi
+bin=keys/daemon/target/release/mackeys
+if [[ ! -x $bin ]] || [[ -n $(find keys/daemon/src keys/daemon/Cargo.toml -newer "$bin") ]]
+then bad "mackeys isn't built from its current source: (cd keys/daemon && cargo build --release)"
+else ok "mackeys built"; fi
 
 # tty/caret (the layout at the text cursor): built, and not older than its source
 bin=tty/caret/target/release/none-caret

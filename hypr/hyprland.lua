@@ -57,6 +57,7 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP "
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
+        .. "&& systemctl --user set-environment MACKEYS_KEYMAP=$HOME/dotfiles/keys/remap.toml "
         .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
     -- Hyprland-only Ghostty look (see the end of ghostty/config.ghostty).
     hl.exec_cmd("ln -sfn hyprland.ghostty ~/.config/ghostty/session.ghostty")

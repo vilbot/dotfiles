@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# The "None" desktop's settings panel (F5, or "Settings" in the launcher): a terminal down the
-# right side, over the windows, with tabs for sound, bluetooth, network, update, theme and help
+# The "None" desktop's control center (F5, or "Control center" in the launcher): a terminal down the
+# right side, over the windows, with tabs for sound, bluetooth, network, update and help
 # (what each shows and does: tty/panel/panel.py). Same keys on every tab: j/k move, H/L (or Tab, or a click on the tab
 # line) switch tabs, q or Esc close; the tab's own keys are in the lines at the bottom, and a
 # click on one of those hints does what its key does. On the sound tab the mouse wheel changes the
@@ -36,7 +36,7 @@ case "${1:-}" in
         if is_open; then close; exit 0; fi
         exec "$dir/term" -a tty-panel "$self" run
         ;;
-    sound|bluetooth|network|update|theme|help)
+    sound|bluetooth|network|update|help)
         is_open && [[ $(cat "$tabfile" 2>/dev/null) == "$1" ]] && { close; exit 0; }
         exec "$self" open "$1"
         ;;
@@ -59,8 +59,6 @@ case "${1:-}" in
         [[ $tab == update ]] && "$dir/panel/update.py" active && exec "$dir/panel/update.py" attach
         binds=(
             "g:first,G:last"
-            # once the list is in: the cursor where the tab wants it (the theme tab: on the current theme)
-            "load:transform('$py' landed)+unbind(load)"
             "q:execute-silent('$self' close),esc:execute-silent('$self' close)"
             "H:transform('$py' go -1),shift-tab:transform('$py' go -1)"
             "L:transform('$py' go +1),tab:transform('$py' go +1)"
@@ -70,12 +68,6 @@ case "${1:-}" in
             "double-click:transform('$py' on enter {2})"
             "click-footer:transform('$py' click \$FZF_CLICK_FOOTER_LINE \$FZF_CLICK_FOOTER_COLUMN {2})"
         )
-        # moving: on the theme tab, moving onto a theme switches to it (panel.py moved); the check
-        # is in the shell so the other tabs don't wait for Python on every j/k
-        # (`transform:` takes the rest of the bind, parentheses and all: one bind per key)
-        for key in j:down k:up down:down up:up; do
-            binds+=("$key+transform:[ \"\$(cat '$tabfile')\" = theme ] && '$py' moved {2} || true")
-        done
         # the mouse wheel: on the sound tab, the volume of the row the cursor is on (as l/h; a
         # click puts the cursor on a row); on the others, the cursor (as k/j)
         for w in scroll-up:up:l scroll-down:down:h; do

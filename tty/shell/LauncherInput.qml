@@ -1,7 +1,6 @@
 // The launcher's text field, the same in the bar (LauncherWindow.qml) and on an empty desktop
-// (EmptyDesk.qml): what you type is Launcher.query; Enter runs, Tab completes, Up/Down (or
-// Ctrl+J/K/N/P) move, Ctrl+F adds or removes a favorite, Ctrl+C erases what's typed, Esc closes (on a desktop: clears).
-// On a Chrome row (a site, a search, Google Chrome itself) Cmd+N opens it in a new window, Cmd+Shift+N incognito.
+// (EmptyDesk.qml): what you type is Launcher.query. Its keys (run, move, complete, favorite, erase,
+// Chrome's new window / incognito, close) are the launcher's actions in tty/keys.toml (AppKeys).
 // What Tab would add shows dimmed after the text (Launcher.ghost); → at the end takes it too.
 import QtQuick
 
@@ -19,16 +18,6 @@ TextInput {
             if (input.text !== Launcher.query) { input.text = Launcher.query; input.cursorPosition = input.text.length }
         }
     }
-    Keys.onEscapePressed: input.cancelled()
-    Keys.onReturnPressed: Launcher.run(Launcher.current)
-    Keys.onEnterPressed: Launcher.run(Launcher.current)
-    Keys.onUpPressed: Launcher.move(-1)
-    Keys.onDownPressed: Launcher.move(1)
-    Keys.onTabPressed: Launcher.complete()
-    Keys.onRightPressed: event => {
-        if (cursorPosition === text.length && Launcher.ghost !== "") Launcher.complete()
-        else event.accepted = false
-    }
     Text {   // the ghost: where the text ends, under the cursor's block like a terminal's
         x: input.contentWidth
         anchors.verticalCenter: parent.verticalCenter
@@ -37,23 +26,25 @@ TextInput {
         font: input.font
         color: Colors.base04
     }
-    Keys.onBacktabPressed: Launcher.move(-1)
-    // physical Ctrl arrives as Super (Meta) through mackeys, as Ctrl without it
     Keys.onPressed: event => {
-        if (!(event.modifiers & (Qt.ControlModifier | Qt.MetaModifier))) return
-        const k = event.key
-        // Cmd+N (Cmd arrives as Ctrl through mackeys): a new window; Ctrl+N (Super) still moves
-        if (k === Qt.Key_N && (event.modifiers & Qt.ControlModifier) && Launcher.chromePick())
-            Launcher.run(Launcher.current, event.modifiers & Qt.ShiftModifier ? "incognito" : "window")
-        else if (k === Qt.Key_C) {
-            // Cmd+C (Ctrl here) with text selected still copies
-            if ((event.modifiers & Qt.ControlModifier) && input.selectedText !== "") return
-            Launcher.query = ""
+        const chrome = how => { if (!Launcher.chromePick()) return false; Launcher.run(Launcher.current, how); return true }
+        switch (AppKeys.action("launcher", event)) {
+        case "launcher.run": Launcher.run(Launcher.current); break
+        case "launcher.close": input.cancelled(); break
+        case "launcher.next": Launcher.move(1); break
+        case "launcher.prev": Launcher.move(-1); break
+        case "launcher.complete": Launcher.complete(); break
+        case "launcher.take":   // only at the end of the text, with something to take
+            if (cursorPosition !== text.length || Launcher.ghost === "") return
+            Launcher.complete(); break
+        case "launcher.favorite": Launcher.toggleFavorite(Launcher.results[Launcher.current]); break
+        case "launcher.clear":   // Cmd+C (Ctrl here) with text selected still copies
+            if (input.selectedText !== "" && (event.modifiers & Qt.ControlModifier)) return
+            Launcher.query = ""; break
+        case "launcher.window": if (!chrome("window")) return; break
+        case "launcher.incognito": if (!chrome("incognito")) return; break
+        default: return
         }
-        else if (k === Qt.Key_J || k === Qt.Key_N) Launcher.move(1)
-        else if (k === Qt.Key_K || k === Qt.Key_P) Launcher.move(-1)
-        else if (k === Qt.Key_F) Launcher.toggleFavorite(Launcher.results[Launcher.current])
-        else return
         event.accepted = true
     }
 }

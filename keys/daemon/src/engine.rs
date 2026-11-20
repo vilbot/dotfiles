@@ -160,10 +160,13 @@ impl Engine {
             return;
         }
         match std::mem::replace(&mut self.tap_hold, TapHoldState::Up) {
+            // a tap is the tap key pressed, so whatever that key does in this context happens
+            // (Caps tapped is Esc, also where a layer maps Esc)
             TapHoldState::Undecided { since_ms } if now_ms.saturating_sub(since_ms) <= tap_ms => {
-                self.sync(world, out);
-                self.set(tap, true, out);
-                self.set(tap, false, out);
+                self.press(tap, world, out);
+                if let Some(Pressed::Key(sent)) = self.pressed.remove(&tap) {
+                    self.set(sent, false, out);
+                }
             }
             TapHoldState::Held => self.modifier_up((hold, Side::Left), world, out),
             _ => {}
@@ -213,7 +216,7 @@ impl Engine {
                 Pressed::Action { name, repeat }
             }
             None if dropped(&self.config, world, key) => Pressed::Nothing,
-            None => {
+            Some((_, Action::Pass)) | None => {
                 let sent = self.config.keys.get(&key).copied().unwrap_or(key);
                 self.sync(world, out);
                 self.set(sent, true, out);

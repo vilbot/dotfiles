@@ -7,6 +7,7 @@ use indexmap::IndexMap;
 use serde::Deserialize;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
+#[derive(Clone)]
 pub struct Config {
     /// Keyboards to take over: a device is used when its name contains one of these.
     pub devices: Vec<String>,
@@ -56,6 +57,7 @@ impl ModMap {
     }
 }
 
+#[derive(Clone)]
 /// A key that is one key when tapped and a modifier when held (Caps: Esc / Ctrl).
 pub struct TapHold {
     pub key: KeyCode,
@@ -66,8 +68,12 @@ pub struct TapHold {
     pub tap_ms: u64,
 }
 
+#[derive(Clone)]
 pub struct Layer {
     pub name: String,
+    /// The app that does this layer's actions itself (`app = "launcher"`): their keys reach it
+    /// unchanged, and keymap.json says which keys it gets for each.
+    pub app: Option<String>,
     pub when: When,
     /// Changes to what physical modifiers send while this layer applies.
     pub modifiers: Vec<(Mod, OutMod)>,
@@ -79,7 +85,7 @@ pub struct Layer {
     pub let_through: Option<Vec<KeyCode>>,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct When {
     pub app: Option<String>,
     pub not_app: Option<String>,
@@ -102,21 +108,29 @@ pub enum Action {
     /// Runs a desktop action (hypr/actions.lua). `repeat`: again while the key is held.
     /// `on_release`: another action, run when the trigger's modifier is let go.
     Run { name: String, repeat: bool, on_release: Option<String> },
+    /// An app's own key (a layer with `app`): sent as if no layer mapped it, for the app to act on.
+    Pass,
     /// Nothing is sent.
     Nothing,
 }
 
+#[derive(Clone)]
 pub struct Section {
     pub title: String,
     pub rows: Vec<Row>,
 }
 
+#[derive(Clone)]
 pub struct Row {
     /// The action as written ("window.focus.{dir}"); None for a note (a mouse bind).
     pub action: Option<String>,
     pub label: String,
     /// Keys as written ("opt+{dir}").
     pub keys: Vec<String>,
+    /// The layer it is in (None for a note): keys clash only within a layer.
+    pub layer: Option<String>,
+    /// The app that does it (an `app` layer's action).
+    pub app: Option<String>,
 }
 
 // --- the file as written ----------------------------------------------------------------
@@ -152,6 +166,7 @@ struct FileTapHold {
 #[serde(deny_unknown_fields)]
 struct FileLayer {
     name: String,
+    app: Option<String>,
     #[serde(default)]
     when: FileWhen,
     #[serde(default)]
@@ -212,7 +227,8 @@ impl OneOrMany {
     }
 }
 
-/// `{dir}` in an action name and its keys: the direction and its vim key.
+/// `{dir}` in an action name and its keys: the direction and its vim key. In keys, `{arrow}` is
+/// the direction's arrow key instead (an action can have both: "opt+{dir}", "opt+{arrow}").
 pub const DIRECTIONS: [(&str, &str); 4] = [("left", "h"), ("down", "j"), ("up", "k"), ("right", "l")];
 
 impl Config {
@@ -244,7 +260,13 @@ impl Config {
             let w = &l.when;
             let in_mode = w.app.is_some() || w.not_app.is_some() || w.layer.is_some() || w.not_layer.is_some() || w.overview.is_some() || w.layout.is_some();
             for (title, actions) in &l.actions {
-                let rows = actions.iter().map(|(name, a)| Row { action: Some(name.clone()), label: a.label.clone(), keys: a.keys.list() });
+                let rows = actions.iter().map(|(name, a)| Row {
+                    action: Some(name.clone()),
+                    label: a.label.clone(),
+                    keys: a.keys.list(),
+                    layer: Some(l.name.clone()),
+                    app: l.app.clone(),
+                });
                 section(if in_mode { &mut modes } else { &mut sheet }, title).rows.extend(rows);
                 for (name, a) in actions {
                     if !action_names.insert(name.clone()) {
@@ -260,7 +282,7 @@ impl Config {
         }
         sheet.extend(modes);
         for (title, notes) in &file.notes {
-            let rows = notes.iter().map(|[label, keys]| Row { action: None, label: label.clone(), keys: vec![keys.clone()] });
+            let rows = notes.iter().map(|[label, keys]| Row { action: None, label: label.clone(), keys: vec![keys.clone()], layer: None, app: None });
             section(&mut sheet, title).rows.extend(rows);
         }
 
@@ -332,12 +354,16 @@ fn layer(l: &FileLayer, apps: &HashMap<String, Vec<String>>, desktops: u32) -> R
         }
         for (name, key) in expand(name, &a.keys.list(), desktops).with_context(ctx)? {
             let trigger = Trigger::parse(&key).with_context(|| format!("{}: {name}", ctx()))?;
-            map.push((trigger, Action::Run { name, repeat: a.repeat, on_release: a.on_release.clone() }));
+            let action = match &l.app {
+                Some(_) => Action::Pass,
+                None => Action::Run { name, repeat: a.repeat, on_release: a.on_release.clone() },
+            };
+            map.push((trigger, action));
         }
     }
     for (i, (t, _)) in map.iter().enumerate() {
         if map[..i].iter().any(|(earlier, _)| earlier == t) {
-            bail!("{}: the same keys are used twice ({})", ctx(), describe(t));
+            bail!("{}: the same keys are used twice ({})", ctx(), t.text());
         }
     }
 
@@ -350,10 +376,11 @@ fn layer(l: &FileLayer, apps: &HashMap<String, Vec<String>>, desktops: u32) -> R
 
     let w = &l.when;
     let when = When { app: w.app.clone(), not_app: w.not_app.clone(), layer: w.layer.clone(), not_layer: w.not_layer.clone(), overview: w.overview, layout: w.layout.clone() };
-    Ok(Layer { name: l.name.clone(), when, modifiers, map, stop: l.stop, let_through })
+    Ok(Layer { name: l.name.clone(), app: l.app.clone(), when, modifiers, map, stop: l.stop, let_through })
 }
 
 /// "desktop.goto.{n}" + "opt+{n}" -> desktop.goto.1 = opt+1, ...; {dir} -> left/h, down/j, ...
+/// ({arrow} in keys: left/left, down/down, ...)
 pub fn expand(name: &str, keys: &[String], desktops: u32) -> Result<Vec<(String, String)>> {
     check_name(name)?;
     let fills: Vec<(String, String)> = if name.contains("{n}") {
@@ -367,7 +394,12 @@ pub fn expand(name: &str, keys: &[String], desktops: u32) -> Result<Vec<(String,
     for (in_name, in_key) in &fills {
         let name = name.replace("{n}", in_name).replace("{dir}", in_name);
         for key in keys {
-            out.push((name.clone(), key.replace("{n}", in_key).replace("{dir}", in_key)));
+            let templated = key.contains("{n}") || key.contains("{dir}") || key.contains("{arrow}");
+            if templated != !in_name.is_empty() {
+                bail!("{name}: keys {key:?} and the action's name need the same {{n}} or {{dir}}");
+            }
+            let key = key.replace("{n}", in_key).replace("{dir}", in_key).replace("{arrow}", in_name);
+            out.push((name.clone(), key));
         }
     }
     Ok(out)
@@ -381,18 +413,6 @@ fn check_name(name: &str) -> Result<()> {
     Ok(())
 }
 
-fn describe(t: &Trigger) -> String {
-    let mut parts: Vec<String> = t.mods.iter().map(|(m, side)| {
-        let side = match side {
-            Some(crate::keys::Side::Left) => "l",
-            Some(crate::keys::Side::Right) => "r",
-            None => "",
-        };
-        format!("{side}{}", format!("{m:?}").to_lowercase())
-    }).collect();
-    parts.push(crate::keys::key_name(t.key));
-    parts.join("+")
-}
 
 fn mod_map(m: &BTreeMap<String, String>) -> Result<ModMap> {
     let get = |name: &str| -> Result<OutMod> {

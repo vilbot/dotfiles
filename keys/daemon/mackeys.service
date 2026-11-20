@@ -1,7 +1,9 @@
 [Unit]
 Description=mackeys: Mac keyboard on Hyprland (dotfiles/keys)
 
+# Each desktop has its own keymap: its hyprland.lua sets MACKEYS_KEYMAP
+# (systemctl --user set-environment) before starting this.
 [Service]
-ExecStart=%h/dotfiles/keys/daemon/target/release/mackeys %h/dotfiles/keys/remap.toml
+ExecStart=%h/dotfiles/keys/daemon/target/release/mackeys ${MACKEYS_KEYMAP}
 Restart=on-failure
 RestartSec=1

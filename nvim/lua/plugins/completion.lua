@@ -6,6 +6,7 @@ return {
 
 		opts = function()
 			return {
+				enabled = function() return not vim.tbl_contains({ "text", "markdown" }, vim.bo.filetype) end,
 				fuzzy = {
 					implementation = 'lua',
 					sorts = (function()
@@ -118,7 +119,7 @@ return {
 						},
 					},
 					menu = {
-						auto_show = true, -- function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
+						auto_show = true, --function() return not vim.tbl_contains({ "c", "cpp" }, vim.bo.filetype) end,
 						draw = {
 							padding = { 0, 1 },
 							components = {

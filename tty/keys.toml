@@ -1,0 +1,265 @@
+# The "None" desktop's keys (mackeys, keys/daemon): what each physical key on the Mac keyboard
+# does here. Only None reads this; the full desktop has keys/remap.toml. Edit it by hand or on
+# the Settings app's Shortcuts page (tty/settings); saved changes apply within a second.
+#
+# Left side of a mapping: physical keys (cmd, opt, ctrl, shift; lopt / ropt for one side).
+# Right side: what apps get (ctrl, alt, super, shift; altgr = right Alt, the layout's third level).
+
+devices = ["NuPhy Air75"]
+desktops = 5  # also read by tty/hyprland.lua
+
+[apps]  # Hyprland window classes
+terminal = ["foot", "footclient", "tty-session", "tty-panel", "com.mitchellh.ghostty", "kitty", "org.kde.konsole", "Alacritty", "org.wezfurlong.wezterm"]
+zed = ["dev.zed.Zed"]
+browser = ["google-chrome", "chromium", "firefox", "brave-browser"]
+settings = ["none-settings"]  # the Settings app (tty/settings)
+
+[modifiers]
+cmd = "ctrl"
+opt = "alt"
+ctrl = "super"
+
+[tap_hold]
+key = "capslock"
+tap = "esc"
+hold = "ctrl"
+tap_ms = 1000
+
+# Layers, top to bottom: the first applying layer that has the pressed keys wins.
+# `when`: app / not_app (a group above), layer / not_layer (an open layer-shell namespace),
+# layout (the keyboard layout, as Hyprland names it). `stop`: layers below don't apply.
+# `map`: keys -> keys apps get. `actions`: desktop actions (tty/actions.lua) by section, with
+# their keys and a label (the Settings app's Shortcuts page); `{n}` = desktops 1..N,
+# `{dir}` = h j k l, `{arrow}` = the arrow keys.
+# `app`: the layer's actions are that app's own (it reads which keys it gets from
+# ~/.local/state/mackeys/keymap.json); mackeys passes their keys on unchanged.
+
+# Swerty: Opt types the symbols on ö ä å and the key after it, as on a Mac (right Opt is AltGr
+# anyway: lv3:ralt_switch in tty/hyprland.lua). Only these keys: Opt stays Alt elsewhere.
+[[layer]]
+name = "swerty"
+when = { layout = "Sweden - Swerty" }
+[layer.map]
+"opt+;" = "altgr+;"              # ;
+"opt+shift+;" = "altgr+shift+;"  # :
+"opt+'" = "altgr+'"              # '
+"opt+shift+'" = "altgr+shift+'"  # "
+"opt+[" = "altgr+["              # [
+"opt+shift+[" = "altgr+shift+["  # {
+"opt+]" = "altgr+]"              # ]
+"opt+shift+]" = "altgr+shift+]"  # }
+
+[[layer]]
+name = "desktop"
+[layer.map]  # the F-row does what is printed on it; right Option + F-key is the F-key
+"ropt+f1" = "f1"
+"ropt+f2" = "f2"
+"ropt+f3" = "f3"
+"ropt+f4" = "f4"
+"ropt+f5" = "f5"
+"ropt+f6" = "f6"
+"ropt+f7" = "f7"
+"ropt+f8" = "f8"
+"ropt+f9" = "f9"
+"ropt+f10" = "f10"
+"ropt+f11" = "f11"
+"ropt+f12" = "f12"
+"ropt+shift+f1" = "shift+f1"
+"ropt+shift+f2" = "shift+f2"
+"ropt+shift+f3" = "shift+f3"
+"ropt+shift+f4" = "shift+f4"
+"ropt+shift+f5" = "shift+f5"
+"ropt+shift+f6" = "shift+f6"
+"ropt+shift+f7" = "shift+f7"
+"ropt+shift+f8" = "shift+f8"
+"ropt+shift+f9" = "shift+f9"
+"ropt+shift+f10" = "shift+f10"
+"ropt+shift+f11" = "shift+f11"
+"ropt+shift+f12" = "shift+f12"
+
+[layer.actions.Desktops]
+"desktop.goto.{n}" = { keys = "opt+{n}", label = "Go to desktop" }
+"desktop.prev" = { keys = "shift+cmd+tab", label = "Previous desktop" }
+"desktop.next" = { keys = "cmd+tab", label = "Next desktop" }
+"desktop.last" = { keys = [], label = "Desktop you were on before" }
+"desktop.move.{n}" = { keys = "opt+shift+{n}", label = "Send window to desktop" }
+"desktop.take.{n}" = { keys = [], label = "Take window to desktop" }
+"desktop.move.prev" = { keys = [], label = "Send window to previous desktop" }
+"desktop.move.next" = { keys = [], label = "Send window to next desktop" }
+"scratchpad.toggle" = { keys = [], label = "Show / hide scratchpad" }
+"scratchpad.move" = { keys = [], label = "Send window to scratchpad" }
+
+[layer.actions.Windows]
+"window.focus.{dir}" = { keys = "opt+{dir}", label = "Focus window" }
+"window.move.{dir}" = { keys = "opt+shift+{dir}", label = "Move window" }
+"window.swap.{dir}" = { keys = [], label = "Swap with window" }
+"window.resize.{dir}" = { keys = "opt+ctrl+{dir}", label = "Resize window", repeat = true }
+"window.close" = { keys = "cmd+q", label = "Close window" }
+"window.fullscreen" = { keys = "opt+f", label = "Fullscreen" }
+"window.maximize" = { keys = [], label = "Maximize" }
+"window.float" = { keys = "opt+shift+f", label = "Floating" }
+"window.pin" = { keys = [], label = "Pin floating window" }
+"window.center" = { keys = [], label = "Center floating window" }
+"window.split" = { keys = [], label = "Turn split sideways / up-down" }
+
+[layer.actions."Tab groups"]
+"group.toggle" = { keys = "opt+m", label = "Make / undo a tab group" }
+"group.next" = { keys = "opt+n", label = "Next tab" }
+"group.prev" = { keys = "opt+p", label = "Previous tab" }
+
+[layer.actions."Launch & type"]
+"launcher" = { keys = "cmd+space", label = "Launcher" }
+"terminal" = { keys = "opt+enter", label = "Terminal" }
+"settings" = { keys = [], label = "Settings" }
+"layout.next" = { keys = ["opt+space", "ctrl+space"], label = "Switch keyboard layout" }
+# the keyboard's screenshot key (right of F12) is a Cmd+Shift+4 macro in Mac mode
+"screenshot.region" = { keys = "cmd+shift+4", label = "Screenshot key: drag an area" }
+
+[layer.actions."Function keys"]
+"brightness.down" = { keys = "f1", label = "Brightness down", repeat = true }
+"brightness.up" = { keys = "f2", label = "Brightness up", repeat = true }
+"panel.control" = { keys = "f5", label = "Control center" }
+"appearance.toggle" = { keys = "f6", label = "Dark / light mode" }
+"media.back" = { keys = "f7", label = "Back 5 seconds" }
+"media.playpause" = { keys = "f8", label = "Play / pause" }
+"media.forward" = { keys = "f9", label = "Forward 5 seconds" }
+"volume.mute" = { keys = "f10", label = "Mute" }
+"volume.down" = { keys = "f11", label = "Volume down", repeat = true }
+"volume.up" = { keys = "f12", label = "Volume up", repeat = true }
+
+[layer.actions.Session]
+"help.keys" = { keys = "opt+shift+/", label = "Keyboard shortcuts (Settings)" }
+"session.reload" = { keys = [], label = "Reload Hyprland config" }
+"session.exit" = { keys = "opt+shift+esc", label = "Log out" }
+"session.lock" = { keys = "ctrl+cmd+q", label = "Lock" }
+"session.sleep" = { keys = [], label = "Sleep" }
+
+# The launcher (Cmd+Space, and an empty desktop's prompt; tty/shell/LauncherInput.qml): its own
+# keys, nothing below rewrites them.
+[[layer]]
+name = "launcher"
+when = { layer = "tty-launcher" }
+stop = true
+app = "launcher"
+[layer.actions.Launcher]
+"launcher.run" = { keys = ["enter", "kpenter"], label = "Start the pick (or run what's typed)" }
+"launcher.close" = { keys = "esc", label = "Close (on an empty desktop: clear)" }
+"launcher.next" = { keys = ["down", "ctrl+j", "ctrl+n", "cmd+j"], label = "Next result" }
+"launcher.prev" = { keys = ["up", "shift+tab", "ctrl+k", "ctrl+p", "cmd+k"], label = "Previous result" }
+"launcher.complete" = { keys = "tab", label = "Complete" }
+"launcher.take" = { keys = "right", label = "At the end of the text: take the dimmed suggestion" }
+"launcher.favorite" = { keys = ["ctrl+f", "cmd+f"], label = "Add / remove a favorite" }
+"launcher.clear" = { keys = ["ctrl+c", "cmd+c"], label = "Erase what's typed (text selected: Cmd+C copies)" }
+"launcher.window" = { keys = "cmd+n", label = "On a Chrome row: in a new window" }
+"launcher.incognito" = { keys = "cmd+shift+n", label = "On a Chrome row: in a new incognito window" }
+
+# The Settings app (tty/settings). Plain letter keys don't act while you type in its search.
+[[layer]]
+name = "settings"
+when = { app = "settings" }
+app = "settings"
+[layer.actions.Settings]
+"settings.next" = { keys = ["down", "j"], label = "Next row" }
+"settings.prev" = { keys = ["up", "k"], label = "Previous row" }
+"settings.activate" = { keys = "enter", label = "Change the row (Shortcuts: record keys)" }
+"settings.add" = { keys = "a", label = "Shortcuts: record one more key" }
+"settings.unbind" = { keys = ["backspace", "delete"], label = "Shortcuts: remove the row's keys" }
+"settings.search" = { keys = ["/", "cmd+f"], label = "Search" }
+"settings.back" = { keys = "esc", label = "Leave the search; again: clear it" }
+"settings.page.next" = { keys = "tab", label = "Next page" }
+"settings.page.prev" = { keys = "shift+tab", label = "Previous page" }
+"settings.lower" = { keys = ["left", "h"], label = "Slider down, previous choice" }
+"settings.higher" = { keys = ["right", "l"], label = "Slider up, next choice" }
+"settings.undo" = { keys = "cmd+z", label = "Undo" }
+"settings.redo" = { keys = "cmd+shift+z", label = "Redo" }
+"settings.close" = { keys = "cmd+w", label = "Close" }
+
+[[layer]]
+name = "zed"  # zed/keymap.linux.json already is the Mac keymap
+when = { app = "zed" }
+stop = true
+
+[[layer]]
+name = "browsers"
+when = { app = "browser" }
+[layer.map]
+"cmd+opt+i" = "ctrl+shift+i"
+"cmd+opt+j" = "ctrl+shift+j"
+"cmd+opt+left" = "ctrl+pageup"
+"cmd+opt+right" = "ctrl+pagedown"
+
+[[layer]]
+name = "terminals"
+when = { app = "terminal" }
+modifiers = { ctrl = "ctrl" }
+[layer.map]
+"cmd+c" = "ctrl+shift+c"
+"cmd+v" = "ctrl+shift+v"
+"cmd+t" = "ctrl+shift+t"
+"cmd+w" = "ctrl+shift+w"
+"cmd+n" = "ctrl+shift+n"
+"cmd+f" = "ctrl+shift+f"
+"cmd+s" = "ctrl+shift+s"
+"cmd+l" = "ctrl+shift+l"
+"cmd+d" = "ctrl+shift+d"
+"cmd+[" = "ctrl+shift+["
+"cmd+]" = "ctrl+shift+]"
+"cmd+=" = "ctrl+shift+="
+"cmd+." = "ctrl+c"
+"cmd+shift+left" = "ctrl+pageup"
+"cmd+shift+right" = "ctrl+pagedown"
+"ctrl+tab" = "ctrl+pagedown"
+"ctrl+shift+tab" = "ctrl+pageup"
+"ctrl+`" = "ctrl+pageup"
+"opt+backspace" = "ctrl+w"
+"opt+delete" = ["esc", "d"]
+"cmd+backspace" = "ctrl+u"
+"cmd+delete" = "ctrl+k"
+
+[[layer]]
+name = "mac text editing"
+[layer.map]
+"cmd+left" = "home"
+"cmd+right" = "end"
+"cmd+up" = "ctrl+home"
+"cmd+down" = "ctrl+end"
+"cmd+shift+left" = "shift+home"
+"cmd+shift+right" = "shift+end"
+"cmd+shift+up" = "ctrl+shift+home"
+"cmd+shift+down" = "ctrl+shift+end"
+"opt+left" = "ctrl+left"
+"opt+right" = "ctrl+right"
+"opt+shift+left" = "ctrl+shift+left"
+"opt+shift+right" = "ctrl+shift+right"
+"opt+backspace" = "ctrl+backspace"
+"opt+shift+backspace" = "ctrl+backspace"
+"opt+delete" = "ctrl+delete"
+"opt+shift+delete" = "ctrl+delete"
+"cmd+backspace" = "ctrl+shift+backspace"
+"cmd+shift+[" = "ctrl+pageup"
+"cmd+shift+]" = "ctrl+pagedown"
+"cmd+." = "esc"
+"cmd+h" = []
+"opt+shift+g" = "ctrl+shift+g"
+"ropt+enter" = "insert"
+
+[[layer]]
+name = "emacs keys"  # physical Ctrl, like in macOS text fields
+when = { not_app = "terminal" }
+[layer.map]
+"ctrl+a" = "home"
+"ctrl+e" = "end"
+"ctrl+b" = "left"
+"ctrl+f" = "right"
+"ctrl+n" = "down"
+"ctrl+p" = "up"
+"ctrl+k" = ["shift+end", "backspace"]
+"ctrl+d" = "delete"
+"ctrl+backspace" = "ctrl+backspace"
+"ctrl+delete" = "ctrl+delete"
+"ctrl+tab" = { send = "ctrl+tab", hold = true }
+"ctrl+shift+tab" = { send = "ctrl+shift+tab", hold = true }
+
+[notes]  # shown with the shortcuts, not keys of mackeys
+Windows = [["Move window with mouse", "⌥ drag"], ["Resize window with mouse", "⌥ right-drag"]]
+Session = [["Restart mackeys (works without it too)", "⌃ ⌥ ⌘ ↩"]]

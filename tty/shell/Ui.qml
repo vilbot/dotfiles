@@ -10,6 +10,6 @@ Singleton {
     readonly property int row: 24            // one line in a list
     readonly property int centerWidth: 640   // the app name / launcher in the middle of the bar
     readonly property int quick: 140         // ms, every transition
-    readonly property int desktops: 5        // 1..5, as keys/remap.toml's `desktops`; the bar shows only these
+    readonly property int desktops: 5        // 1..5, as tty/keys.toml's `desktops`; the bar shows only these
     readonly property bool greeter: Quickshell.env("TTY_GREETER") === "1"   // the login screen
 }
