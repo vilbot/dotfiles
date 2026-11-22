@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Checks for the "None" desktop (tty/). Exit status 1 if anything is wrong.
 #   - tty/hyprland.lua passes Hyprland's own check
-#   - the full desktop doesn't depend on tty/: only the theme generator (which writes
-#     tty/foot-colors.ini) may mention it, so this experiment can't break or change the other desktops
-#   - foot accepts tty/foot.ini, and its generated colours are up to date
+#   - nothing outside tty/ mentions it, so None can't break or change the other desktops
+#   - foot accepts tty/foot.ini, and None's generated colours are up to date
 #   - None's keys (tty/keys.json): they parse, no keys twice (Hyprland's check above binds them
 #     all: an unknown key or action fails it), keyd's Caps config
 set -uo pipefail
@@ -15,7 +14,7 @@ ok() { echo "ok    $*"; }
 out=$(Hyprland --verify-config -c tty/hyprland.lua 2>&1 | sed -n '/parsing result/,$p' | tail -n +2)
 if grep -q "config ok" <<<"$out"; then ok "tty/hyprland.lua"; else bad "tty/hyprland.lua:$out"; fi
 
-refs=$(git grep --untracked -nP '(?<![\w.])tty/' -- . ':!tty/' ':!.gitignore' ':!theme/build.py' \
+refs=$(git grep --untracked -nP '(?<![\w.])tty/' -- . ':!tty/' ':!.gitignore' \
     ':!prompts/' ':!nvim_old/' ':!AGENTS.md' ':!README*' 2>/dev/null)
 if [[ -z $refs ]]; then ok "nothing outside tty/ depends on it"; else bad "files outside tty/ use it:"$'\n'"$refs"; fi
 
@@ -26,8 +25,8 @@ else
     bad "foot not installed (pacman -S foot)"
 fi
 
-if python3 theme/build.py --check >/dev/null; then ok "tty/foot-colors.ini (theme/build.py)"
-else bad "themes out of date: python3 theme/build.py"; fi
+if python3 tty/theme.py build --check >/dev/null; then ok "None's gruver16 files (tty/theme.py build)"
+else bad "colours out of date: python3 tty/theme.py build"; fi
 
 for f in tty/*.sh tty/term tty/start tty/lock tty/bin/* tty/greeter/*.sh; do
     bash -n "$f" 2>/dev/null || bad "$f: $(bash -n "$f" 2>&1)"
@@ -60,7 +59,7 @@ for n in m.names():
 for f in ("tty/panel/update.py", "tty/panel/help.py", "tty/theme.py"):
     ast.parse(open(f).read(), f)
 PY
-); then ok "themes (theme/*.yaml), tty/panel/update.py, help.py"; else bad "themes / panel programs: $err"; fi
+); then ok "themes (tty/themes/*.yaml), tty/panel/update.py, help.py"; else bad "themes / panel programs: $err"; fi
 
 # the boot splash and Limine's colours generate (into a temporary folder / from a sample config)
 tmp=$(mktemp -d)
@@ -74,7 +73,9 @@ rm -rf "$tmp"
 # the login screen: its Hyprland config (with its /etc paths pointed at a temporary copy),
 # and whether /etc/greetd/none still matches this repo (sudo tty/login.sh copies it)
 tmp=$(mktemp -d)
-cp hypr/colors.lua hypr/json.lua hypr/settings.json "$tmp/"
+cp tty/colors.lua "$tmp/"
+machine=${XDG_CONFIG_HOME:-$HOME/.config}/none/machine.lua
+[[ -f $machine ]] && cp -L "$machine" "$tmp/"
 sed "s|^local here = .*|local here = \"$tmp/\"|" tty/greeter/greeter.lua >"$tmp/greeter.lua"
 if out=$(Hyprland --verify-config -c "$tmp/greeter.lua" 2>&1) && grep -q "config ok" <<<"$out"
 then ok "tty/greeter/greeter.lua"; else bad "tty/greeter/greeter.lua:"$'\n'"$out"; fi
@@ -86,16 +87,26 @@ if [[ ! -d $copy ]]; then
     echo "--    login screen not set up (sudo tty/login.sh)"
 elif { diff -rq tty/greeter "$copy" 2>/dev/null || true; } | grep -q '^Files' ||  # || true: pipefail would hide the match
         ! diff -rq tty/shell "$copy/shell" >/dev/null 2>&1 \
-        || ! cmp -s tty/foot-colors.ini "$copy/foot-colors.ini"; then
+        || ! cmp -s tty/foot-colors.ini "$copy/foot-colors.ini" || ! cmp -s tty/colors.lua "$copy/colors.lua" \
+        || { [[ -f $machine || -f $copy/machine.lua ]] && ! cmp -s "$machine" "$copy/machine.lua"; }; then
     bad "the login screen's copy is out of date: sudo tty/login.sh"
 else ok "login screen copy (/etc/greetd/none) up to date"; fi
 
-# None's keys (tty/keys.json): every key once, on the desktop and in each app (a desktop key
+# None's keys (tty/keys.json, with yours over it): every key once, on the desktop and in each app (a desktop key
 # never reaches an app); Hyprland's check above already bound them all
 if err=$(python3 - <<'PY' 2>&1
 import json
+import os, pathlib
 k = json.load(open("tty/keys.json"))
-n = k.get("desktops", 5)
+try:   # with what you changed laid over it (~/.config/none/keys.json)
+    mine = json.loads((pathlib.Path(os.environ.get("XDG_CONFIG_HOME") or pathlib.Path.home() / ".config") / "none/keys.json").read_text())
+except OSError:
+    mine = {}
+for group in k["sections"] + list(k.get("apps", {}).values()):
+    for action, keys in mine.get("keys", {}).items():
+        if action in group["actions"]:
+            group["actions"][action]["keys"] = keys
+n = mine.get("desktops", k.get("desktops", 5))
 temps = {"{n}": [str(i) for i in range(1, n + 1)], "{dir}": list("HJKL"), "{arrow}": ["Left", "Down", "Up", "Right"]}
 order = ["SUPER", "CTRL", "ALT", "SHIFT"]
 def expand(key):

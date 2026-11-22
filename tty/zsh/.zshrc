@@ -8,7 +8,7 @@
 }
 
 logout()   { hyprctl dispatch 'hl.dsp.exit()' >/dev/null; }    # ends None: back to the login screen
-lock()     { ~/dotfiles/tty/lock & }    # hyprlock: only your password opens it
+lock()     { ${ZDOTDIR:h}/lock & }    # hyprlock: only your password opens it
 shutdown() { systemctl poweroff; }
 poweroff() { systemctl poweroff; }
 reboot()   { systemctl reboot; }

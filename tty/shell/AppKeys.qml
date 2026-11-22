@@ -1,6 +1,7 @@
 pragma Singleton
 // None's keys as tty/keys.json writes them ("SUPER + SHIFT + H"), for its own apps: the launcher's
-// and the Settings app's keys ("apps" there) and the desktop keys' labels. Keys are matched by
+// and the Settings app's keys ("apps" there) and the desktop keys' labels. What you changed
+// (~/.config/none/keys.json: { "keys": { "action": ["SUPER + X"] } }) is laid over it. Keys are matched by
 // the key's Linux code (US names: on Swerty the key right of L is still "semicolon"), as Hyprland
 // does with its first layout. tty/settings uses this file too (a link).
 //   AppKeys.action("launcher", event)  the action those keys are ("launcher.next"), or ""
@@ -15,10 +16,26 @@ Singleton {
     readonly property string path: Quickshell.shellDir + "/../keys.json"
     // read when first asked (a key can come right after start); a file caught half-written
     // doesn't parse: the last good one stays
-    readonly property var last: ({ good: {} })   // changing it notifies nothing: no binding loop
-    readonly property var model: {
+    readonly property string userPath: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/none" + "/keys.json"
+    readonly property var last: ({ good: {}, mine: {} })   // changing it notifies nothing: no binding loop
+    readonly property var base: {   // None's own keys
         try { last.good = JSON.parse(file.text()) } catch (e) {}
         return last.good
+    }
+    readonly property var mine: {   // yours; no file = nothing changed
+        const text = userFile.text()
+        if (text.trim() === "") last.mine = {}
+        else try { last.mine = JSON.parse(text) } catch (e) {}
+        return last.mine
+    }
+    readonly property var model: {
+        const changed = mine.keys ?? {}
+        if (!Object.keys(changed).length && mine.desktops === undefined) return base
+        const m = JSON.parse(JSON.stringify(base))
+        if (mine.desktops !== undefined) m.desktops = mine.desktops
+        const groups = (m.sections ?? []).concat(Object.keys(m.apps ?? {}).map(a => m.apps[a]))
+        for (const g of groups) for (const a in g.actions ?? {}) if (changed[a]) g.actions[a].keys = changed[a]
+        return m
     }
     readonly property int desktops: model.desktops ?? 5
 
@@ -27,6 +44,14 @@ Singleton {
         path: root.path
         blockLoading: true
         watchChanges: true
+        onFileChanged: reload()
+    }
+    FileView {
+        id: userFile
+        path: root.userPath
+        blockLoading: true
+        watchChanges: true
+        printErrors: false
         onFileChanged: reload()
     }
 

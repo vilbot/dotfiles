@@ -13,9 +13,9 @@ import Quickshell.Io
 ShellRoot {
     id: app
     readonly property var pages: [
-        { id: "shortcuts", name: "Shortcuts", file: "ShortcutsPage.qml", note: "tty/keys.json" },
+        { id: "shortcuts", name: "Shortcuts", file: "ShortcutsPage.qml", note: "~/.config/none/keys.json" },
         { id: "appearance", name: "Appearance", file: "AppearancePage.qml", note: "tty/theme.py" },
-        { id: "input", name: "Keyboard & mouse", file: "InputPage.qml", note: "tty/settings.json" },
+        { id: "input", name: "Keyboard & mouse", file: "InputPage.qml", note: "~/.config/none/settings.json" },
     ]
     property int pageIndex: Math.max(0, pages.findIndex(p => p.id === Quickshell.env("NONE_SETTINGS_PAGE")))
     function open(id) { const i = pages.findIndex(p => p.id === id); if (i >= 0) pageIndex = i }

@@ -1,5 +1,6 @@
-// The keys of the desktop (tty/keys.json), for the Shortcuts page: its rows, saving (the whole
-// file, then `hyprctl reload`, which binds them again through tty/binds.lua), undo, and recording
+// The keys of the desktop (tty/keys.json with yours laid over it), for the Shortcuts page: its
+// rows, saving (what you changed, to ~/.config/none/keys.json, then `hyprctl reload`, which binds
+// them again through tty/binds.lua), undo, and recording
 // keys: Hyprland switches to an empty submap ("none-record", tty/binds.lua) meanwhile, so the keys
 // pressed reach this window and do nothing else.
 pragma Singleton
@@ -85,46 +86,42 @@ Singleton {
     property string error: ""
     signal saved()
 
-    // keys.json as it is written: one action per line
+    // your keys.json as it is written: one action per line
     function one(v) {
         if (Array.isArray(v)) return "[" + v.map(one).join(", ") + "]"
-        if (v && typeof v === "object") {
-            const ks = Object.keys(v)
-            return ks.length ? "{ " + ks.map(k => JSON.stringify(k) + ": " + one(v[k])).join(", ") + " }" : "{}"
-        }
         return JSON.stringify(v)
     }
-    function actionsBlock(head, acts, indent) {
-        const names = Object.keys(acts ?? {})
-        return head + "\n" + names.map(a => indent + "  " + JSON.stringify(a) + ": " + one(acts[a])).join(",\n")
-               + (names.length ? "\n" : "") + indent + "} }"
-    }
     function format(data) {
-        const parts = Object.keys(data).map(k => {
-            const v = data[k]
-            if (k === "sections")
-                return '  "sections": [\n' + v.map(s => actionsBlock("    { \"title\": " + JSON.stringify(s.title) + ", \"actions\": {", s.actions, "    ")).join(",\n") + "\n  ]"
-            if (k === "apps")
-                return '  "apps": {\n' + Object.keys(v).map(a => actionsBlock("    " + JSON.stringify(a) + ": { \"title\": " + JSON.stringify(v[a].title ?? a) + ", \"actions\": {", v[a].actions, "    ")).join(",\n") + "\n  }"
-            if (k === "notes")
-                return '  "notes": {\n' + Object.keys(v).map(n => "    " + JSON.stringify(n) + ": " + one(v[n])).join(",\n") + "\n  }"
-            return "  " + JSON.stringify(k) + ": " + one(v)
-        })
+        const parts = Object.keys(data).filter(k => k !== "keys").map(k => "  " + JSON.stringify(k) + ": " + JSON.stringify(data[k]))
+        const names = Object.keys(data.keys ?? {})
+        parts.push('  "keys": {' + (names.length ? "\n" + names.map(a => "    " + JSON.stringify(a) + ": " + one(data.keys[a])).join(",\n") + "\n  " : "") + "}")
         return "{\n" + parts.join(",\n") + "\n}\n"
     }
 
     function keysOf(action) { return (rows.find(r => r.action === action) ?? { keys: [] }).keys }
-    // changes: { action: [keys] }; `history` false for undo/redo themselves
+    // an action's keys in None's own keys.json
+    function defaultKeys(action) {
+        const base = AppKeys.base
+        for (const s of base.sections ?? []) if (s.actions && s.actions[action]) return s.actions[action].keys ?? []
+        for (const app in base.apps ?? {}) { const a = base.apps[app].actions ?? {}; if (a[action]) return a[action].keys ?? [] }
+        return []
+    }
+    function sameKeys(a, b) { return a.map(canon).join("|") === b.map(canon).join("|") }
+    // changes: { action: [keys] }; `history` false for undo/redo themselves. Your file keeps
+    // only the actions whose keys differ from None's own.
     function save(changes, history) {
-        const data = JSON.parse(JSON.stringify(model))
         const before = {}
         for (const a in changes) {
+            if (!rows.some(r => r.action === a)) { error = "no action " + a + " in tty/keys.json"; return }
             before[a] = keysOf(a)
-            let found = false
-            for (const s of data.sections ?? []) if (s.actions && s.actions[a]) { s.actions[a].keys = changes[a]; found = true }
-            for (const app in data.apps ?? {}) { const acts = data.apps[app].actions ?? {}; if (acts[a]) { acts[a].keys = changes[a]; found = true } }
-            if (!found) { error = "no action " + a + " in tty/keys.json"; return }
         }
+        const data = JSON.parse(JSON.stringify(AppKeys.mine))
+        const keys = data.keys ?? {}
+        for (const a in changes) {
+            if (sameKeys(changes[a], defaultKeys(a))) delete keys[a]
+            else keys[a] = changes[a]
+        }
+        data.keys = keys
         if (history !== false) { undoStack = undoStack.concat([{ before: before, after: changes }]); redoStack = [] }
         error = ""
         writer.setText(format(data))
@@ -147,11 +144,11 @@ Singleton {
     }
     FileView {
         id: writer
-        path: AppKeys.path
+        path: AppKeys.userPath
         blockLoading: true
         atomicWrites: true
         onSaved: reload.running = true
-        onSaveFailed: err => root.error = "couldn't save tty/keys.json: " + err
+        onSaveFailed: err => root.error = "couldn't save " + AppKeys.userPath + ": " + err
     }
     // Hyprland binds the keys again (desktop keys); the apps read keys.json themselves
     Process {

@@ -19,12 +19,13 @@ TTY = HERE.parent
 DOTFILES = TTY.parent
 PANEL = TTY / "panel.sh"
 STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
+USER = pathlib.Path(os.environ.get("XDG_CONFIG_HOME") or pathlib.Path.home() / ".config") / "none"   # yours
 KEYMAP = TTY / "keys.json"
 sys.path.insert(0, str(HERE))
 from panel import TABS as _TABS   # the tab line, as the other tabs draw it
 TABS = list(_TABS)
 CHAT = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-help-chat.json"
-CONFIG = tomllib.loads((HERE / "help.toml").read_text())
+CONFIG = tomllib.loads((USER / "help.toml" if (USER / "help.toml").exists() else HERE / "help.toml").read_text())
 LINES = [l.strip() for l in (HERE / "funny-lines.txt").read_text().splitlines() if l.strip()]
 ENDERS, THINKING = LINES[-2:], LINES[:-2]   # the last two end a long think
 
@@ -88,9 +89,17 @@ def keys_rows():
         model = json.loads(KEYMAP.read_text())
     except (OSError, ValueError):
         return [("", "(can't read tty/keys.json)", "")]
-    n, notes = model.get("desktops", 5), model.get("notes", {})
+    try:   # what you changed (the Settings app writes it)
+        mine = json.loads((USER / "keys.json").read_text())
+    except (OSError, ValueError):
+        mine = {}
+    n, notes = mine.get("desktops", model.get("desktops", 5)), model.get("notes", {})
     groups = [(s.get("title", ""), s.get("actions", {})) for s in model.get("sections", [])]
     groups += [(a.get("title", name), a.get("actions", {})) for name, a in model.get("apps", {}).items()]
+    for _, actions in groups:
+        for name, keys in mine.get("keys", {}).items():
+            if name in actions:
+                actions[name]["keys"] = keys
     rows = []
     for title, actions in groups:
         rows.append(("group", title, ""))

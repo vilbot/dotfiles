@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Limine's menu in gruver16: sets the colour options among limine.conf's global options (the
 lines before the first entry) and drops any wallpaper, so it's None's plain gray. Entries are
-left alone. Colours: tty/foot-colors.ini (the terminal palette) and hypr/colors.lua.
+left alone. Colours: tty/foot-colors.ini (the terminal palette) and tty/colors.lua.
 
     limine.py FILE        rewrite FILE (tty/boot.sh: /boot/limine.conf, after a backup)
     limine.py FILE --show print what FILE would become, change nothing
@@ -9,9 +9,9 @@ left alone. Colours: tty/foot-colors.ini (the terminal palette) and hypr/colors.
 """
 import pathlib, re, sys
 
-REPO = pathlib.Path(__file__).resolve().parents[2]
-pal = dict(re.findall(r'(base0[0-9A-F]) = "([0-9a-f]{6})"', (REPO / "hypr/colors.lua").read_text()))
-foot = dict(re.findall(r"^(regular\d|bright\d)=([0-9a-fA-F]{6})$", (REPO / "tty/foot-colors.ini").read_text(), re.M))
+TTY = pathlib.Path(__file__).resolve().parents[1]
+pal = dict(re.findall(r'(base0[0-9A-F]) = "([0-9a-f]{6})"', (TTY / "colors.lua").read_text()))
+foot = dict(re.findall(r"^(regular\d|bright\d)=([0-9a-fA-F]{6})$", (TTY / "foot-colors.ini").read_text(), re.M))
 assert len(pal) == 16 and len(foot) == 16, "colour sources incomplete"
 
 OPTIONS = {

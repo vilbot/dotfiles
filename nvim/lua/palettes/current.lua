@@ -1,7 +1,8 @@
 -- The palette colors/custom.lua draws with: gruver16 (palettes/gruver16.lua, generated), or on
 -- the "None" desktop the theme picked there. None sets $NONE_THEME to its theme file (JSON with
 -- base00..base0F as "#rrggbb", and "variant" = "dark" | "light") and, when the theme changes,
--- tells every nvim to load the colorscheme again (which reads this again).
+-- fires `User NoneTheme` in every nvim: config/autocmds.lua loads the colorscheme again (which
+-- reads this again).
 local file = vim.env.NONE_THEME
 if file and file ~= "" then
   local ok, t = pcall(function()

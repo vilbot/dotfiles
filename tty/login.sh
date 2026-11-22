@@ -18,7 +18,8 @@ if [[ ${1:-} == modes ]]; then   # "video=DP-4:2560x1440@200 ..." from the runni
 fi
 [[ $EUID == 0 && -n ${SUDO_USER:-} ]] || { echo "run with sudo" >&2; exit 1; }
 tty=$(dirname "$(readlink -f "$0")")
-dotfiles=$(dirname "$tty")
+home=$(getent passwd "$SUDO_USER" | cut -d: -f6)
+config=${XDG_CONFIG_HOME:-$home/.config}/none   # yours: machine.lua = monitors and keyboard
 sessions=/etc/greetd/sessions
 copy=/etc/greetd/none
 
@@ -49,7 +50,8 @@ rm -rf "$copy"
 mkdir -p "$copy"
 cp "$tty"/greeter/* "$copy/"
 cp -r "$tty/shell" "$copy/shell"
-cp "$tty/foot-colors.ini" "$dotfiles/hypr/colors.lua" "$dotfiles/hypr/json.lua" "$dotfiles/hypr/settings.json" "$copy/"
+cp "$tty/foot-colors.ini" "$tty/colors.lua" "$copy/"
+[[ -f $config/machine.lua ]] && cp -L "$config/machine.lua" "$copy/"
 sed "s|^include=.*|include=$copy/foot-colors.ini|" "$tty/foot.ini" >"$copy/foot.ini"
 chmod -R a+rX,go-w "$copy"
 install -d -o greeter -g greeter /var/cache/none-greeter /var/cache/none-greeter/home /var/cache/tuigreet  # what they remember, and a home to write caches in

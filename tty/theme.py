@@ -1,46 +1,60 @@
 #!/usr/bin/env python3
-"""None's colour theme: any theme/<name>.yaml (the 16 slots of gruver16.yaml, plus
-`variant: light` for a light one), switched live, everywhere at once.
+"""None's colour theme: any themes/<name>.yaml here or in ~/.config/none/themes/ (the 16 slots
+of gruver16.yaml, plus `variant: light` for a light one), switched live, everywhere at once.
 
     theme.py list         the themes, one name per line
     theme.py themes       every theme with its colours, as JSON (the Settings app's Appearance page)
     theme.py get          the current one
     theme.py set NAME     switch to it
     theme.py ensure       write the files a new terminal needs if they're missing (tty/term)
+    theme.py build        write None's own gruver16 files again, after editing themes/gruver16.yaml:
+                          foot-colors.ini, colors.lua, shell/Colors.qml (settings/ links to it)
+    theme.py build --check   exit 1 if any of them is out of date (writes nothing)
 
 What a switch changes, while everything keeps running:
   - ~/.local/state/none/theme.json: the shell (tty/shell/Colors.qml) reads it again when it
-    changes; nvim reads it at start ($NONE_THEME, nvim/lua/palettes/current.lua)
+    changes; an editor can read it too ($NONE_THEME)
   - ~/.local/state/none/foot-colors.ini: what new terminals start with (tty/foot.ini includes it)
   - ~/.local/state/none/hyprlock-colors.conf: the lock's colours (tty/hyprlock.conf, next lock)
   - every open None terminal: its colours by escape codes (OSC 4/10/11/12/17/19) written to its
     tty, so the shell, yazi, fzf and everything else using the terminal's colours changes at once
-  - every running nvim: told to load its colorscheme again (through its RPC socket)
+  - every running nvim: told the theme changed (`doautocmd User NoneTheme`, through its RPC socket)
   - Hyprland's border and background colours
-  - light or dark for GTK, Qt and Chrome (hypr/appearance.sh), when the variant changes
-gruver16 until one is picked. The other desktops keep gruver16 (theme/build.py).
+  - light or dark for GTK, Qt and Chrome (tty/appearance.sh), when the variant changes
+gruver16 until one is picked.
 """
 import json, os, pathlib, re, socket, subprocess, sys
 
 HERE = pathlib.Path(__file__).resolve().parent
-THEMES = HERE.parent / "theme"
+CONFIG = pathlib.Path(os.environ.get("XDG_CONFIG_HOME") or pathlib.Path.home() / ".config") / "none"
+THEMES = [HERE / "themes", CONFIG / "themes"]   # None's own, then yours (yours win on a shared name)
 STATE = pathlib.Path(os.environ.get("XDG_STATE_HOME") or pathlib.Path.home() / ".local/state") / "none"
 JSON, FOOT = STATE / "theme.json", STATE / "foot-colors.ini"
 HYPRLOCK = STATE / "hyprlock-colors.conf"
-APPEARANCE = HERE.parent / "hypr" / "appearance.sh"
+APPEARANCE = HERE / "appearance.sh"
 SLOTS = [f"base0{i:X}" for i in range(16)]
 
 
+def files():
+    return {p.stem: p for d in THEMES for p in sorted(d.glob("*.yaml"))}
+
+
 def names():
-    return sorted(p.stem for p in THEMES.glob("*.yaml"))
+    return sorted(files())
 
 
-def load(name):
-    text = (THEMES / f"{name}.yaml").read_text()
+def load_file(path):
+    text = path.read_text()
     pal = {k: "#" + v.lower() for k, v in re.findall(r'^(base0[0-9A-F]):\s*"([0-9a-fA-F]{6})"', text, re.M)}
     missing = [s for s in SLOTS if s not in pal]
     if missing:
-        raise SystemExit(f"theme/{name}.yaml: missing {', '.join(missing)}")
+        raise SystemExit(f"{path}: missing {', '.join(missing)}")
+    return pal
+
+
+def load(name):
+    path = files()[name]
+    text, pal = path.read_text(), load_file(path)
     variant = re.search(r'^variant:\s*"?(light|dark)"?', text, re.M)
     return {"name": name, "variant": variant.group(1) if variant else "dark", **pal}
 
@@ -52,16 +66,16 @@ def current():
         return load("gruver16")
 
 
-# ---- the terminal's colours: the same mapping as theme/build.py ------------------------------
+# ---- the terminal's colours ---------------------------------------------------------------------
 # ANSI "yellow" is sage (0A), "magenta" the real yellow (0E); bright black is the muted grey.
 def ansi(t):
     regular = [t[s] for s in ("base00", "base08", "base0B", "base0A", "base0D", "base0E", "base0C", "base07")]
     return regular + [t["base04"]] + regular[1:]
 
 
-def foot_ini(t):
+def foot_ini(t, header=None):
     h = lambda x: x.lstrip("#")
-    lines = [f"# None's current theme ({t['name']}), written by tty/theme.py; tty/foot.ini includes it",
+    lines = [header or f"# None's current theme ({t['name']}), written by tty/theme.py; tty/foot.ini includes it",
              "[colors-dark]", f"background={h(t['base00'])}", f"foreground={h(t['base07'])}",
              f"cursor={h(t['base00'])} {h(t['base07'])}",
              f"selection-background={h(t['base02'])}", f"selection-foreground={h(t['base07'])}"]
@@ -126,8 +140,10 @@ def mp_str(s):
     return head + b
 
 
-NVIM_RELOAD = ('lua if vim.g.colors_name == "custom" then package.loaded["palettes.current"] = nil; '
-               'vim.cmd.colorscheme("custom") end')
+# None doesn't know your nvim config: it only says the theme changed. A config that follows it
+# reads $NONE_THEME (JSON: base00..base0F as "#rrggbb", "variant" = "dark" | "light") and has
+#   autocmd User NoneTheme  <load the colorscheme again>
+NVIM_RELOAD = "silent! doautocmd User NoneTheme"
 
 
 def reload_nvims():
@@ -173,6 +189,56 @@ def write(t):
     JSON.write_text(json.dumps(t, indent=1) + "\n")
 
 
+# ---- None's own files, generated from themes/gruver16.yaml (theme.py build) -------------------
+GENERATED = "generated by tty/theme.py build from tty/themes/gruver16.yaml; do not edit"
+
+
+def colors_lua(t):
+    """hex without '#': require("colors").base0D (hyprland.lua before a theme is picked, the
+    login screen, the boot screens)"""
+    body = "\n".join(f'  {s} = "{t[s][1:]}",' for s in SLOTS)
+    return f"-- {GENERATED}\nreturn {{\n{body}\n}}\n"
+
+
+def colors_qml(t):
+    """the shell's and the Settings app's colours: the theme picked (theme.json, read again when
+    it changes), gruver16 until then"""
+    body = "\n".join(f'    readonly property color {s}: theme.{s} ?? "{t[s]}"' for s in SLOTS)
+    return (f"// {GENERATED}\n"
+            "// None's current theme (~/.local/state/none/theme.json, written by tty/theme.py), read again\n"
+            "// when it changes, so everything drawn with these changes with it; gruver16 until one is picked.\n"
+            "pragma Singleton\nimport QtQuick\nimport Quickshell\nimport Quickshell.Io\n\nSingleton {\n"
+            "    id: root\n"
+            "    property var theme: ({})\n"
+            "    readonly property bool light: theme.variant === \"light\"\n"
+            "    FileView {\n"
+            "        path: (Quickshell.env(\"XDG_STATE_HOME\") || Quickshell.env(\"HOME\") + \"/.local/state\") + \"/none/theme.json\"\n"
+            "        watchChanges: true\n"
+            "        onFileChanged: reload()\n"
+            "        // a file caught half-written doesn't parse: the last good one stays\n"
+            "        onLoaded: { try { const t = JSON.parse(text()); if (t.base00) root.theme = t } catch (e) {} }\n"
+            "    }\n"
+            f"{body}\n}}\n")
+
+
+def build(check):
+    t = {"name": "gruver16", "variant": "dark", **load_file(HERE / "themes" / "gruver16.yaml")}
+    targets = {"foot-colors.ini": foot_ini(t, "# " + GENERATED), "colors.lua": colors_lua(t),
+               "shell/Colors.qml": colors_qml(t)}
+    stale = [rel for rel, new in targets.items()
+             if not (HERE / rel).exists() or (HERE / rel).read_text() != new]
+    if check:
+        if stale:
+            print("out of date (theme.py build):", *stale, sep="\n  ")
+            sys.exit(1)
+        return
+    for rel in stale:
+        (HERE / rel).write_text(targets[rel])
+        print("wrote", rel)
+    if not stale:
+        print("nothing changed")
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "list":
@@ -184,9 +250,11 @@ def main():
     elif cmd == "ensure":
         if not (FOOT.exists() and JSON.exists() and HYPRLOCK.exists()):
             write(current())
+    elif cmd == "build":
+        build("--check" in sys.argv)
     elif cmd == "set" and len(sys.argv) == 3:
         if sys.argv[2] not in names():
-            raise SystemExit(f"no theme {sys.argv[2]} (theme/*.yaml: {', '.join(names())})")
+            raise SystemExit(f"no theme {sys.argv[2]} (there are: {', '.join(names())})")
         t, before = load(sys.argv[2]), current()
         write(t)   # first: the shell reads it, and terminals opened from now on
         recolour_terminals(t)

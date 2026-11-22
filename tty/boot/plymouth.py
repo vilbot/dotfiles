@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """The boot splash (Plymouth theme "none"): None's gray, and a row of squares in gruver16's vivid
 colours (base08..base0F) that a slow wave runs through, each lighting up and lifting in turn.
-Colours come from hypr/colors.lua (generated from theme/gruver16.yaml).
+Colours come from tty/colors.lua (generated from tty/themes/gruver16.yaml).
 
     plymouth.py DIR    write the theme into DIR (tty/boot.sh puts it in /usr/share/plymouth/themes/none)
 """
 import pathlib, re, struct, sys, zlib
 
-REPO = pathlib.Path(__file__).resolve().parents[2]
-pal = dict(re.findall(r'(base0[0-9A-F]) = "([0-9a-f]{6})"', (REPO / "hypr/colors.lua").read_text()))
-assert len(pal) == 16, "hypr/colors.lua: expected base00..base0F"
+TTY = pathlib.Path(__file__).resolve().parents[1]
+pal = dict(re.findall(r'(base0[0-9A-F]) = "([0-9a-f]{6})"', (TTY / "colors.lua").read_text()))
+assert len(pal) == 16, "tty/colors.lua: expected base00..base0F"
 VIVID = [pal[f"base0{c}"] for c in "89ABCDEF"]
 
 

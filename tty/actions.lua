@@ -1,7 +1,6 @@
 -- The None desktop's actions by name. Their keys are in tty/keys.json, bound by tty/binds.lua;
 -- by hand: `hyprctl eval 'Actions["window.close"]()'`. tty/hyprland.lua makes the table global:
 --   Actions = require("actions")({ tty = tty, programs = programs, desktops = 5 })
--- Only None uses this (the full desktop has hypr/actions.lua).
 
 return function(opts)
     local P, N, tty = opts.programs, opts.desktops, opts.tty
@@ -60,12 +59,12 @@ return function(opts)
     A["settings"] = exec(tty .. "settings.sh")                       -- the Settings app (tty/settings)
     A["help.keys"] = exec(tty .. "settings.sh shortcuts")
     A["layout.next"] = exec("hyprctl switchxkblayout all next")
-    A["screenshot.region"] = exec("~/.config/hypr/screenshot.sh")
+    A["screenshot.region"] = exec(tty .. "bin/screenshot")
 
     -- Function keys
     A["brightness.down"] = exec(shell .. "brightness down")
     A["brightness.up"] = exec(shell .. "brightness up")
-    A["appearance.toggle"] = exec("~/.config/hypr/appearance.sh toggle")
+    A["appearance.toggle"] = exec(tty .. "appearance.sh toggle")
     A["media.back"] = exec("playerctl position 5-")
     A["media.playpause"] = exec("playerctl play-pause")
     A["media.forward"] = exec("playerctl position 5+")

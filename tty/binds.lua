@@ -1,7 +1,9 @@
 -- None's keys as Hyprland binds: every desktop key in tty/keys.json runs its action from
 -- tty/actions.lua. Plain Linux keys: nothing is remapped, apps get every key that isn't bound here
 -- (the physical Cmd key is Super, which apps don't use, so desktop keys never collide with them).
---   require("binds")(Actions, tty .. "keys.json")
+--   require("binds")(Actions, tty .. "keys.json", "~/.config/none/keys.json")
+-- The second file holds only what you changed ({ "keys": { "action": ["SUPER + X"] } }, written
+-- by the Settings app); its keys replace the action's own.
 -- An action keys.json names that actions.lua doesn't have is an error (Hyprland --verify-config
 -- shows it: tty/check.sh).
 
@@ -42,14 +44,16 @@ local function record_submap()
     end)
 end
 
-return function(actions, file)
+return function(actions, file, yours)
     local keys, err = json.read(file)
     if not keys then error("tty/keys.json: " .. tostring(err)) end
-    local desktops = keys.desktops or 5
+    local mine = yours and json.read(yours) or {}
+    local changed = mine.keys or {}
+    local desktops = mine.desktops or keys.desktops or 5
 
     for _, section in ipairs(keys.sections or {}) do
         for action, def in pairs(section.actions or {}) do
-            for _, k in ipairs(def.keys or {}) do
+            for _, k in ipairs(changed[action] or def.keys or {}) do
                 for _, b in ipairs(expand(k, action, desktops)) do
                     local fn = actions[b[2]]
                     if not fn then error("tty/keys.json: no action " .. b[2] .. " in tty/actions.lua") end

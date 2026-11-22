@@ -27,5 +27,16 @@ vim.api.nvim_create_autocmd("VimLeavePre", {
 	end
 })
 
+vim.api.nvim_create_autocmd("User", {
+	pattern = "NoneTheme",
+	desc = "the None desktop's theme changed: draw with the new palette (palettes/current.lua)",
+	callback = function()
+		if vim.g.colors_name == "custom" then
+			package.loaded["palettes.current"] = nil
+			vim.cmd.colorscheme("custom")
+		end
+	end,
+})
+
 require("util.build").setup()
 require("util.filetypes").setup()

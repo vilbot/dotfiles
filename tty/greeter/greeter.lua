@@ -6,12 +6,7 @@ package.path = here .. "?.lua;" .. package.path
 local c = require("colors")
 local rgb = function(hex) return "rgba(" .. hex .. "ff)" end
 
--- same monitors as None (copied from hypr/settings.json)
 hl.monitor({ output = "", mode = "preferred", position = "auto", scale = "auto" })
-hl.monitor({ output = "desc:Sony SONY TV", mode = "preferred", position = "auto", scale = 1, mirror = "desc:Samsung Electric Company LS27FG53x" })  -- by description: connector names change (DP-4 became DP-1 with NVIDIA loading early)
-for output, m in pairs((require("json").read(here .. "settings.json") or {}).monitors or {}) do
-    hl.monitor({ output = output, mode = m.mode, position = m.position or "auto", scale = m.scale or "auto" })
-end
 
 hl.config({
     general = { gaps_in = 0, gaps_out = 0, border_size = 0, layout = "dwindle" },
@@ -21,9 +16,15 @@ hl.config({
         disable_hyprland_logo = true, disable_splash_rendering = true,
         background_color = rgb(c.base00),
     },
-    input = { kb_layout = "us,se", kb_variant = ",swerty", kb_options = "ctrl:nocaps" },
+    input = { kb_layout = "us", kb_options = "ctrl:nocaps" },
     cursor = { inactive_timeout = 1 },
 })
+
+-- the same monitors and keyboard as None: your ~/.config/none/machine.lua, copied here too
+do
+    local f = io.open(here .. "machine.lua")
+    if f then f:close(); dofile(here .. "machine.lua") end
+end
 
 hl.on("hyprland.start", function()
     hl.exec_cmd("env TTY_GREETER=1 qs -p " .. here .. "shell")

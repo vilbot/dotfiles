@@ -27,6 +27,7 @@ LINKS=(
   "zed/settings.json      $HOME/.config/zed/settings.json"
   "$ZED_KEYMAP            $HOME/.config/zed/keymap.json"
   "zed/themes             $HOME/.config/zed/themes"
+  "none                   $HOME/.config/none"
   "herdr/settings.json    $HOME/.config/herdr-app/settings.json"
   "herdr/themes/gruver16.json $HOME/.config/herdr-app/themes/gruver16.json"
 )

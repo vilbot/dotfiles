@@ -28,6 +28,7 @@ Singleton {
 
     readonly property string tty: Quickshell.shellDir + "/.."
     readonly property string home: Quickshell.env("HOME")
+    readonly property string config: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/none"   // yours: favorites.txt, sites.txt
     readonly property string term: tty + "/term"   // None's terminal (Super+Enter)
     function exec(args) { return () => Quickshell.execDetached(args) }
     function sh(cmd) { return exec(["sh", "-c", cmd]) }
@@ -60,10 +61,10 @@ Singleton {
                      webCmd: e.id === "google-chrome" ? e.name : undefined,
                      run: e.id === "google-chrome" ? chromeApp(exec(chromeCmd)) : app(e.id) })))
 
-    // ---- favorites -----------------------------------------------------------------------
+    // ---- favorites (yours: ~/.config/none/favorites.txt) -----------------------------------
     FileView {
         id: favFile
-        path: root.tty + "/favorites.txt"
+        path: root.config + "/favorites.txt"
         watchChanges: true
         onFileChanged: reload()
     }
@@ -159,7 +160,7 @@ Singleton {
     function host(url) { return url.replace(/^[a-z]+:\/\/(www\.)?/i, "").replace(/\/.*$/, "") }
     FileView {
         id: sitesFile
-        path: root.tty + "/sites.txt"
+        path: root.config + "/sites.txt"
         watchChanges: true
         onFileChanged: reload()
     }

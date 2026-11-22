@@ -1,4 +1,4 @@
--- What the Settings app (tty/settings) changed of Hyprland's options: tty/settings.json, written
+-- What the Settings app (tty/settings) changed of Hyprland's options: ~/.config/none/settings.json, written
 -- only by it, applied over hyprland.lua's own values (tty/hyprland.lua requires this last).
 -- The app also sends each change here while you drag a slider:
 --   hyprctl eval 'NoneOptions.apply_json([==[{"input:repeat_rate": 30}]==])'

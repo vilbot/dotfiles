@@ -1,6 +1,6 @@
 // Hyprland options the Settings app changes (the Keyboard & mouse page): their values now
 // (hyprctl getoption), applied live while you change them (tty/options.lua, through
-// `hyprctl eval`), and saved to tty/settings.json, which tty/hyprland.lua applies at start.
+// `hyprctl eval`), and saved to ~/.config/none/settings.json, which tty/hyprland.lua applies at start.
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -8,7 +8,7 @@ import Quickshell.Io
 
 Singleton {
     id: root
-    readonly property string file: Quickshell.shellDir + "/../settings.json"
+    readonly property string file: (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/none" + "/settings.json"
     property var values: ({})          // option -> value now
     property var saved: ({})           // settings.json
 
