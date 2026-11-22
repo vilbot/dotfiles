@@ -1,2 +1,0 @@
-Arch Wiki https://wiki.archlinux.org
-Hyprland Wiki https://wiki.hypr.land

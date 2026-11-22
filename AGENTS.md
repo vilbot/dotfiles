@@ -15,18 +15,17 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `powershell/` | pwsh 7 (windows) | `$PROFILE` |
 | `jetbrains/` | JetBrains theme plugin | installed manually from `jetbrains/gruver16/gruver16-plugin.zip` |
 | `theme/` | gruver16 color source + generator | — |
-| `keys/` | mackeys (Hyprland): `remap.toml` = the full desktop's keys and desktop shortcuts (None has no remapper: `tty/keys.json`), `daemon/` = the Rust remapper | `mackeys.service` → `~/.config/systemd/user/` (linux); it runs `$MACKEYS_KEYMAP`, which hypr/hyprland.lua sets (None stops it) |
+| `keys/` | mackeys (Hyprland): `remap.toml` = the full desktop's keys and desktop shortcuts (None has no remapper), `daemon/` = the Rust remapper | `mackeys.service` → `~/.config/systemd/user/` (linux); it runs `$MACKEYS_KEYMAP`, which hypr/hyprland.lua sets (None stops it) |
 | `toshy/` | Toshy (linux, now KDE only) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`actions.lua`, `settings.lua` + `json.lua`; `colors.lua` generated), `settings.json` (written by the settings window), `curves.json`, `hidden-apps.txt` | `~/.config/hypr` (linux) |
 | `xdg-desktop-portal/` | portal backends for Hyprland (KDE file picker) | `~/.config/xdg-desktop-portal/` (linux) |
 | `quickshell/` | Quickshell (linux, Hyprland): the shell; `services/Colors.qml` generated | `~/.config/quickshell` (linux) |
-| `tty/` | "None" desktop: an all-terminal Hyprland. A project of its own, to be split into its own repo: it uses nothing outside its folder, and nothing here but `none/` and nvim's `$NONE_THEME` reader knows it. Read `tty/AGENTS.md` before working on it. Check: `tty/check.sh` | `~/.local/share/none` (by `tty/install.sh`) |
-| `none/` | my own config for None: `machine.lua` (monitors, keyboard; the login screen copies it: `sudo tty/login.sh`), `user.lua` (SCUF, NVIDIA, bob, KDE apps), `favorites.txt`, `sites.txt`, `keys.json` (the keys changed) and `settings.json` (both written by None's Settings app) | `~/.config/none` (linux) |
+| `none/` | my own config for the "None" desktop, an all-terminal Hyprland. None itself is its own repo, `~/none` (read its `AGENTS.md` before working on it; check: `~/none/check.sh`; `~/none/install.sh` links it to `~/.local/share/none`), and uses nothing from these dotfiles. Here: `machine.lua` (monitors, keyboard; the login screen copies it: `sudo ~/none/login.sh`), `user.lua` (SCUF, NVIDIA, bob, KDE apps), `favorites.txt`, `sites.txt`, `keys.json` (the keys changed) and `settings.json` (both written by None's Settings app) | `~/.config/none` (linux) |
 | `kde/env/` | Plasma login scripts | `~/.config/plasma-workspace/env/` (linux) |
 | `nvim_old/` | User's own pre-rewrite nvim config, kept for reference. Don't edit or delete. | — |
 
 ## prompts/ (gitignored)
-The user's messages and task lists for agents. The "None" desktop (`tty/`) and the other Hyprland desktop, called **Gallery** (`hypr/` + `quickshell/`), each have a folder: `prompts/none/`, `prompts/gallery/`. Each has a `todo.md`; its `## Patches` section holds the fixes asked for ("implement the patch" = the open item there), then new features and ideas. Tick an item (`- [x]`) once it's done.
+The user's messages and task lists for agents. The "None" desktop (`~/none`) and the other Hyprland desktop, called **Gallery** (`hypr/` + `quickshell/`), each have a folder: `prompts/none/`, `prompts/gallery/`. Each has a `todo.md`; its `## Patches` section holds the fixes asked for ("implement the patch" = the open item there), then new features and ideas. Tick an item (`- [x]`) once it's done.
 
 `install.sh` (mac and linux) and `install.ps1` (windows) create all links. When adding a new app config, add it to both scripts if it applies.
 
@@ -44,11 +43,11 @@ The user's messages and task lists for agents. The "None" desktop (`tty/`) and t
 3. `python3 theme/build.py --check` verifies nothing is out of date.
 
 Do not hand-edit generated files (`nvim/lua/palettes/gruver16.lua`, `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `zed/themes/gruver16.json`, `herdr/themes/gruver16.json`, `jetbrains/gruver16/*`).
-None has its own themes and generator (`tty/themes/`, `tty/theme.py build`), with its own copy of gruver16: a change to gruver16 is made in both. nvim's `colors/custom.lua` draws from `palettes/current.lua` (gruver16, or on None the theme in `$NONE_THEME`; `config/autocmds.lua` reloads it on `User NoneTheme`).
+None has its own themes and generator (`~/none/themes/`, `theme.py build` there), with its own copy of gruver16: a change to gruver16 is made in both. nvim's `colors/custom.lua` draws from `palettes/current.lua` (gruver16, or on None the theme in `$NONE_THEME`; `config/autocmds.lua` reloads it on `User NoneTheme`).
 `nvim/colors/custom.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit.
 
 ## Keys (mackeys, Hyprland)
-- Only the full desktop (Gallery) uses mackeys: `keys/remap.toml`. None has plain Linux keys (`tty/keys.json`); `none/user.lua` stops mackeys when None starts. The service runs `$MACKEYS_KEYMAP` (`systemctl --user set-environment`, done by `hypr/hyprland.lua` at start). When keyd runs (None's Caps), mackeys grabs keyd's virtual keyboard (`devices`).
+- Only the full desktop (Gallery) uses mackeys: `keys/remap.toml`. None has plain Linux keys; `none/user.lua` stops mackeys when None starts. The service runs `$MACKEYS_KEYMAP` (`systemctl --user set-environment`, done by `hypr/hyprland.lua` at start). When keyd runs (None's Caps), mackeys grabs keyd's virtual keyboard (`devices`).
 - A layer with `app = "name"` holds that app's own keys: mackeys passes them on unchanged and writes, per action, the keys the app gets (`apps` in keymap.json, by Linux key code), so the app needs no keys of its own.
 - `$XDG_RUNTIME_DIR/mackeys.sock`: `record` answers the next keys pressed (`keys opt+shift+1`, `cancelled` after Esc twice) and keeps them from doing anything; `cancel`. The Settings app's Shortcuts page uses it.
 - `keys/remap.toml` says what each physical Mac key does: modifier swaps, Caps, per-app layers and desktop actions (with their sheet labels). mackeys reloads it on save and writes the shortcut sheet model to `~/.local/state/mackeys/keymap.json` (Opt+? sheet, Shortcuts page).

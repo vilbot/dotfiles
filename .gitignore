@@ -5,4 +5,5 @@ __pycache__/
 ghostty/session.ghostty
 prompts/
 keys/daemon/target/
-tty/zsh/.zcompdump*
+# a leftover link to None's own repo (~/none), for sessions started before the split
+/tty

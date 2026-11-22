@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# Starts the "None" desktop (the login screen's "None", tty/login.sh).
-# What it prints goes to the journal (journalctl -t none-session), not to tty1: visible text on
-# tty1 makes the kernel's console take over the screen and draw what boot left there.
-exec > >(exec systemd-cat -t none-session) 2>&1
-exec start-hyprland -- -c "$(dirname "$(readlink -f "$0")")/hyprland.lua"
