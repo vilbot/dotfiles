@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Generate Zed's Linux keymap so Zed behaves like it does on the Mac (Python 3.11+).
+"""Generate Zed's Linux keymap from the Mac one (Python 3.11+).
 
     python3 zed/build.py           # write zed/keymap.linux.json
     python3 zed/build.py --check   # exit 1 if it is out of date (writes nothing)
 
-On Linux, mackeys (keys/remap.toml) sends Cmd as Ctrl and the physical Ctrl key as Super (see AGENTS.md), and
-Zed's Linux defaults are its own ctrl-based set. So keymap.linux.json:
-  1. unbinds every Linux default (upstream/default-linux.json + upstream/vim.json), then
-  2. binds Zed's Mac defaults (upstream/default-macos.json + vim.json) and your own Mac
-     keymap (keymap.json), with each keystroke translated to what Zed receives through mackeys:
-         cmd -> ctrl,  ctrl -> super,  alt -> alt,  shift -> shift
-Result: Cmd+P, Cmd+D, ... do what they do on the Mac, and the physical Ctrl key is vim's
-Ctrl (Ctrl+D/U/O/W ...), exactly like on the Mac; in the terminal it is the shell's Ctrl (2b).
+On Linux, Zed keeps its own Linux defaults (Ctrl+P, Ctrl+J, ...): plain Linux keys, nothing
+remapped (the None desktop; AGENTS.md). keymap.linux.json is only your own Mac keymap
+(keymap.json), its bindings and unbinds with each keystroke translated:
+    cmd -> ctrl,  ctrl -> ctrl,  alt -> alt,  shift -> shift
+It prints where a translated binding replaces a Linux default (upstream/default-linux.json,
+upstream/vim.json) with something else, or two of yours land on the same keys.
 
 Edit keymap.json (the Mac keymap, the source of truth), never keymap.linux.json.
 After a Zed upgrade, refresh upstream/ from the matching tag (see upstream/VERSION).
@@ -21,7 +19,7 @@ import json, pathlib, re, sys
 ZED = pathlib.Path(__file__).resolve().parent
 UP = ZED / "upstream"
 MOD = {"cmd": "ctrl", "super": "ctrl", "win": "ctrl", "secondary": "ctrl", "platform": "ctrl",
-       "ctrl": "super", "alt": "alt", "shift": "shift", "fn": "fn"}
+       "ctrl": "ctrl", "alt": "alt", "shift": "shift", "fn": "fn"}
 
 
 def load(path):
@@ -71,50 +69,40 @@ def section(sec, bindings, kind="bindings"):
     return out
 
 
-# 2. Mac defaults, minus what keymap.json unbinds, translated ---------------------------------
+# your Mac keymap, translated ------------------------------------------------------------
 user = load(ZED / "keymap.json")
-removed = {(sec.get("context"), k, json.dumps(v)) for sec in user for k, v in sec.get("unbind", {}).items()}
-binds = []
-for name in ("default-macos.json", "vim.json"):
-    for sec in load(UP / name):
-        b = {keys(k): action(v) for k, v in sec.get("bindings", {}).items()
-             if (sec.get("context"), k, json.dumps(v)) not in removed}
-        if b:
-            binds.append(section(sec, b))
-
-# 2b. the terminal gets the physical Ctrl keys, as on the Mac. There Zed passes any ctrl key it
-#     has no binding for to the shell; here they arrive as super (mackeys), which Zed doesn't pass,
-#     so each one is sent on explicitly. First, so Zed's own bindings (super-c, super-r) win.
-passthrough = [chr(c) for c in range(ord("a"), ord("z") + 1)] + ["[", "]", "\\", "space"]
-binds.insert(0, {"context": "Terminal", "bindings": {
-    f"super-{k}": ["terminal::SendKeystroke", f"ctrl-{k}"] for k in passthrough}})
-
-# 3. your Mac keymap, translated (its unbinds were applied in step 2) --------------------------
+out = []
 for sec in user:
-    b = {keys(k): action(v) for k, v in sec.get("bindings", {}).items()}
-    if b:
-        binds.append(section(sec, b))
+    for kind in ("unbind", "bindings"):
+        b = {keys(k): action(v) for k, v in sec.get(kind, {}).items()}
+        if b:
+            out.append(section(sec, b, kind))
 
-# 1. unbind Linux defaults, except ones we rebind identically: Zed applies an unbind to every
-#    matching (context, keystroke, action), including our own later binding (e.g. ctrl-j ->
-#    ToggleBottomDock is both a Linux default and the translated Mac cmd-j).
-rebound = {(sec.get("context"), k, json.dumps(v)) for sec in binds for k, v in sec["bindings"].items()}
-unbinds = []
+# what to look at: a Linux default replaced by something else, two of yours on the same keys
+defaults = {}
 for name in ("default-linux.json", "vim.json"):
     for sec in load(UP / name):
-        b = {k: v for k, v in sec.get("bindings", {}).items()
-             if v is not None and (sec.get("context"), k, json.dumps(v)) not in rebound}
-        if b:
-            unbinds.append(section(sec, b, "unbind"))
+        for k, v in sec.get("bindings", {}).items():
+            defaults[(sec.get("context"), k)] = v
+unbound = {(sec.get("context"), k) for sec in out for k in sec.get("unbind", {})}
+mine = {}
+for sec in out:
+    for k, v in sec.get("bindings", {}).items():
+        where = (sec.get("context"), k)
+        if where in mine and mine[where] != v:
+            print(f"note: {k} in {where[0] or 'every context'}: yours twice, {json.dumps(mine[where])} and {json.dumps(v)}")
+        mine[where] = v
+        if where in defaults and defaults[where] not in (None, v) and where not in unbound and "--check" not in sys.argv:
+            print(f"note: {k} in {where[0] or 'every context'}: {json.dumps(v)} instead of Linux's {json.dumps(defaults[where])}")
 
-head = ("// GENERATED by zed/build.py from zed/keymap.json (your Mac keymap) + Zed's defaults in\n"
-        "// zed/upstream/. Do not edit: edit keymap.json and re-run `python3 zed/build.py`.\n"
-        "// Linux defaults are unbound, Mac defaults rebound for mackeys: cmd->ctrl, ctrl->super.\n")
-new = head + json.dumps(unbinds + binds, indent=2, ensure_ascii=False) + "\n"
+head = ("// GENERATED by zed/build.py from zed/keymap.json (your Mac keymap), on top of Zed's own\n"
+        "// Linux defaults. Do not edit: edit keymap.json and re-run `python3 zed/build.py`.\n"
+        "// Translated for plain Linux keys: cmd->ctrl.\n")
+new = head + json.dumps(out, indent=2, ensure_ascii=False) + "\n"
 
-out = ZED / "keymap.linux.json"
+target = ZED / "keymap.linux.json"
 if "--check" in sys.argv:
-    if not out.exists() or out.read_text() != new:
+    if not target.exists() or target.read_text() != new:
         print("out of date: zed/keymap.linux.json"); sys.exit(1)
-elif not out.exists() or out.read_text() != new:
-    out.write_text(new); print("wrote zed/keymap.linux.json")
+elif not target.exists() or target.read_text() != new:
+    target.write_text(new); print("wrote zed/keymap.linux.json")

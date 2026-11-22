@@ -3,7 +3,7 @@
 //! The shell can't see where the text cursor is: apps tell only an input method (text-input-v3,
 //! the cursor rectangle). So this is an input method that types nothing (it never grabs the
 //! keyboard); its one popup surface, which Hyprland places at the text cursor, shows the layout's
-//! name for about a second (fading in and out) after mackeys' keyboard switches layout (Hyprland's socket2 "activelayout").
+//! name for about a second (fading in and out) after the keyboard switches layout (Hyprland's socket2 "activelayout").
 //!
 //! While a text field is focused (the input method is "active") it writes 1 to
 //! $XDG_RUNTIME_DIR/none-caret, else 0, and removes it when it quits: the shell's corner shows the
@@ -34,7 +34,11 @@ use wayland_protocols_misc::zwp_input_method_v2::client::{
     zwp_input_popup_surface_v2::ZwpInputPopupSurfaceV2,
 };
 
-const KEYBOARD: &str = "mackeys-virtual-keyboard"; // all typing goes through it (as in Status.qml)
+/// a keyboard that types: named so (the NuPhy's "…-keyboard", keyd's "keyd-virtual-keyboard"), not
+/// a headset's media buttons, which Hyprland lists as a keyboard too (as in tty/shell/Status.qml)
+fn typing(keyboard: &str) -> bool {
+    keyboard.contains("keyboard")
+}
 // About a second in all: in (a fade, rising 6px, as tty/shell/Line.qml), held, out
 const FADE_IN: f64 = 0.10; // seconds
 const HOLD: f64 = 0.76;
@@ -187,24 +191,24 @@ fn hypr_socket(name: &str) -> Result<PathBuf> {
     Ok(PathBuf::from(run).join("hypr").join(sig).join(name))
 }
 
-/// the layout mackeys' keyboard has now (hyprctl devices)
+/// the layout the keyboards have now (hyprctl devices)
 fn current_layout() -> Option<String> {
     let mut s = UnixStream::connect(hypr_socket(".socket.sock").ok()?).ok()?;
     s.write_all(b"j/devices").ok()?;
     let mut out = String::new();
     s.read_to_string(&mut out).ok()?;
     let v: serde_json::Value = serde_json::from_str(&out).ok()?;
-    v["keyboards"].as_array()?.iter().find(|k| k["name"] == KEYBOARD)?["active_keymap"].as_str().map(String::from)
+    v["keyboards"].as_array()?.iter().find(|k| k["name"].as_str().is_some_and(typing))?["active_keymap"].as_str().map(String::from)
 }
 
-/// every layout mackeys' keyboard switches to, sent to TX (and a byte to WAKE for the main loop's poll)
+/// every layout a keyboard switches to, sent to TX (and a byte to WAKE for the main loop's poll)
 fn watch_layouts(tx: mpsc::Sender<String>, mut wake: UnixStream) -> Result<()> {
     let socket = UnixStream::connect(hypr_socket(".socket2.sock")?)?;
     for line in BufReader::new(socket).lines() {
         let line = line?;
         let Some(rest) = line.strip_prefix("activelayout>>") else { continue };
         let Some((keyboard, name)) = rest.rsplit_once(',') else { continue };
-        if keyboard == KEYBOARD {
+        if typing(keyboard) {
             tx.send(name.to_string())?;
             wake.write_all(b"x")?;
         }

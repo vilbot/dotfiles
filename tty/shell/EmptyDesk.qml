@@ -1,6 +1,6 @@
 // An empty desktop is a terminal-like prompt: the launcher, where a terminal's prompt would be
 // (foot's size and padding: Hack 16px, 10x6), with its results listed below like output. You can
-// type straight away; it goes as soon as a window is on the desktop. Same launcher as Cmd+Space
+// type straight away; it goes as soon as a window is on the desktop. Same launcher as Super+Space
 // (Launcher.qml, LauncherInput.qml), so the same keys and searches (Files ~/, nvim ~/, ...).
 import QtQuick
 import Quickshell
@@ -19,7 +19,7 @@ PanelWindow {
     exclusionMode: ExclusionMode.Normal   // under the bar
     color: "transparent"
     WlrLayershell.layer: WlrLayer.Top
-    WlrLayershell.namespace: "tty-launcher"   // mackeys: the launcher's own Ctrl keys
+    WlrLayershell.namespace: "tty-launcher"
     WlrLayershell.keyboardFocus: active ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
     readonly property font font: Qt.font({ family: "Hack", pixelSize: 16 })

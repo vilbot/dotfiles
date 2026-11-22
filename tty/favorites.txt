@@ -1,6 +1,7 @@
 google-chrome
 tty:nvim
 steam
-tty:terminal
 dev.zed.Zed
 tty:files
+tty:terminal
+zen

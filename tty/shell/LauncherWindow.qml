@@ -1,6 +1,6 @@
 // The launcher on screen: a see-through strip lying exactly on the middle of the bar, where the
 // app's name fades out and the prompt fades in, with the results dropping down below it.
-// Its own surface ("tty-launcher") so mackeys knows when it's open (tty/keys.toml).
+// Its own surface ("tty-launcher").
 import QtQuick
 import Quickshell
 import Quickshell.Wayland

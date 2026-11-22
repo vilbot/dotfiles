@@ -1,7 +1,8 @@
-// Every action in tty/keys.toml with its keys, by section, searchable by name or by keys.
-// Click a key (or Enter on the row) and press new keys: mackeys records them, so they do nothing
-// meanwhile; Esc twice cancels. "+" (or a) adds one more key, Backspace removes the row's keys.
-// Keys another action in the same layer has: Enter takes them over. Saved at once (Cmd+Z undoes).
+// Every action in tty/keys.json with its keys, by section, searchable by name or by keys.
+// Click a key (or Enter on the row) and press new keys: Hyprland's binds are off meanwhile
+// (Keymap.qml), so they do nothing else; Esc twice cancels, Esc and a pause records Esc. "+" (or a) adds one more key, Backspace removes the row's keys.
+// Keys another action already has (in the same app, or on the desktop): Enter takes them over.
+// Saved at once, Hyprland reloads (Ctrl+Z undoes).
 import QtQuick
 import QtQuick.Layouts
 
@@ -11,8 +12,8 @@ Item {
     property bool mouseLive: true           // set by the window: the mouse moved since the last key
     property int current: 0
     readonly property string hints: rec ? "press the new keys   Esc Esc cancel"
-        : ask ? "⏎ " + ask.yes + "   Esc no"
-        : "⏎ record   a add   ⌫ remove   ⌘Z undo   / search"
+        : ask ? "Enter " + ask.yes + "   Esc no"
+        : "Enter record   a add   Backspace remove   Ctrl+Z undo   / search"
 
     // ---- what's shown ----------------------------------------------------------------------
     // rows that fit the search, and the list with section headings between them
@@ -40,14 +41,13 @@ Item {
     Connections {
         target: Keymap
         function onErrorChanged() { if (Keymap.error) page.say(Keymap.error, true) }
-        function onSaved() { if (!page.messageBad) page.say("saved   ⌘Z undo") }
+        function onSaved() { if (!page.messageBad) page.say("saved   Ctrl+Z undo") }
     }
 
     // Enter on a row: its first key, or all of them when it has several, or one when it has none
     function slotFor(r) { return r.keys.length === 0 ? -1 : r.keys.length > 1 ? -2 : 0 }
     function record(r, slot) {
         if (!r || r.fixed) return
-        if (!Keymap.canRecord) { say("mackeys isn't running: can't record keys", true); return }
         ask = null
         rec = { action: r.action, slot: slot }
         Keymap.record(keys => { const was = rec; rec = null; if (keys) recorded(r, was.slot, keys) })
@@ -59,11 +59,11 @@ Item {
         const s = Keymap.split(keys)
         if (r.action.includes("{n}")) {
             if (!/^[1-9]$/.test(s.key)) return { error: "this one is for every desktop: press the modifiers with a number" }
-            return { keys: s.mods.concat(["{n}"]).join("+") }
+            return { keys: AppKeys.write(s.mods, "{n}") }
         }
         if (r.action.includes("{dir}")) {
-            if (["h", "j", "k", "l"].includes(s.key)) return { keys: s.mods.concat(["{dir}"]).join("+") }
-            if (["left", "down", "up", "right"].includes(s.key)) return { keys: s.mods.concat(["{arrow}"]).join("+") }
+            if (["H", "J", "K", "L"].includes(s.key)) return { keys: AppKeys.write(s.mods, "{dir}") }
+            if (["Left", "Down", "Up", "Right"].includes(s.key)) return { keys: AppKeys.write(s.mods, "{arrow}") }
             return { error: "this one is for every direction: press the modifiers with h j k l or an arrow" }
         }
         return { keys: keys }
@@ -82,7 +82,7 @@ Item {
         const go = () => apply(r, keys, t.keys)
         // a plain key on the desktop would stop it from typing anywhere
         const s = Keymap.split(t.keys)
-        if (!r.app && !s.mods.length && !/^f\d+$/.test(s.key)) {
+        if (!r.app && !s.mods.length && !/^F\d+$/.test(s.key)) {
             ask = { text: shown + " alone would stop typing " + shown + " everywhere", yes: "use it anyway", go: go }
             return
         }
@@ -104,7 +104,7 @@ Item {
         Keymap.save(changes)
     }
 
-    // ---- what the window's keys do here (tty/keys.toml's settings.* actions) ---------------
+    // ---- what the window's keys do here (tty/keys.json's settings.* actions) ---------------
     function next() { if (current < shown.length - 1) current++ }
     function prev() { if (current > 0) current-- }
     function activate() {
@@ -157,7 +157,7 @@ Item {
     Text {
         anchors.centerIn: parent
         visible: page.shown.length === 0
-        text: Keymap.rows.length ? "nothing fits “" + page.query + "”" : "no keymap yet: mackeys writes it when it starts"
+        text: Keymap.rows.length ? "nothing fits “" + page.query + "”" : "can't read tty/keys.json"
         font: Style.font
         color: Style.dim
     }
@@ -212,7 +212,7 @@ Item {
                     font: Style.font
                     color: rowItem.r.fixed ? Style.dim : rowItem.picked ? Style.strong : Style.text
                 }
-                Text {   // the action's name, for the picked row (what tty/keys.toml calls it)
+                Text {   // the action's name, for the picked row (what tty/keys.json calls it)
                     visible: rowItem.picked && !rowItem.r.fixed && rowItem.width > 700
                     text: rowItem.r.action ?? ""
                     font: Style.small

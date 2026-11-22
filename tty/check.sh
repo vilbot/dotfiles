@@ -4,7 +4,8 @@
 #   - the full desktop doesn't depend on tty/: only the theme generator (which writes
 #     tty/foot-colors.ini) may mention it, so this experiment can't break or change the other desktops
 #   - foot accepts tty/foot.ini, and its generated colours are up to date
-#   - None's keys (tty/keys.toml) parse and do what keys/daemon/tests/none.rs says; mackeys is built
+#   - None's keys (tty/keys.json): they parse, no keys twice (Hyprland's check above binds them
+#     all: an unknown key or action fails it), keyd's Caps config
 set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
@@ -14,9 +15,8 @@ ok() { echo "ok    $*"; }
 out=$(Hyprland --verify-config -c tty/hyprland.lua 2>&1 | sed -n '/parsing result/,$p' | tail -n +2)
 if grep -q "config ok" <<<"$out"; then ok "tty/hyprland.lua"; else bad "tty/hyprland.lua:$out"; fi
 
-# (mackeys' tests read tty/keys.toml: a test, nothing the other desktops run)
 refs=$(git grep --untracked -nP '(?<![\w.])tty/' -- . ':!tty/' ':!.gitignore' ':!theme/build.py' \
-    ':!prompts/' ':!nvim_old/' ':!AGENTS.md' ':!README*' ':!keys/daemon/tests/none.rs' 2>/dev/null)
+    ':!prompts/' ':!nvim_old/' ':!AGENTS.md' ':!README*' 2>/dev/null)
 if [[ -z $refs ]]; then ok "nothing outside tty/ depends on it"; else bad "files outside tty/ use it:"$'\n'"$refs"; fi
 
 if command -v foot >/dev/null; then
@@ -90,13 +90,43 @@ elif { diff -rq tty/greeter "$copy" 2>/dev/null || true; } | grep -q '^Files' ||
     bad "the login screen's copy is out of date: sudo tty/login.sh"
 else ok "login screen copy (/etc/greetd/none) up to date"; fi
 
-# None's keymap (tty/keys.toml): mackeys' tests for it, and mackeys built from its current source
-if err=$(cd keys/daemon && cargo test --release -q --test none 2>&1); then ok "tty/keys.toml (keys/daemon/tests/none.rs)"
-else bad "tty/keys.toml:"$'\n'"$(tail -n 20 <<<"$err")"; fi
-bin=keys/daemon/target/release/mackeys
-if [[ ! -x $bin ]] || [[ -n $(find keys/daemon/src keys/daemon/Cargo.toml -newer "$bin") ]]
-then bad "mackeys isn't built from its current source: (cd keys/daemon && cargo build --release)"
-else ok "mackeys built"; fi
+# None's keys (tty/keys.json): every key once, on the desktop and in each app (a desktop key
+# never reaches an app); Hyprland's check above already bound them all
+if err=$(python3 - <<'PY' 2>&1
+import json
+k = json.load(open("tty/keys.json"))
+n = k.get("desktops", 5)
+temps = {"{n}": [str(i) for i in range(1, n + 1)], "{dir}": list("HJKL"), "{arrow}": ["Left", "Down", "Up", "Right"]}
+order = ["SUPER", "CTRL", "ALT", "SHIFT"]
+def expand(key):
+    parts = [p.strip() for p in key.split("+")]
+    mods = sorted((m.upper() for m in parts[:-1]), key=order.index)
+    last = parts[-1]
+    names = temps.get(last, [last])
+    return [" + ".join(mods + [x.upper() if len(x) == 1 else x]) for x in names]
+def collect(groups):
+    seen = {}
+    for acts in groups:
+        for action, d in acts.items():
+            assert d.get("label"), f"{action}: no label"
+            for key in d.get("keys", []):
+                for e in expand(key):
+                    assert e not in seen, f"{e}: both {seen[e]} and {action}"
+                    seen[e] = action
+    return seen
+desk = collect(s["actions"] for s in k["sections"])
+for app, a in k.get("apps", {}).items():
+    mine = collect([a["actions"]])
+    both = set(mine) & set(desk)
+    assert not both, f"{app}: desktop keys never reach it: {sorted(both)}"
+PY
+); then ok "tty/keys.json"; else bad "tty/keys.json: $err"; fi
+if command -v keyd >/dev/null; then
+    if err=$(keyd check tty/keyd.conf 2>&1); then ok "tty/keyd.conf"; else bad "tty/keyd.conf: $err"; fi
+    if ! systemctl is-active -q keyd; then echo "--    keyd isn't running: Caps is only Ctrl (sudo tty/keys.sh)"
+    elif ! cmp -s tty/keyd.conf /etc/keyd/default.conf; then bad "keyd's config is out of date: sudo tty/keys.sh"
+    else ok "keyd running with tty/keyd.conf"; fi
+else echo "--    keyd not set up: Caps is only Ctrl (sudo tty/keys.sh)"; fi
 
 # tty/caret (the layout at the text cursor): built, and not older than its source
 bin=tty/caret/target/release/none-caret

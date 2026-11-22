@@ -1,9 +1,9 @@
 //@ pragma AppId none-settings
 // The None desktop's Settings app: a window of its own (class none-settings), started by
-// tty/settings.sh [PAGE] (the launcher's "Settings", Opt+? for Shortcuts), which shows the open
-// one instead when there is one. Pages: Shortcuts (tty/keys.toml), Appearance (the colour theme),
+// tty/settings.sh [PAGE] (the launcher's "Settings", Alt+? for Shortcuts), which shows the open
+// one instead when there is one. Pages: Shortcuts (tty/keys.json), Appearance (the colour theme),
 // Keyboard & mouse (Hyprland's input options, tty/settings.json).
-// Its keys are the settings.* actions in tty/keys.toml (AppKeys); the mouse picks what it's over.
+// Its keys are the settings.* actions in tty/keys.json (AppKeys); the mouse picks what it's over.
 // Run by hand to see errors:  qs -p ~/dotfiles/tty/settings
 import QtQuick
 import QtQuick.Layouts
@@ -13,7 +13,7 @@ import Quickshell.Io
 ShellRoot {
     id: app
     readonly property var pages: [
-        { id: "shortcuts", name: "Shortcuts", file: "ShortcutsPage.qml", note: "tty/keys.toml" },
+        { id: "shortcuts", name: "Shortcuts", file: "ShortcutsPage.qml", note: "tty/keys.json" },
         { id: "appearance", name: "Appearance", file: "AppearancePage.qml", note: "tty/theme.py" },
         { id: "input", name: "Keyboard & mouse", file: "InputPage.qml", note: "tty/settings.json" },
     ]
@@ -34,7 +34,7 @@ ShellRoot {
         implicitWidth: 1040
         implicitHeight: 720
         color: Style.bg
-        onVisibleChanged: if (!visible) Qt.quit()   // closed (Cmd+Q): the app is done
+        onVisibleChanged: if (!visible) { Keymap.cancel(); Qt.quit() }   // closed (Super+Q): the app is done
 
         readonly property var page: loader.item
         property alias query: app.query
@@ -44,6 +44,7 @@ ShellRoot {
         readonly property var whileTyping: ["settings.back", "settings.next", "settings.prev", "settings.activate",
             "settings.page.next", "settings.page.prev", "settings.undo", "settings.redo", "settings.close", "settings.search"]
         function handle(event, typing) {
+            if (Keymap.recording) { Keymap.keyEvent(event); return true }   // the Shortcuts page records them
             const a = AppKeys.action("settings", event)
             if (typing && (AppKeys.plain(event) || !whileTyping.includes(a))) return false
             const p = page

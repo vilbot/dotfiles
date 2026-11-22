@@ -1,5 +1,5 @@
--- The None desktop's actions by name. Keys are bound in tty/keys.toml; mackeys runs an action
--- with `hyprctl eval 'Actions["window.close"]()'`. tty/hyprland.lua makes the table global:
+-- The None desktop's actions by name. Their keys are in tty/keys.json, bound by tty/binds.lua;
+-- by hand: `hyprctl eval 'Actions["window.close"]()'`. tty/hyprland.lua makes the table global:
 --   Actions = require("actions")({ tty = tty, programs = programs, desktops = 5 })
 -- Only None uses this (the full desktop has hypr/actions.lua).
 
@@ -46,6 +46,13 @@ return function(opts)
     A["group.toggle"] = run(hl.dsp.group.toggle())
     A["group.next"] = run(hl.dsp.group.next())
     A["group.prev"] = run(hl.dsp.group.prev())
+
+    -- Universal clipboard (as in Omarchy): Super+C/V/X copy, paste and cut in every app, terminals
+    -- too (tty/foot.ini: Ctrl+Insert copies, Shift+Insert pastes), so Ctrl+C stays the app's own
+    local function shortcut(mods, key) return run(hl.dsp.send_shortcut({ mods = mods, key = key })) end
+    A["clipboard.copy"] = shortcut("CTRL", "Insert")
+    A["clipboard.paste"] = shortcut("SHIFT", "Insert")
+    A["clipboard.cut"] = shortcut("CTRL", "X")
 
     -- Launching
     A["launcher"] = exec(P.launcher)

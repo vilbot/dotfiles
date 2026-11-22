@@ -3,7 +3,7 @@
 #   - greetd shows a login screen in None's look (tty/greeter, from a copy in /etc/greetd/none,
 #     which the greeter user can read): pick None, Hyprland or KDE, then your password. If it
 #     can't start, tuigreet (plain text). Logging out comes back to it.
-#   - None's lock (sleep, Ctrl+Cmd+Q) is hyprlock (tty/lock), installed here too.
+#   - None's lock (sleep, Super+Ctrl+Q) is hyprlock (tty/lock), installed here too.
 #   sudo tty/login.sh [MODES]  set it up, or copy changes to it (tty/check.sh says when stale)
 #   sudo tty/login.sh undo     back to Plasma's login screen
 #   tty/login.sh modes         (not root, in a Hyprland session) the monitors' modes as MODES

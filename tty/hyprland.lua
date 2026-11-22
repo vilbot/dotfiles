@@ -1,7 +1,8 @@
 -- "None" desktop: a desktop that is all terminal. Started by tty/start, the login screen's
 -- "None" (tty/login.sh).
 -- Terminals everywhere (foot, tty/foot.ini: Hack + gruver16), no wallpaper, gaps, rounding
--- or plugins. Its own keys (tty/keys.toml, through mackeys) and actions (tty/actions.lua).
+-- or plugins. Plain Linux keys: Super (the Cmd key) for the desktop, everything else the apps';
+-- its keys are tty/keys.json, bound by tty/binds.lua, running tty/actions.lua.
 -- Check: tty/check.sh
 
 local home = os.getenv("HOME")
@@ -45,14 +46,8 @@ do
 end
 local rgb = function(hex) return "rgba(" .. hex .. "ff)" end
 
--- how many desktops: `desktops = N` in tty/keys.toml
-local desktops = 5
-do
-    local f = io.open(tty .. "keys.toml")
-    local n = f and f:read("a"):match("\ndesktops%s*=%s*(%d+)")
-    if f then f:close() end
-    desktops = tonumber(n) or desktops
-end
+-- how many desktops: "desktops" in tty/keys.json
+local desktops = tonumber((require("json").read(tty .. "keys.json") or {}).desktops) or 5
 
 -- Monitors: the modes chosen in the full desktop's settings window (hypr/settings.json); only
 -- those, none of its looks.
@@ -73,12 +68,12 @@ hl.env("SDL_GAMECONTROLLERCONFIG", "03000000952e00004e43000011010000,Gaming SCUF
 require("kde")                 -- KDE apps look and work right (hypr/kde.lua)
 
 hl.on("hyprland.start", function()
-    -- systemd user services see this session; mackeys takes the keyboard, with None's keys
+    -- systemd user services see this session. No key remapper here: the full desktop's mackeys
+    -- and KDE's Toshy are stopped (Caps = tap Esc / hold Ctrl is keyd's, system-wide: tty/keys.sh)
     hl.exec_cmd("dbus-update-activation-environment --systemd XDG_SESSION_TYPE XDG_SESSION_DESKTOP "
         .. "XDG_CURRENT_DESKTOP WAYLAND_DISPLAY DISPLAY HYPRLAND_INSTANCE_SIGNATURE "
         .. "QT_QPA_PLATFORMTHEME XDG_MENU_PREFIX GSK_RENDERER "
-        .. "&& systemctl --user set-environment MACKEYS_KEYMAP=" .. tty .. "keys.toml "
-        .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
+        .. "; systemctl --user stop mackeys.service toshy-session-monitor.service toshy-config.service")
     hl.exec_cmd("hypridle -c " .. tty .. "hypridle.conf")
     -- the bar with the launcher, volume, keyboard layout and notifications (tty/shell)
     hl.exec_cmd("qs -p " .. tty .. "shell")
@@ -115,12 +110,11 @@ hl.config({
     },
     cursor = { no_warps = true, hide_on_key_press = true, inactive_timeout = 3 },
     render = { cm_auto_hdr = 0 },
-    -- same keyboard as hypr/hyprland.lua (mackeys does the Mac keys), except that Ctrl+Alt+F1-F6
-    -- (Cmd+Opt+F1-F6) switch consoles
+    -- Ctrl+Alt+F1-F6 switch consoles; Caps is Ctrl here too when keyd isn't set up
     input = {
         kb_layout = "us,se",
         kb_variant = ",swerty",
-        kb_options = "ctrl:nocaps,lv3:ralt_switch",   -- right Opt = AltGr: swerty's ;:'"[]{} (the US layout's Alt_R otherwise wins)
+        kb_options = "ctrl:nocaps,lv3:ralt_switch",   -- right Alt = AltGr: swerty's ;:'"[]{} (the US layout's Alt_R otherwise wins)
         follow_mouse = 2,
         sensitivity = 0,
     },
@@ -152,20 +146,8 @@ Actions = require("actions")({ tty = tty, programs = programs, desktops = deskto
 NoneOptions = require("options")
 NoneOptions.load(tty .. "settings.json")
 
--- Mouse: Opt + left-drag moves a window, Opt + right-drag resizes it.
-hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })
-hl.bind("ALT + mouse:273", hl.dsp.window.resize(), { mouse = true })
-
--- Media keys of other devices (mackeys doesn't see those).
-local media = {
-    XF86AudioPlay = "media.playpause", XF86AudioPause = "media.playpause", XF86AudioNext = "media.next",
-    XF86AudioPrev = "media.prev", XF86AudioMute = "volume.mute", XF86AudioLowerVolume = "volume.down",
-    XF86AudioRaiseVolume = "volume.up",
-}
-for key, action in pairs(media) do
-    hl.bind(key, Actions[action], { locked = true, repeating = action:find("^volume%.[ud]") ~= nil })
-end
-hl.bind("CTRL + ALT + SUPER + Return", hl.dsp.exec_cmd("systemctl --user restart mackeys.service"))
+-- the keys (tty/keys.json), the mouse and media keys
+require("binds")(Actions, tty .. "keys.json")
 
 for i = 1, desktops do
     hl.workspace_rule({ workspace = tostring(i), persistent = true })

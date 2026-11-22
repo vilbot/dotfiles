@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Locks None: hyprlock with tty/hyprlock.conf (only your password opens it). Ctrl+Cmd+Q, the
+# Locks None: hyprlock with tty/hyprlock.conf (only your password opens it). Super+Ctrl+Q, the
 # launcher's "Lock", zsh's `lock`, and before sleep (tty/hypridle.conf). Locking twice does nothing.
 tty=$(dirname "$(readlink -f "$0")")
 pidof -q hyprlock && exit 0

@@ -16,7 +16,7 @@ case "$(uname -s)" in
 esac
 
 # Zed keymaps: keymap.json is mac (cmd-*). Linux gets keymap.linux.json, generated from it by
-# zed/build.py for mackeys' key swaps (Cmd->Ctrl, Ctrl->Super) so Zed behaves like on the Mac.
+# zed/build.py: your own bindings with Cmd as Ctrl, on top of Zed's Linux defaults (plain keys).
 if [[ $OS == mac ]]; then ZED_KEYMAP=zed/keymap.json; else ZED_KEYMAP=zed/keymap.linux.json; fi
 
 # source (relative to repo)  ->  target
@@ -27,6 +27,8 @@ LINKS=(
   "zed/settings.json      $HOME/.config/zed/settings.json"
   "$ZED_KEYMAP            $HOME/.config/zed/keymap.json"
   "zed/themes             $HOME/.config/zed/themes"
+  "herdr/settings.json    $HOME/.config/herdr-app/settings.json"
+  "herdr/themes/gruver16.json $HOME/.config/herdr-app/themes/gruver16.json"
 )
 [[ $OS == mac ]] && LINKS+=("wezterm/.wezterm.lua   $HOME/.wezterm.lua")
 [[ $OS == linux ]] && LINKS+=(

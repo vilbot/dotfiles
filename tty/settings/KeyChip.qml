@@ -1,4 +1,4 @@
-// One key on the Shortcuts page: "⌥ ⇧ 1–5" in a box. Hover lights it, a click records new keys
+// One key on the Shortcuts page: "Alt+Shift+1–5" in a box. Hover lights it, a click records new keys
 // for it. While recording it waits, blinking; `add` is the "+" box that records one more key.
 import QtQuick
 

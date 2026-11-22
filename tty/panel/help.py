@@ -3,7 +3,7 @@
 
     help.py      runs in the panel's terminal (panel.sh switches to it for the help tab)
 
-Keys on top (mackeys' shortcut sheet, ~/.local/state/mackeys/keymap.json), the chat below. Type a
+Keys on top (tty/keys.json, as the Settings app's Shortcuts page shows them), the chat below. Type a
 question, Enter asks. Up/Down scroll the keys, PgUp/PgDn the chat, Tab (or a click on a tab name)
 another tab, Esc closes the panel. The robot is a model of your choosing (help.toml), allowed to
 read None's files and nothing more; while it thinks, it narrates (funny-lines.txt, in order from
@@ -19,7 +19,7 @@ TTY = HERE.parent
 DOTFILES = TTY.parent
 PANEL = TTY / "panel.sh"
 STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
-KEYMAP = pathlib.Path.home() / ".local/state/mackeys/keymap.json"
+KEYMAP = TTY / "keys.json"
 sys.path.insert(0, str(HERE))
 from panel import TABS as _TABS   # the tab line, as the other tabs draw it
 TABS = list(_TABS)
@@ -30,7 +30,7 @@ ENDERS, THINKING = LINES[-2:], LINES[:-2]   # the last two end a long think
 
 PERSONA = """You are the support bot of "None", a keyboard-driven, all-terminal Linux desktop
 (Hyprland; its files are in the tty/ folder of these dotfiles; its keys are in
-tty/keys.toml and ~/.local/state/mackeys/keymap.json; its Settings app is tty/settings; AGENTS.md
+tty/keys.json, plain Linux keys: Super for the desktop, Ctrl in apps; its Settings app is tty/settings; AGENTS.md
 describes the layout).
 You are cheerful, a little dim, and easily impressed, like a junior support agent on their
 first day: you misread things at first, ramble a bit, and then do get to the right answer.
@@ -69,16 +69,34 @@ class Bot:
 
 
 # ---- the screen -----------------------------------------------------------------------------
+MODS = {"SUPER": "Super", "CTRL": "Ctrl", "ALT": "Alt", "SHIFT": "Shift"}
+SHOWN = {"Escape": "Esc", "BackSpace": "Backspace", "Return": "Enter", "KP_Enter": "Keypad Enter",
+         "space": "Space", "slash": "/", "Up": "↑", "Down": "↓", "Left": "←", "Right": "→",
+         "{dir}": "H J K L", "{arrow}": "← ↓ ↑ →"}
+
+
+def show(keys, desktops):
+    """ "SUPER + SHIFT + {n}" -> "Super+Shift+1–5", as tty/shell/AppKeys.qml shows keys"""
+    parts = [p.strip() for p in keys.split("+") if p.strip()]
+    key = parts[-1] if parts else ""
+    key = f"1–{desktops}" if key == "{n}" else SHOWN.get(key, key)
+    return "+".join([MODS.get(m.upper(), m) for m in parts[:-1]] + [key])
+
+
 def keys_rows():
     try:
-        groups = json.loads(KEYMAP.read_text())["groups"]
-    except (OSError, ValueError, KeyError):
-        return [("", "(no shortcut sheet yet: mackeys writes it)", "")]
+        model = json.loads(KEYMAP.read_text())
+    except (OSError, ValueError):
+        return [("", "(can't read tty/keys.json)", "")]
+    n, notes = model.get("desktops", 5), model.get("notes", {})
+    groups = [(s.get("title", ""), s.get("actions", {})) for s in model.get("sections", [])]
+    groups += [(a.get("title", name), a.get("actions", {})) for name, a in model.get("apps", {}).items()]
     rows = []
-    for g in groups:
-        rows.append(("group", g.get("title", ""), ""))
-        for r in g.get("rows", []):
-            rows.append(("", r.get("label", ""), "  ".join(r.get("keysLabel", [])) or "—"))
+    for title, actions in groups:
+        rows.append(("group", title, ""))
+        for a in actions.values():
+            rows.append(("", a.get("label", ""), "  ".join(show(k, n) for k in a.get("keys", [])) or "—"))
+        rows += [("", label, keys) for label, keys in notes.get(title, [])]
     return rows
 
 

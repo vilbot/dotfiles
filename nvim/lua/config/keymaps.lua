@@ -33,10 +33,10 @@ if platform.is_mac then
 	map('v', '<D-/>', 'gc', { remap = true })
 else
 	-- Windows and Linux have no usable cmd key.
-	map({'n', 't'}, '<C-j>', function() terminal.toggle('belowright 15split') end)
-	map({'n', 't'}, '<C-k>', function() terminal.toggle('vsplit') end)
-	map('n', '<C-/>', 'gcc', { remap = true })
-	map('v', '<C-/>', 'gc', { remap = true })
+	map({'n', 't'}, '<A-j>', function() terminal.toggle('belowright 15split') end)
+	map({'n', 't'}, '<A-k>', function() terminal.toggle('vsplit') end)
+	-- map('n', '<C-/>', 'gcc', { remap = true })
+	-- map('v', '<C-/>', 'gc', { remap = true })
 end
 
 map('n', '<A-->',  '<C-w>_')

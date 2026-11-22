@@ -27,4 +27,6 @@ return {
 	html = { tab_size = 2, hard_tabs = false },
 	css = { tab_size = 2, hard_tabs = false },
 	json = { tab_size = 2, hard_tabs = false },
+	markdown = { soft_wrap = true },
+	text = { soft_wrap = true },
 }

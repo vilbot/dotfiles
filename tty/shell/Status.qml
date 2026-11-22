@@ -64,9 +64,10 @@ Singleton {
 
     // ---- the keyboard layout --------------------------------------------------------------
     // Every keyboard reports its layout, and a Bluetooth headset's media buttons count as one (it
-    // even becomes Hyprland's "main" keyboard). All typing goes through mackeys' virtual keyboard,
-    // so only its layout counts, and only when it changed.
-    readonly property string typingKeyboard: "mackeys-virtual-keyboard"
+    // even becomes Hyprland's "main" keyboard). Only keyboards named so count (the NuPhy's
+    // "…-keyboard", keyd's "keyd-virtual-keyboard"), and only when the layout changed (Alt+Space
+    // switches them all: each reports it).
+    function typing(keyboard) { return keyboard.includes("keyboard") }
     property string current: ""
     Connections {
         target: Hyprland
@@ -74,7 +75,7 @@ Singleton {
             if (event.name !== "activelayout") return
             const i = event.data.lastIndexOf(",")
             const keyboard = event.data.slice(0, i), name = event.data.slice(i + 1)
-            if (keyboard !== root.typingKeyboard || name === root.current) return
+            if (!root.typing(keyboard) || name === root.current) return
             root.current = name
             root.layout = name
             // a text cursor shows it instead (tty/caret: the box at the cursor; it writes 1 while

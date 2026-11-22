@@ -1,6 +1,6 @@
 // The launcher's text field, the same in the bar (LauncherWindow.qml) and on an empty desktop
 // (EmptyDesk.qml): what you type is Launcher.query. Its keys (run, move, complete, favorite, erase,
-// Chrome's new window / incognito, close) are the launcher's actions in tty/keys.toml (AppKeys).
+// Chrome's new window / incognito, close) are the launcher's actions in tty/keys.json (AppKeys).
 // What Tab would add shows dimmed after the text (Launcher.ghost); → at the end takes it too.
 import QtQuick
 
@@ -38,7 +38,7 @@ TextInput {
             if (cursorPosition !== text.length || Launcher.ghost === "") return
             Launcher.complete(); break
         case "launcher.favorite": Launcher.toggleFavorite(Launcher.results[Launcher.current]); break
-        case "launcher.clear":   // Cmd+C (Ctrl here) with text selected still copies
+        case "launcher.clear":   // Ctrl+C with text selected still copies
             if (input.selectedText !== "" && (event.modifiers & Qt.ControlModifier)) return
             Launcher.query = ""; break
         case "launcher.window": if (!chrome("window")) return; break

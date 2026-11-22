@@ -1,5 +1,5 @@
-// The launcher (Cmd+Space): typed into the middle of the bar, results drop down below it.
-//   empty           the favorites (tty/favorites.txt; launcher.favorite in tty/keys.toml adds or removes one)
+// The launcher (Super+Space): typed into the middle of the bar, results drop down below it.
+//   empty           the favorites (tty/favorites.txt; launcher.favorite in tty/keys.json adds or removes one)
 //   a name          apps, None's own entries (Settings, Control center, Files, Neovim, Terminal) and commands (Lock, Sleep,
 //                   Logout, Reboot, Shut down; the last two ask for a second Enter)
 //   Files <path>    the folder's contents: Enter opens a folder in yazi, a file in its app
@@ -9,7 +9,7 @@
 //                   the common ones (tty/sites.txt) and the ones you go to most; typing, what you typed (an
 //                   address, or a search), Chrome's history and Google's suggestions, as Chrome's
 //                   own address bar does. Enter opens it in Chrome,
-//                   Cmd+N in a new window, Cmd+Shift+N in a new incognito one (also on Google Chrome itself)
+//                   Ctrl+N in a new window, Ctrl+Shift+N in a new incognito one (also on Google Chrome itself)
 // Tab completes: the picked file or folder (and goes into a folder), the picked site or
 // suggestion, or the picked entry's name (`Files ~/` for the three above, `Google Chrome `).
 // Enter starts the pick, or runs what you typed as a command.
@@ -24,11 +24,11 @@ Singleton {
     property string query: ""
     property int current: 0
     property string confirming: ""        // the id of a command waiting for its second Enter
-    property bool desk: false             // an empty desktop shows it (EmptyDesk.qml); Cmd+Space does nothing then
+    property bool desk: false             // an empty desktop shows it (EmptyDesk.qml); Super+Space does nothing then
 
     readonly property string tty: Quickshell.shellDir + "/.."
     readonly property string home: Quickshell.env("HOME")
-    readonly property string term: tty + "/term"   // None's terminal (Opt+Enter)
+    readonly property string term: tty + "/term"   // None's terminal (Super+Enter)
     function exec(args) { return () => Quickshell.execDetached(args) }
     function sh(cmd) { return exec(["sh", "-c", cmd]) }
     // apps go through gtk-launch: terminal apps then open in None's terminal (tty/bin)
@@ -144,11 +144,11 @@ Singleton {
                           : Quickshell.execDetached(["sh", "-c", focusChrome + "; exec \"$@\"", "sh"].concat(chromeCmd, [url]))
     }
     // Google Chrome itself: Enter starts it (with chromeCmd's flag, not through gtk-launch),
-    // Cmd+N / Cmd+Shift+N a new (incognito) window
+    // Ctrl+N / Ctrl+Shift+N a new (incognito) window
     function chromeApp(plain) {
         return how => how ? Quickshell.execDetached(chromeCmd.concat(chromeFlags(how))) : plain()
     }
-    // can the pick open in a new Chrome window (Cmd+N)?
+    // can the pick open in a new Chrome window (Ctrl+N)?
     function chromePick() { const e = results[current]; return !!e && (e.isWeb || e.id === "google-chrome") }
     // an address (has a dot or a scheme, no spaces) or words to search for
     function webTarget(text) {
@@ -221,7 +221,7 @@ Singleton {
             add(wq.text, t.search ? "Google search" : "open", t.url, wq.text)
         } else {
             add("New window", "empty", "chrome://newtab", "")   // first, so Enter on `Google Chrome ` opens nothing else
-            // Enter and Cmd+N: a new window on a new tab; Cmd+Shift+N: incognito
+            // Enter and Ctrl+N: a new window on a new tab; Ctrl+Shift+N: incognito
             rows[0].run = how => Quickshell.execDetached(chromeCmd.concat(chromeFlags(how || "window")))
             for (const s of sites) add(s.title, host(s.url), s.url, host(s.url))
         }
@@ -280,7 +280,7 @@ Singleton {
         return query !== "" && c.length > query.length && c.toLowerCase().startsWith(query.toLowerCase())
             ? c.slice(query.length) : ""
     }
-    // how: "" (Enter), "incognito" (Cmd+Shift+N) or "window" (Cmd+N): only Chrome's rows use it
+    // how: "" (Enter), "incognito" (Ctrl+Shift+N) or "window" (Ctrl+N): only Chrome's rows use it
     function run(i, how) {
         const e = results[i]
         if (e && e.confirm && confirming !== e.id) { confirming = e.id; return }   // once more to do it
