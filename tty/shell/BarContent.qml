@@ -58,7 +58,7 @@ Item {
     }
 
     // ---- middle: the focused app and its title, where the launcher's text goes ------------
-    // "Terminal  ~/dotfiles", "Terminal  • options.lua" (nvim's title, • = unsaved), "Google
+    // "Terminal  ~/projects", "Terminal  • options.lua" (nvim's title, • = unsaved), "Google
     // Chrome  Inbox - Gmail". It starts where you'd type in the launcher, so opening the launcher
     // looks like the title being replaced by what you type.
     Item {

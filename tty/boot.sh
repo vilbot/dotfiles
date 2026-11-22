@@ -3,12 +3,20 @@
 # theme "none", tty/boot/plymouth.py), no text; it stays up until None draws its first frame. And
 # Limine's menu in gruver16 (tty/boot/limine.py).
 #   sudo tty/boot.sh        set it up (again, after changing the theme)
-#   sudo tty/boot.sh undo   back to CachyOS's splash and Limine's own colours
+#   sudo tty/boot.sh undo   back to the splash you had and Limine's own colours
+# Needs Plymouth, and Limine as the boot loader with limine-mkinitcpio (as CachyOS sets it up):
+# the kernel's options and the initramfs are theirs here. With NVIDIA's driver it also loads
+# that early.
 set -euo pipefail
 [[ $EUID == 0 ]] || { echo "run with sudo" >&2; exit 1; }
+for need in plymouth-set-default-theme limine-mkinitcpio; do
+    command -v "$need" >/dev/null || { echo "this needs $need (Plymouth, and Limine with limine-mkinitcpio)" >&2; exit 1; }
+done
+[[ -f /etc/default/limine ]] || { echo "this needs Limine (/etc/default/limine)" >&2; exit 1; }
 tty=$(dirname "$(readlink -f "$0")")
 conf=/boot/limine.conf
 dropin=/etc/systemd/system/plymouth-quit.service.d/none.conf
+before=/usr/share/plymouth/none-theme-before   # the Plymouth theme set before this one
 # NVIDIA in the initramfs (early KMS): Plymouth won't draw on the firmware's basic display and
 # waits for a real driver; loaded from disk, NVIDIA's arrives only a second before the login
 early=/etc/mkinitcpio.conf.d/90-none-nvidia-early.conf
@@ -23,19 +31,23 @@ drop_quiet() {
 if [[ ${1:-} == undo ]]; then
     drop_quiet
     rm -f "$dropin" "$early" "$old_blank"; systemctl daemon-reload
-    plymouth-set-default-theme cachyos
+    plymouth-set-default-theme "$(cat "$before" 2>/dev/null || echo cachyos)"
     python3 "$tty/boot/limine.py" "$conf" --remove
     limine-mkinitcpio
     echo "done: reboot"
     exit 0
 fi
 
+now=$(plymouth-set-default-theme)
+[[ $now == none ]] || echo "$now" >"$before"
 python3 "$tty/boot/plymouth.py" /usr/share/plymouth/themes/none
 plymouth-set-default-theme none
 drop_quiet
 sed -i -E "/^KERNEL_CMDLINE/s/\"\$/ $quiet\"/" /etc/default/limine
 
-printf '# tty/boot.sh: NVIDIA loads in the initramfs, so the boot splash has a display early\nMODULES+=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)\n' >"$early"
+if modinfo nvidia_drm >/dev/null 2>&1; then
+    printf '# tty/boot.sh: NVIDIA loads in the initramfs, so the boot splash has a display early\nMODULES+=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)\n' >"$early"
+fi
 
 # Plymouth's last frame stays on screen until the next program draws (the login screen),
 # instead of a black screen in between. (Nothing may print to tty1 after it, or the kernel's

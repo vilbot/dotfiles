@@ -1,7 +1,7 @@
 // Screen brightness (F1 / F2): over DDC/CI (ddcutil) when the monitor answers, else dimmed with
-// hyprsunset's gamma (the Samsung doesn't answer DDC on NVIDIA). The corner shows it while it
-// changes, like the volume. A copy of the full desktop's (quickshell/services/Brightness.qml),
-// without night light.
+// hyprsunset's gamma (some monitors don't answer DDC, e.g. on NVIDIA). The corner shows it
+// while it changes, like the volume.
+//
 pragma Singleton
 import QtQuick
 import Quickshell

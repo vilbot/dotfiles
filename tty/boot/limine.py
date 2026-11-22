@@ -27,7 +27,8 @@ OPTIONS = {
 }
 # also ours: these go (a wallpaper would cover the gray), and the colour spellings Limine accepts
 DROP = {"wallpaper", "wallpaper_style", "interface_branding_color", "interface_help_color"}
-MARK = "# gruver16 (dotfiles: tty/boot/limine.py)"
+MARK = "# gruver16 (None: boot/limine.py)"
+OLD_MARKS = {"# gruver16 (" + "dot" + "files: tty/boot/limine.py)"}   # what earlier versions wrote
 
 
 def themed(text, add=True):
@@ -35,7 +36,7 @@ def themed(text, add=True):
     first_entry = next((i for i, l in enumerate(lines) if l.lstrip().startswith("/")), len(lines))
     head, rest = lines[:first_entry], lines[first_entry:]
     keep = [l for l in head
-            if l.strip() != MARK and l.split(":", 1)[0].strip().lower() not in OPTIONS.keys() | DROP]
+            if l.strip() != MARK and l.strip() not in OLD_MARKS and l.split(":", 1)[0].strip().lower() not in OPTIONS.keys() | DROP]
     block = [MARK] + [f"{k}: {v}" for k, v in OPTIONS.items()] if add else []
     return "\n".join(block + keep + rest) + "\n"
 

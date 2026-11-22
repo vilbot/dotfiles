@@ -16,7 +16,6 @@ import curses, json, os, pathlib, random, shlex, subprocess, sys, textwrap, time
 
 HERE = pathlib.Path(__file__).resolve().parent
 TTY = HERE.parent
-DOTFILES = TTY.parent
 PANEL = TTY / "panel.sh"
 STATE = pathlib.Path(os.environ.get("XDG_RUNTIME_DIR", "/tmp")) / "tty-panel-tab"
 USER = pathlib.Path(os.environ.get("XDG_CONFIG_HOME") or pathlib.Path.home() / ".config") / "none"   # yours
@@ -30,9 +29,9 @@ LINES = [l.strip() for l in (HERE / "funny-lines.txt").read_text().splitlines() 
 ENDERS, THINKING = LINES[-2:], LINES[:-2]   # the last two end a long think
 
 PERSONA = """You are the support bot of "None", a keyboard-driven, all-terminal Linux desktop
-(Hyprland; its files are in the tty/ folder of these dotfiles; its keys are in
-tty/keys.json, plain Linux keys: Super for the desktop, Ctrl in apps; its Settings app is tty/settings; AGENTS.md
-describes the layout).
+(Hyprland; you are in the folder with its files: README.md says what it is, AGENTS.md describes
+the layout; its keys are in keys.json, plain Linux keys: Super for the desktop, Ctrl in apps,
+with the user's own changes in ~/.config/none/keys.json; its Settings app is settings/).
 You are cheerful, a little dim, and easily impressed, like a junior support agent on their
 first day: you misread things at first, ramble a bit, and then do get to the right answer.
 Answer in at most four short lines of plain text: no markdown, no lists, no code blocks.
@@ -55,7 +54,7 @@ class Bot:
                    "--append-system-prompt", PERSONA, "--setting-sources", "project"]
             if self.session:
                 cmd += ["--resume", self.session]
-            r = subprocess.run(cmd, cwd=DOTFILES, capture_output=True, text=True, timeout=180)
+            r = subprocess.run(cmd, cwd=TTY, capture_output=True, text=True, timeout=180)
             if r.returncode:
                 raise RuntimeError((r.stderr or r.stdout).strip().splitlines()[-1:] or "claude failed")
             out = json.loads(r.stdout)

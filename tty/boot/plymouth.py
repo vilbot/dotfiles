@@ -28,7 +28,7 @@ def floats(hexrgb):
 
 PLYMOUTH = """[Plymouth Theme]
 Name=none
-Description=None's gray with a gruver16 wave (dotfiles: tty/boot/plymouth.py)
+Description=None's gray with a gruver16 wave (None: boot/plymouth.py)
 ModuleName=script
 
 [script]

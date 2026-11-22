@@ -1,4 +1,4 @@
-// Appearance: None's colour theme (tty/theme.py). Every theme/*.yaml with its colours; a click
+// Appearance: None's colour theme (tty/theme.py). Every themes/*.yaml with its colours; a click
 // (or Enter) switches to it everywhere at once: the shell, open terminals, nvim, Hyprland.
 import QtQuick
 import QtQuick.Layouts
@@ -111,7 +111,7 @@ Item {
                                     font: Style.small
                                     text: "<span style='color:" + r.modelData.base0E + "'>&gt;</span> "
                                         + "<span style='color:" + r.modelData.base06 + "'>ls </span>"
-                                        + "<span style='color:" + r.modelData.base0D + "'>~/dotfiles</span>"
+                                        + "<span style='color:" + r.modelData.base0D + "'>~/projects</span>"
                                 }
                                 Text {
                                     textFormat: Text.RichText

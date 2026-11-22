@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # Caps Lock = tap Esc, hold Ctrl (tty/keyd.conf), for None, which remaps nothing else: keyd, a
-# system service, so it applies in every desktop and on the console too. Gallery's mackeys takes
-# keyd's virtual keyboard instead of the NuPhy (devices in keys/remap.toml).
+# system service, so it applies in every desktop and on the console too.
 #   sudo tty/keys.sh        install keyd, copy the config, start it (again: copy changes)
 #   sudo tty/keys.sh undo   stop it (the config stays, unused)
 set -euo pipefail

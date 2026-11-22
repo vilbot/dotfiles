@@ -2,6 +2,7 @@
 # Checks for the "None" desktop (tty/). Exit status 1 if anything is wrong.
 #   - tty/hyprland.lua passes Hyprland's own check
 #   - nothing outside tty/ mentions it, so None can't break or change the other desktops
+#   - tty/ names nothing outside itself, and a copy of it elsewhere works with an empty home
 #   - foot accepts tty/foot.ini, and None's generated colours are up to date
 #   - None's keys (tty/keys.json): they parse, no keys twice (Hyprland's check above binds them
 #     all: an unknown key or action fails it), keyd's Caps config
@@ -17,6 +18,25 @@ if grep -q "config ok" <<<"$out"; then ok "tty/hyprland.lua"; else bad "tty/hypr
 refs=$(git grep --untracked -nP '(?<![\w.])tty/' -- . ':!tty/' ':!.gitignore' \
     ':!prompts/' ':!nvim_old/' ':!AGENTS.md' ':!README*' 2>/dev/null)
 if [[ -z $refs ]]; then ok "nothing outside tty/ depends on it"; else bad "files outside tty/ use it:"$'\n'"$refs"; fi
+
+# None names nothing outside its folder: not these dotfiles, not the other desktop, no home folder
+out=$(git grep --untracked -nIE 'dotfiles|\.config/(hypr|quickshell)|(^|[^[:alnum:]_./$-])(hypr|theme|quickshell|keys|nvim|ghostty|toshy|kde)/|(^|[^[:alnum:]_.-])/home/[a-z]|mackeys|Gallery|full desktop' \
+    -- tty ':!tty/check.sh' ':!tty/caret/Cargo.lock' 2>/dev/null)
+if [[ -z $out ]]; then ok "tty/ names nothing outside itself"; else bad "tty/ names things outside it:"$'\n'"$out"; fi
+
+# a stranger's None: a copy of this folder somewhere else, an empty home, no ~/.config/none
+tmp=$(mktemp -d)
+mkdir -p "$tmp/home" "$tmp/none"
+git ls-files -co --exclude-standard tty | grep -v '^tty/caret/' | while read -r f; do
+    mkdir -p "$tmp/none/$(dirname "${f#tty/}")" && cp -P "$f" "$tmp/none/${f#tty/}"
+done
+alone() { env -u XDG_CONFIG_HOME -u XDG_STATE_HOME -u NONE_THEME -u NONE_DIR HOME="$tmp/home" "$@"; }
+if out=$(alone Hyprland --verify-config -c "$tmp/none/hyprland.lua" 2>&1) && grep -q "config ok" <<<"$out" \
+        && out=$(alone python3 "$tmp/none/theme.py" build --check 2>&1) \
+        && out=$(alone python3 "$tmp/none/theme.py" ensure 2>&1 && { ! command -v foot >/dev/null || alone foot -c "$tmp/none/foot.ini" --check-config 2>&1; })
+then ok "a copy of tty/ elsewhere, with an empty home, works"
+else bad "tty/ doesn't stand alone:"$'\n'"$(tail -5 <<<"$out")"; fi
+rm -rf "$tmp"
 
 if command -v foot >/dev/null; then
     python3 tty/theme.py ensure   # foot.ini includes the current theme's colours

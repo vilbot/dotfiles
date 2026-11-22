@@ -311,7 +311,9 @@ class Update:
             return ""
 
     def list(self):
-        import time
+        import shutil, time
+        if not shutil.which("arch-update"):   # (cachy-update is arch-update under CachyOS's name)
+            return [(f"  {GREY}needs arch-update (pacman -S arch-update; on CachyOS: cachy-update){OFF}", "status")]
         packages = [l.split() for l in self.read("last_updates_check").splitlines() if l.strip()]
         checked = (self.read("last_updates_check_time").splitlines() or ["", ""])[-1][:16]
         try:

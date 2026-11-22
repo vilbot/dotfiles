@@ -4,7 +4,7 @@
 // one instead when there is one. Pages: Shortcuts (tty/keys.json), Appearance (the colour theme),
 // Keyboard & mouse (Hyprland's input options, tty/settings.json).
 // Its keys are the settings.* actions in tty/keys.json (AppKeys); the mouse picks what it's over.
-// Run by hand to see errors:  qs -p ~/dotfiles/tty/settings
+// Run by hand to see errors:  qs -p ~/.local/share/none/settings
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
