@@ -37,9 +37,9 @@ sed -i -E "/^KERNEL_CMDLINE/s/\"\$/ $quiet\"/" /etc/default/limine
 
 printf '# tty/boot.sh: NVIDIA loads in the initramfs, so the boot splash has a display early\nMODULES+=(nvidia nvidia_modeset nvidia_uvm nvidia_drm)\n' >"$early"
 
-# Plymouth's last frame stays on screen until the next program draws (None, behind its lock),
+# Plymouth's last frame stays on screen until the next program draws (the login screen),
 # instead of a black screen in between. (Nothing may print to tty1 after it, or the kernel's
-# console takes over the screen and shows boot text: tty/desktops sends its output elsewhere.)
+# console takes over the screen and shows boot text: greetd's sessions keep theirs off it.)
 mkdir -p "$(dirname "$dropin")"
 cat >"$dropin" <<'UNIT'
 [Service]

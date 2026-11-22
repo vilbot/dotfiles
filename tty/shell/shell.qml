@@ -15,5 +15,4 @@ ShellRoot {
     LazyLoader { active: !Ui.greeter; LauncherWindow {} }
     LazyLoader { active: !Ui.greeter; EmptyDesk {} }   // an empty desktop: the launcher as a prompt
     LazyLoader { active: !Ui.greeter; Corner {} }
-    LazyLoader { active: !Ui.greeter; LockScreen {} }   // the login: None waits locked behind it
 }

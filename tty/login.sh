@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 # Logging in, set up with greetd on tty1:
-#   - at boot greetd starts your session right away (tty/desktops): None, locked behind its login
-#     form (tty/shell/LockScreen.qml). Your password unlocks it, so no new session starts and the
-#     screen never goes black. Picking Hyprland or KDE there ends None and starts that one.
-#   - if that session ends, greetd shows a separate login screen in None's look (tty/greeter,
-#     from a copy in /etc/greetd/none, which the greeter user can read); if even that can't
-#     start, tuigreet (plain text).
+#   - greetd shows a login screen in None's look (tty/greeter, from a copy in /etc/greetd/none,
+#     which the greeter user can read): pick None, Hyprland or KDE, then your password. If it
+#     can't start, tuigreet (plain text). Logging out comes back to it.
+#   - None's lock (sleep, Ctrl+Cmd+Q) is hyprlock (tty/lock), installed here too.
 #   sudo tty/login.sh [MODES]  set it up, or copy changes to it (tty/check.sh says when stale)
 #   sudo tty/login.sh undo     back to Plasma's login screen
 #   tty/login.sh modes         (not root, in a Hyprland session) the monitors' modes as MODES
@@ -34,7 +32,7 @@ if [[ ${1:-} == undo ]]; then
     exit 0
 fi
 
-pacman -S --needed --noconfirm greetd greetd-tuigreet
+pacman -S --needed --noconfirm greetd greetd-tuigreet hyprlock
 
 # Only these three are listed (not hyprland-uwsm from /usr/share/wayland-sessions).
 rm -rf "$sessions"
@@ -60,13 +58,8 @@ cat >/etc/greetd/config.toml <<EOF
 [terminal]
 vt = 1
 
-# at boot: you, in None behind its lock (the login form); see tty/desktops
+# the login screen (tty/greeter), at boot and after each logout
 # (comments only on their own lines: greetd's reader rejects them after a [section])
-[initial_session]
-command = "$tty/desktops"
-user = "$SUDO_USER"
-
-# if that session ends: the separate login screen
 [default_session]
 command = "bash $copy/greeter.sh"
 user = "greeter"

@@ -69,9 +69,9 @@ return function(opts)
     A["volume.up"] = exec("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+")
     A["panel.control"] = exec(tty .. "panel.sh")                     -- the control center (F5)
 
-    -- Session: logging out locks, the login screen is a lock over None (tty/shell/LockScreen.qml)
+    -- Session. Logout ends None: greetd shows the login screen again (tty/greeter)
     A["session.reload"] = run(hl.dsp.reload_config())
-    A["session.exit"] = exec(shell .. "lock logout")
+    A["session.exit"] = run(hl.dsp.exit())
     A["session.lock"] = exec(P.lock)
     A["session.sleep"] = exec(P.sleep)
 

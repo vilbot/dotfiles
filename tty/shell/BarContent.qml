@@ -1,7 +1,7 @@
 // What the bar shows: desktops on the left, the focused app's name in the middle (the launcher
 // opens over it, LauncherWindow.qml: the name gives way to the prompt), and on the right the
 // notifications, the settings button and the clock. Drawn by Bar.qml along the top of None, and
-// by the lock (LockScreen.qml), which shows only the desktops, the name and the clock.
+// of the login screen (tty/greeter), which shows only the desktops, the name and the clock.
 // Changes move the way the launcher does: a quick fade with a small slide (Ui.quick).
 import QtQuick
 import Quickshell
@@ -12,7 +12,7 @@ Item {
     id: content
     property bool here: true         // the focused monitor's bar
     property bool launching: false   // the launcher is open over it
-    property bool minimal: false     // only desktops, name, clock (the lock, the login screen)
+    property bool minimal: false     // only desktops, name, clock (the login screen)
     implicitHeight: Ui.barHeight
 
     Rectangle { anchors { left: parent.left; right: parent.right; bottom: parent.bottom } height: 1; color: Colors.base02 }

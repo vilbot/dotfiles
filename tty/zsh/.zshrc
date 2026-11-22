@@ -7,8 +7,8 @@
     ZDOTDIR=$here  # shells started from here get these commands too
 }
 
-logout()   { qs -p ~/dotfiles/tty/shell ipc call lock logout; }  # back to the login form (a lock over None)
-lock()     { qs -p ~/dotfiles/tty/shell ipc call lock lock; }    # locked: only your password opens it
+logout()   { hyprctl dispatch 'hl.dsp.exit()' >/dev/null; }    # ends None: back to the login screen
+lock()     { ~/dotfiles/tty/lock & }    # hyprlock: only your password opens it
 shutdown() { systemctl poweroff; }
 poweroff() { systemctl poweroff; }
 reboot()   { systemctl reboot; }

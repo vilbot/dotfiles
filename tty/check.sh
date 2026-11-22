@@ -29,7 +29,7 @@ fi
 if python3 theme/build.py --check >/dev/null; then ok "tty/foot-colors.ini (theme/build.py)"
 else bad "themes out of date: python3 theme/build.py"; fi
 
-for f in tty/*.sh tty/term tty/start tty/desktops tty/bin/* tty/greeter/*.sh; do
+for f in tty/*.sh tty/term tty/start tty/lock tty/bin/* tty/greeter/*.sh; do
     bash -n "$f" 2>/dev/null || bad "$f: $(bash -n "$f" 2>&1)"
 done && ok "shell scripts parse"
 

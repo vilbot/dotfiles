@@ -12,6 +12,7 @@ What a switch changes, while everything keeps running:
   - ~/.local/state/none/theme.json: the shell (tty/shell/Colors.qml) reads it again when it
     changes; nvim reads it at start ($NONE_THEME, nvim/lua/palettes/current.lua)
   - ~/.local/state/none/foot-colors.ini: what new terminals start with (tty/foot.ini includes it)
+  - ~/.local/state/none/hyprlock-colors.conf: the lock's colours (tty/hyprlock.conf, next lock)
   - every open None terminal: its colours by escape codes (OSC 4/10/11/12/17/19) written to its
     tty, so the shell, yazi, fzf and everything else using the terminal's colours changes at once
   - every running nvim: told to load its colorscheme again (through its RPC socket)
@@ -25,6 +26,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 THEMES = HERE.parent / "theme"
 STATE = pathlib.Path(os.environ.get("XDG_STATE_HOME") or pathlib.Path.home() / ".local/state") / "none"
 JSON, FOOT = STATE / "theme.json", STATE / "foot-colors.ini"
+HYPRLOCK = STATE / "hyprlock-colors.conf"
 APPEARANCE = HERE.parent / "hypr" / "appearance.sh"
 SLOTS = [f"base0{i:X}" for i in range(16)]
 
@@ -64,6 +66,14 @@ def foot_ini(t):
              f"cursor={h(t['base00'])} {h(t['base07'])}",
              f"selection-background={h(t['base02'])}", f"selection-foreground={h(t['base07'])}"]
     lines += [f"{'regular' if i < 8 else 'bright'}{i % 8}={h(x)}" for i, x in enumerate(ansi(t))]
+    return "\n".join(lines) + "\n"
+
+
+def hyprlock_conf(t):
+    """the lock's colours (tty/hyprlock.conf sources it): $baseXX = rgb(...) for its colour
+    options, $baseXXhex = the bare hex for Pango markup ("##$base08hex" in its texts)"""
+    lines = [f"# None's current theme ({t['name']}), written by tty/theme.py; tty/hyprlock.conf sources it"]
+    lines += [f"${s} = rgb({t[s][1:]})\n${s}hex = {t[s][1:]}" for s in SLOTS]
     return "\n".join(lines) + "\n"
 
 
@@ -159,6 +169,7 @@ def light_or_dark(t):
 def write(t):
     STATE.mkdir(parents=True, exist_ok=True)
     FOOT.write_text(foot_ini(t))
+    HYPRLOCK.write_text(hyprlock_conf(t))
     JSON.write_text(json.dumps(t, indent=1) + "\n")
 
 
@@ -171,7 +182,7 @@ def main():
     elif cmd == "get":
         print(current()["name"])
     elif cmd == "ensure":
-        if not (FOOT.exists() and JSON.exists()):
+        if not (FOOT.exists() and JSON.exists() and HYPRLOCK.exists()):
             write(current())
     elif cmd == "set" and len(sys.argv) == 3:
         if sys.argv[2] not in names():

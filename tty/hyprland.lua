@@ -14,7 +14,7 @@ local term = tty .. "term"
 local programs = {
     terminal     = term,
     launcher     = "qs -p " .. tty .. "shell ipc call launcher toggle",  -- in the bar (tty/shell)
-    lock         = "qs -p " .. tty .. "shell ipc call lock lock",   -- only the password (tty/shell/LockScreen.qml)
+    lock         = tty .. "lock",   -- hyprlock: only the password (tty/hyprlock.conf)
     sleep        = "systemctl suspend",   -- tty/hypridle.conf locks first
 }
 
@@ -80,8 +80,7 @@ hl.on("hyprland.start", function()
         .. "&& systemctl --user set-environment MACKEYS_KEYMAP=" .. tty .. "keys.toml "
         .. "&& systemctl --user stop toshy-session-monitor.service toshy-config.service && systemctl --user restart mackeys.service")
     hl.exec_cmd("hypridle -c " .. tty .. "hypridle.conf")
-    -- the bar with the launcher, volume, keyboard layout, notifications, and the lock that is the
-    -- login screen (tty/shell); first, so it locks before anything else shows
+    -- the bar with the launcher, volume, keyboard layout and notifications (tty/shell)
     hl.exec_cmd("qs -p " .. tty .. "shell")
     -- the keyboard layout at the text cursor when it changes (an input method that types nothing;
     -- built with `cargo build --release` in tty/caret)
@@ -110,8 +109,8 @@ hl.config({
         disable_splash_rendering = true,
         background_color = rgb(c.base00),
         focus_on_activate = true,   -- clicking a notification brings its window forward
-        -- the lock (the login screen) restarted after a crash takes over again (instead of
-        -- Hyprland's "lock died" screen)
+        -- a lock (hyprlock, tty/lock) started again after a crash takes over (instead of
+        -- Hyprland's "lock died" screen): from tty2, WAYLAND_DISPLAY=wayland-1 ~/dotfiles/tty/lock
         allow_session_lock_restore = true,
     },
     cursor = { no_warps = true, hide_on_key_press = true, inactive_timeout = 3 },
