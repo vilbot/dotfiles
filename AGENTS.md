@@ -23,13 +23,13 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 - **wezterm:** use the `is_win` / `is_mac` locals at the top. Paths go through `dotfiles` (`~/dotfiles`); never hardcode `/Users/...` or `C:\...`.
 - **zed:** `settings.json` is shared. Keymaps are split during a transition: `keymap.json` (mac, `cmd-*`) and `keymap.windows.json`. Zed has no per-OS conditionals in keymaps.
 
-## Colors: gruver16
-`theme/gruver16.yaml` is the single source of truth. To change a color:
-1. Edit `theme/gruver16.yaml` (or `theme/templates/zed.json` for zed-only details like UI alpha values).
-2. Run `python3 theme/build.py`, which regenerates the nvim palette, wezterm, ghostty, zed and jetbrains themes.
+## Colors: gruver16 family
+Each `theme/<name>.yaml` (`gruver16`, `gruvnord`) is the source of truth for that theme. All share gruver16's slot roles. To change a color:
+1. Edit `theme/<name>.yaml` (or `theme/templates/zed.json`, shared by all themes, for zed-only details like UI alpha values).
+2. Run `python3 theme/build.py`, which regenerates the nvim palette, wezterm, ghostty, zed and jetbrains themes for every yaml.
 3. `python3 theme/build.py --check` verifies nothing is out of date.
 
-Do not hand-edit generated files (`nvim/lua/palettes/gruver16.lua`, `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `zed/themes/gruver16.json`, `jetbrains/gruver16/*`).
-`nvim/colors/custom.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit.
+Do not hand-edit generated files (`nvim/lua/palettes/<name>.lua`, `wezterm/colors/<name>.toml`, `ghostty/themes/<name>`, `zed/themes/<name>.json`, `jetbrains/<name>/*`).
+`nvim/lua/util/colorscheme.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit. `nvim/colors/<name>.lua` are one-line wrappers (`custom` is gruver16).
 
 Terminal quirk: the ANSI "yellow" slot is sage (`base0A`) and ANSI "magenta" is the real yellow (`base0E`). Shells color commands with **magenta** so they show yellow (zsh `fg=magenta`, pwsh `` `e[35m ``).
