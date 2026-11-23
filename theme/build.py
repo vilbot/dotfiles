@@ -16,7 +16,7 @@ import pathlib, re, subprocess, sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 THEME = ROOT / "theme"
 
-pal = dict(re.findall(r'^(base0[0-9A-F]):\s*"([0-9a-fA-F]{6})"', (THEME / "gruver16.yaml").read_text(), re.M))
+pal = dict(re.findall(r'^(base0[0-9A-F]):\s*"#?([0-9a-fA-F]{6})"', (THEME / "gruver16.yaml").read_text(), re.M))
 assert len(pal) == 16, f"expected 16 colors in gruver16.yaml, found {len(pal)}"
 c = {k: "#" + v.lower() for k, v in pal.items()}
 b = lambda n: c[f"base{n}"]
