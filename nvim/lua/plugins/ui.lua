@@ -148,4 +148,12 @@ return {
 
 		}
 	},
+	{
+		-- Paint hex codes like #95a99f with their own color, in any file type
+		"brenoprata10/nvim-highlight-colors",
+		event = { "BufReadPre", "BufNewFile" },
+		opts = {
+			render = "background",
+		},
+	},
 }
