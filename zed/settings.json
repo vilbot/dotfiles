@@ -75,7 +75,7 @@
     "claude-acp": {
       "default_config_options": {
         "mode": "acceptEdits",
-        "effort": "default",
+        "effort": "medium",
         "model": "opus"
       },
       "type": "registry"
