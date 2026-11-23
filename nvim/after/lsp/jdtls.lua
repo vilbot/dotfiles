@@ -35,5 +35,8 @@ return {
 		vim.fs.joinpath(package, config_dir()),
 		'-data',
 		vim.fs.joinpath(data, 'jdtls-workspace'),
+		-- Rescan the project on start. Without it, files that arrive while jdtls is down
+		-- (git pull, branch switch) stay "cannot be resolved" until the workspace is wiped.
+		'-refresh',
 	}
 }

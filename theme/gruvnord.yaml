@@ -1,0 +1,30 @@
+# gruvnord — gruver16's slot roles filled with the Nord palette (nordtheme.com).
+# Edit here, then run:  python3 theme/build.py
+#
+# Roles (what each slot is used for, roughly):
+#   base00 background        base08 red     / errors, deletions
+#   base01 panels, statusbar  base09 purple  / numbers, constants
+#   base02 selection          base0A sage    / types, classes  (ANSI "yellow" slot)
+#   base03 borders, guides    base0B green   / strings, additions
+#   base04 comments, muted    base0C teal    / constants, escapes
+#   base05 dim text           base0D blue    / functions
+#   base06 light text         base0E yellow  / keywords, shell commands (ANSI "magenta" slot)
+#   base07 main foreground    base0F brown   / misc
+scheme: "gruvnord"
+author: "vilgot"
+base00: "#2e3440" # nord0
+base01: "#3b4252" # nord1
+base02: "#434c5e" # nord2
+base03: "#4c566a" # nord3
+base04: "#616e88" # nord3, brightened (Nord's comment color)
+base05: "#d8dee9" # nord4
+base06: "#e5e9f0" # nord5
+base07: "#eceff4" # nord6
+base08: "#bf616a" # nord11 red
+base09: "#b48ead" # nord15 purple
+base0A: "#8fbcbb" # nord7 frost green
+base0B: "#a3be8c" # nord14 green
+base0C: "#88c0d0" # nord8 frost teal
+base0D: "#81a1c1" # nord9 frost blue
+base0E: "#ebcb8b" # nord13 yellow
+base0F: "#d08770" # nord12 orange

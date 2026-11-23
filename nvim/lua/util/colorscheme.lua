@@ -1,31 +1,19 @@
+-- Highlight groups for every gruver16-family theme. Each colors/<name>.lua calls this with
+-- its name (= its palette in lua/palettes/), so slot -> group mappings live here once.
+return function(name)
 vim.cmd("hi clear")
 if vim.fn.exists("syntax_on") then
   vim.cmd("syntax reset")
 end
-vim.g.colors_name = "custom"
+vim.g.colors_name = name
 
-local c = require("palettes.current") -- gruver16, or the "None" desktop's current theme
+-- This theme's palette, or on the "None" desktop the theme picked there (palettes/current.lua)
+local c = require("palettes.current")(name)
 local hl = vim.api.nvim_set_hl
 vim.o.background = c.variant == "light" and "light" or "dark"
 
--- `color` at `alpha` (0-255) over the editor background, as Zed draws its see-through colors
-local function over(color, alpha)
-  local function ch(hex, i) return tonumber(hex:sub(i, i + 1), 16) end
-  local a = alpha / 255
-  local out = "#"
-  for _, i in ipairs({ 2, 4, 6 }) do
-    out = out .. string.format("%02x", math.floor(ch(c.base00, i) + (ch(color, i) - ch(c.base00, i)) * a + 0.5))
-  end
-  return out
-end
-
--- Zed's alpha colors (theme/templates/zed.json), flattened over the editor background
-local blend = {
-  active_line = over(c.base01, 0xbf),  -- editor.active_line.background
-  selection = over(c.base0D, 0x3d),    -- players[0].selection
-  match = over(c.base0D, 0x66),        -- search.match_background
-  active_match = over(c.base0E, 0x66), -- search.active_match_background
-}
+-- Zed's alpha colors, flattened over base00 (by theme/build.py, or current.lua for None's themes)
+local blend = c.blend
 
 hl(0, "Normal",         { fg = c.base07, bg = c.base00 })
 hl(0, "NormalFloat",    { fg = c.base07, bg = c.base00 })
@@ -74,7 +62,7 @@ hl(0, "Underlined",     { fg = c.base0D, underline = true })
 hl(0, "Error",          { fg = c.base08, bold = true })
 hl(0, "Todo",           { fg = c.base00, bg = c.base08, bold = true })
 
--- The "syntax" block of zed/themes/gruver16.json. Zed and Neovim both resolve a capture
+-- The "syntax" block of zed/themes/<name>.json. Zed and Neovim both resolve a capture
 -- like @keyword.import by its longest listed prefix, so these names carry over as they are.
 local syntax = {
   ["attribute"]               = { fg = c.base0D },
@@ -189,3 +177,4 @@ hl(0, "cppStatement",               { link = 'Keyword' })
 hl(0, "GitSignsAdd",    { bg = c.base00, fg = c.base0B, bold = false })
 hl(0, "GitSignsDelete", { bg = c.base00, fg = c.base08, bold = false })
 hl(0, "GitSignsChange", { bg = c.base00, fg = c.base0E, bold = false })
+end

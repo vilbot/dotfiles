@@ -30,6 +30,7 @@ LINKS=(
   "none                   $HOME/.config/none"
   "herdr/settings.json    $HOME/.config/herdr-app/settings.json"
   "herdr/themes/gruver16.json $HOME/.config/herdr-app/themes/gruver16.json"
+  "herdr/themes/gruvnord.json $HOME/.config/herdr-app/themes/gruvnord.json"
 )
 [[ $OS == mac ]] && LINKS+=("wezterm/.wezterm.lua   $HOME/.wezterm.lua")
 [[ $OS == linux ]] && LINKS+=(

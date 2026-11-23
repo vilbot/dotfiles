@@ -6,7 +6,7 @@ return {
 			local function set_hl()
 				-- faint text over the background (any theme, light too: palettes/current.lua);
 				-- on gruver16 these come out as the old #444444 and #575757
-				local c = require("palettes.current")
+				local c = require("palettes.current")()
 				local function faint(a)
 					local out = "#"
 					for i = 2, 6, 2 do
@@ -158,5 +158,13 @@ return {
 		opts = {
 
 		}
+	},
+	{
+		-- Paint hex codes like #95a99f with their own color, in any file type
+		"brenoprata10/nvim-highlight-colors",
+		event = { "BufReadPre", "BufNewFile" },
+		opts = {
+			render = "background",
+		},
 	},
 }

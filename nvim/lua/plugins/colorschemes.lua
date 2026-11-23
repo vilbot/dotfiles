@@ -1,4 +1,4 @@
--- The active colorscheme is colors/custom.lua, set in init.lua.
+-- The active colorscheme is colors/gruver16.lua, set in init.lua.
 -- These stay installed so they can be switched to with :colorscheme.
 return {
 	{

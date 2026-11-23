@@ -1,10 +1,10 @@
 {
   "$schema": "https://zed.dev/schema/themes/v0.2.0.json",
-  "name": "Gruver16",
+  "name": "{{Name}}",
   "author": "vilgot",
   "themes": [
     {
-      "name": "Gruver16",
+      "name": "{{Name}}",
       "appearance": "dark",
       "style": {
         "accents": ["#{{base08}}ff", "#{{base0B}}ff", "#{{base0E}}ff", "#{{base0D}}ff", "#{{base09}}ff", "#{{base0C}}ff", "#{{base0F}}ff"],

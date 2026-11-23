@@ -9,12 +9,12 @@ Never create per-OS branches or per-OS copies of a config. Put OS differences in
 | `nvim/` | Neovim | `~/.config/nvim` / `%LOCALAPPDATA%\nvim` |
 | `wezterm/.wezterm.lua` | WezTerm (mac, windows) | `~/.wezterm.lua` |
 | `zed/` | Zed | `~/.config/zed/*` / `%APPDATA%\Zed\*` |
-| `herdr/` | Herdr app (terminals + agents; trying it for None): `settings.json` (Herdr writes it too), `themes/gruver16.json` (generated). Herdr rewrites the rest of its home (`AGENTS.md`, shipped layouts/mods) on every start | `~/.config/herdr-app/settings.json`, `~/.config/herdr-app/themes/gruver16.json` (mac + linux) |
+| `herdr/` | Herdr app (terminals + agents; trying it for None): `settings.json` (Herdr writes it too), `themes/<name>.json` (generated). Herdr rewrites the rest of its home (`AGENTS.md`, shipped layouts/mods) on every start | `~/.config/herdr-app/settings.json`, `~/.config/herdr-app/themes/<name>.json` (mac + linux) |
 | `ghostty/` | Ghostty (mac, linux) | `~/.config/ghostty` |
 | `.zshrc` | zsh (mac, linux) | `~/.zshrc` |
 | `powershell/` | pwsh 7 (windows) | `$PROFILE` |
 | `jetbrains/` | JetBrains theme plugin | installed manually from `jetbrains/gruver16/gruver16-plugin.zip` |
-| `theme/` | gruver16 color source + generator | — |
+| `theme/` | color sources (gruver16, gruvnord) + generator | — |
 | `keys/` | mackeys (Hyprland): `remap.toml` = the full desktop's keys and desktop shortcuts (None has no remapper), `daemon/` = the Rust remapper | `mackeys.service` → `~/.config/systemd/user/` (linux); it runs `$MACKEYS_KEYMAP`, which hypr/hyprland.lua sets (None stops it) |
 | `toshy/` | Toshy (linux, now KDE only) customizations: config slices + tray preferences | written into `~/.config/toshy` by `toshy/apply.py` |
 | `hypr/` | Hyprland (linux): `hyprland.lua` + modules (`actions.lua`, `settings.lua` + `json.lua`; `colors.lua` generated), `settings.json` (written by the settings window), `curves.json`, `hidden-apps.txt` | `~/.config/hypr` (linux) |
@@ -36,15 +36,15 @@ The user's messages and task lists for agents. The "None" desktop (`~/none`) and
 - **wezterm:** use the `is_win` / `is_mac` locals at the top. Paths go through `dotfiles` (`~/dotfiles`); never hardcode `/Users/...` or `C:\...`.
 - **zed:** `settings.json` is shared. `keymap.json` is the Mac keymap and the source of truth. Linux links the generated `keymap.linux.json` (`python3 zed/build.py`, `--check`): Zed's own Linux defaults stay, plus `keymap.json`'s bindings with cmd→ctrl (plain Linux keys, as on None); build.py prints where those replace a Linux default (`zed/upstream/`, refresh on Zed upgrades). On Gallery (mackeys) Zed's keys are off until its rework. Windows still uses the hand-written `keymap.windows.json`.
 
-## Colors: gruver16
-`theme/gruver16.yaml` is the single source of truth. To change a color:
-1. Edit `theme/gruver16.yaml` (or `theme/templates/zed.json` for zed-only details like UI alpha values).
-2. Run `python3 theme/build.py`, which regenerates the nvim palette, wezterm, ghostty, zed, herdr and jetbrains themes.
+## Colors: gruver16 family
+Each `theme/<name>.yaml` (`gruver16`, `gruvnord`) is the source of truth for that theme. All share gruver16's slot roles. To change a color:
+1. Edit `theme/<name>.yaml` (or `theme/templates/zed.json`, shared by all themes, for zed-only details like UI alpha values).
+2. Run `python3 theme/build.py`, which regenerates the nvim palette, wezterm, ghostty, zed, herdr and jetbrains themes for every yaml, and from gruver16 alone `hypr/colors.lua` and `quickshell/services/Colors.qml`.
 3. `python3 theme/build.py --check` verifies nothing is out of date.
 
-Do not hand-edit generated files (`nvim/lua/palettes/gruver16.lua`, `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `zed/themes/gruver16.json`, `herdr/themes/gruver16.json`, `jetbrains/gruver16/*`).
-None has its own themes and generator (`~/none/themes/`, `theme.py build` there), with its own copy of gruver16: a change to gruver16 is made in both. nvim's `colors/custom.lua` draws from `palettes/current.lua` (gruver16, or on None the theme in `$NONE_THEME`; `config/autocmds.lua` reloads it on `User NoneTheme`).
-`nvim/colors/custom.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit.
+Do not hand-edit generated files (`nvim/lua/palettes/<name>.lua`, `wezterm/colors/<name>.toml`, `ghostty/themes/<name>`, `zed/themes/<name>.json`, `herdr/themes/<name>.json`, `jetbrains/<name>/*`).
+None has its own themes and generator (`~/none/themes/`, `theme.py build` there), with its own copy of gruver16: a change to gruver16 is made in both. nvim's colorscheme draws from `palettes/current.lua` (the theme's own palette, or on None the theme in `$NONE_THEME`; `config/autocmds.lua` reloads it on `User NoneTheme`).
+`nvim/lua/util/colorscheme.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit. `nvim/colors/<name>.lua` are one-line wrappers.
 
 ## Keys (mackeys, Hyprland)
 - Only the full desktop (Gallery) uses mackeys: `keys/remap.toml`. None has plain Linux keys; `none/user.lua` stops mackeys when None starts. The service runs `$MACKEYS_KEYMAP` (`systemctl --user set-environment`, done by `hypr/hyprland.lua` at start). When keyd runs (None's Caps), mackeys grabs keyd's virtual keyboard (`devices`).

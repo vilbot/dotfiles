@@ -6,7 +6,8 @@ Runs on macOS, Linux and Windows. Needs Neovim 0.12 or newer.
 
 ```
 init.lua                 load order only
-colors/custom.lua        active colorscheme (palettes are in lua/palettes/)
+colors/<name>.lua        colorschemes (gruver16 is active): one-line wrappers around
+                         lua/util/colorscheme.lua (palettes are in lua/palettes/)
 after/lsp/<server>.lua   settings for one language server
 zed-queries/<lang>.scm   Zed's treesitter highlight queries
 lua/config/
@@ -68,7 +69,7 @@ return {
 
 `zed/themes/gruver16.json` is the source of truth. Neovim matches it in three parts:
 
-- `colors/custom.lua` holds a copy of the theme's `syntax` block.
+- `lua/util/colorscheme.lua` holds a copy of the theme's `syntax` block.
 - `zed-queries/<lang>.scm` holds Zed's queries for that language, which decide which capture
   each token gets. They replace nvim-treesitter's queries completely. Languages without a file
   there keep nvim-treesitter's queries.
@@ -76,7 +77,8 @@ return {
 
 To bring in a change from Zed:
 
-- **Theme colors:** update `colors/custom.lua` and `lua/palettes/gruver16.lua`.
+- **Theme colors:** update `lua/util/colorscheme.lua` (slot → group) and `theme/gruver16.yaml`
+  (then `python3 theme/build.py`).
 - **Queries:** copy the new `highlights.scm` over the file in `zed-queries/`. Each file's first
   line says where it came from. `java.scm` also needs `zed/patches/java-highlights.sh` applied,
   which is already done if you copy Zed's installed extension file.

@@ -15,14 +15,16 @@ config.color_scheme = 'gruver16'
 local current_font = wezterm.font 
 {
     family = 'Hack',
+    -- family = 'Iosevka', weight = 600,
     -- family = 'Source Code Pro',
     -- family = 'Droid Sans Mono Slashed',
-    -- family = 'Consolas',
-	-- family = 'Liberation Mono',
-    -- family = 'Fira Code',
+    -- family = 'Consolas', weight = 600,
+    -- family = 'Liberation Mono', weight = 600,
+    -- family = 'SF Mono', weight = 600,
+    -- family = 'Fira Code', weight = 600,
     -- family = 'Ac437 PhoenixEGA 8x14',
-    -- family = 'JetBrains Mono',
-    -- family = 'Courier new'
+    -- family = 'JetBrains Mono', weight = 600,
+    -- family = 'Courier new',
     harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' },
 }
 

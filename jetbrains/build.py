@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Generate the gruver16 JetBrains theme (editor scheme + UI theme plugin) from nvim/lua/palettes/gruver16.lua."""
-import re, zipfile, pathlib
+"""Generate a JetBrains theme (editor scheme + UI theme plugin) from nvim/lua/palettes/<name>.lua.
+
+    python3 jetbrains/build.py [name]   # default: gruver16
+"""
+import re, sys, zipfile, pathlib
 
 here = pathlib.Path(__file__).parent
-lua = (here.parent / "nvim/lua/palettes/gruver16.lua").read_text()
+name = sys.argv[1] if len(sys.argv) > 1 else "gruver16"
+out = here / name
+out.mkdir(exist_ok=True)
+lua = (here.parent / f"nvim/lua/palettes/{name}.lua").read_text()
 c = {k: v.lstrip("#") for k, v in re.findall(r'(base0[0-9A-F])\s*=\s*"(#[0-9a-fA-F]{6})"', lua)}
 b = lambda n: c[f"base{n}"]
 
@@ -88,8 +94,8 @@ colors = {
     "IGNORED_DELETED_LINES_BORDER_COLOR": b("03"),
 }
 
-x = '<scheme name="gruver16" version="142" parent_scheme="Darcula">\n'
-x += '  <metaInfo><property name="ide">idea</property><property name="originalScheme">gruver16</property></metaInfo>\n'
+x = f'<scheme name="{name}" version="142" parent_scheme="Darcula">\n'
+x += f'  <metaInfo><property name="ide">idea</property><property name="originalScheme">{name}</property></metaInfo>\n'
 x += '  <option name="FONT_SCALE" value="1.0" />\n  <colors>\n'
 x += "".join(f'    <option name="{k}" value="{v}" />\n' for k, v in colors.items())
 x += "  </colors>\n  <attributes>\n"
@@ -98,12 +104,12 @@ for n, fg in attrs: x += opt(n, fg=fg)
 x += opt("DEFAULT_KEYWORD", fg=b("0E")) if False else ""
 for n, kw in extra: x += opt(n, **kw)
 x += "  </attributes>\n</scheme>\n"
-(here / "gruver16/gruver16.icls").write_text(x)
+(out / f"{name}.icls").write_text(x)
 
 # UI theme (works in every JetBrains IDE incl. Rider)
 import json
 ui = {
-    "name": "gruver16", "dark": True, "author": "vilgot", "editorScheme": "/gruver16.icls",
+    "name": name, "dark": True, "author": "vilgot", "editorScheme": f"/{name}.icls",
     "colors": {
         "bg": "#" + b("00"), "bg2": "#" + b("01"), "sel": "#" + b("02"), "border": "#" + b("02"),
         "fg": "#" + b("07"), "dim": "#" + b("04"), "accent": "#" + b("0D"), "hi": "#" + b("03"),
@@ -130,25 +136,25 @@ ui = {
         "Panel": {"background": "bg"}, "Menu": {"background": "bg2"}, "MenuBar": {"background": "bg2"},
     },
 }
-(here / "gruver16/gruver16.theme.json").write_text(json.dumps(ui, indent=2) + "\n")
+(out / f"{name}.theme.json").write_text(json.dumps(ui, indent=2) + "\n")
 
-plugin_xml = """<idea-plugin>
-  <id>dev.vilgot.gruver16</id>
-  <name>gruver16</name>
+plugin_xml = f"""<idea-plugin>
+  <id>dev.vilgot.{name}</id>
+  <name>{name}</name>
   <vendor>vilgot</vendor>
-  <description>gruver16 dark theme, ported from the nvim/wezterm config.</description>
+  <description>{name} dark theme, ported from the nvim/wezterm config.</description>
   <depends>com.intellij.modules.platform</depends>
   <extensions defaultExtensionNs="com.intellij">
-    <themeProvider id="dev.vilgot.gruver16" path="/gruver16.theme.json"/>
+    <themeProvider id="dev.vilgot.{name}" path="/{name}.theme.json"/>
   </extensions>
 </idea-plugin>
 """
-jar = here / "gruver16/gruver16.jar"
+jar = out / f"{name}.jar"
 with zipfile.ZipFile(jar, "w", zipfile.ZIP_DEFLATED) as z:
     z.writestr("META-INF/plugin.xml", plugin_xml)
-    z.write(here / "gruver16/gruver16.theme.json", "gruver16.theme.json")
-    z.write(here / "gruver16/gruver16.icls", "gruver16.icls")
-with zipfile.ZipFile(here / "gruver16/gruver16-plugin.zip", "w", zipfile.ZIP_DEFLATED) as z:
-    z.write(jar, "gruver16/lib/gruver16.jar")
+    z.write(out / f"{name}.theme.json", f"{name}.theme.json")
+    z.write(out / f"{name}.icls", f"{name}.icls")
+with zipfile.ZipFile(out / f"{name}-plugin.zip", "w", zipfile.ZIP_DEFLATED) as z:
+    z.write(jar, f"{name}/lib/{name}.jar")
 jar.unlink()
 print("ok")

@@ -6,4 +6,4 @@ require("config.autocmds")
 require("config.keymaps")
 require("config.lsp")
 
-vim.cmd("colorscheme custom")
+vim.cmd("colorscheme gruver16")

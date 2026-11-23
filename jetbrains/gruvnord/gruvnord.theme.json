@@ -1,0 +1,94 @@
+{
+  "name": "gruvnord",
+  "dark": true,
+  "author": "vilgot",
+  "editorScheme": "/gruvnord.icls",
+  "colors": {
+    "bg": "#2e3440",
+    "bg2": "#3b4252",
+    "sel": "#434c5e",
+    "border": "#434c5e",
+    "fg": "#eceff4",
+    "dim": "#616e88",
+    "accent": "#81a1c1",
+    "hi": "#4c566a"
+  },
+  "ui": {
+    "*": {
+      "background": "bg",
+      "foreground": "fg",
+      "infoForeground": "dim",
+      "selectionBackground": "sel",
+      "selectionForeground": "fg",
+      "selectionInactiveBackground": "bg2",
+      "borderColor": "border",
+      "disabledForeground": "dim",
+      "hoverBackground": "bg2",
+      "pressedBackground": "sel",
+      "separatorColor": "border",
+      "focusColor": "accent",
+      "Button": {
+        "startBackground": "bg2",
+        "endBackground": "bg2",
+        "startBorderColor": "border",
+        "endBorderColor": "border",
+        "focusedBorderColor": "accent",
+        "default": {
+          "startBackground": "accent",
+          "endBackground": "accent",
+          "foreground": "bg",
+          "startBorderColor": "accent",
+          "endBorderColor": "accent"
+        }
+      },
+      "Component": {
+        "focusColor": "accent",
+        "borderColor": "border",
+        "hoverIconColor": "fg"
+      },
+      "TextField": {
+        "background": "bg2",
+        "borderColor": "border"
+      },
+      "EditorPane": {
+        "background": "bg"
+      },
+      "EditorTabs": {
+        "underlineColor": "accent",
+        "background": "bg",
+        "hoverBackground": "bg2",
+        "selectedBackground": "bg"
+      },
+      "ToolWindow": {
+        "Header": {
+          "background": "bg2"
+        }
+      },
+      "StatusBar": {
+        "background": "bg2"
+      },
+      "Tree": {
+        "background": "bg",
+        "hash": "border"
+      },
+      "List": {
+        "background": "bg"
+      },
+      "Popup": {
+        "borderColor": "border"
+      },
+      "ScrollBar": {
+        "thumbColor": "hi"
+      }
+    },
+    "Panel": {
+      "background": "bg"
+    },
+    "Menu": {
+      "background": "bg2"
+    },
+    "MenuBar": {
+      "background": "bg2"
+    }
+  }
+}
