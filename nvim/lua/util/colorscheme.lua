@@ -1,14 +1,14 @@
 -- Highlight groups for every gruver16-family theme. Each colors/<name>.lua calls this with
--- its palette name, so slot -> group mappings live here once.
-return function(colors_name, palette)
+-- its name (= its palette in lua/palettes/), so slot -> group mappings live here once.
+return function(name)
 vim.cmd("hi clear")
 if vim.fn.exists("syntax_on") then
   vim.cmd("syntax reset")
 end
-vim.g.colors_name = colors_name
+vim.g.colors_name = name
 
-package.loaded["palettes." .. palette] = nil -- pick up a fresh build on :colorscheme
-local c = require("palettes." .. palette)
+package.loaded["palettes." .. name] = nil -- pick up a fresh build on :colorscheme
+local c = require("palettes." .. name)
 local hl = vim.api.nvim_set_hl
 
 -- Zed's alpha colors, flattened over base00 by theme/build.py

@@ -30,6 +30,6 @@ Each `theme/<name>.yaml` (`gruver16`, `gruvnord`) is the source of truth for tha
 3. `python3 theme/build.py --check` verifies nothing is out of date.
 
 Do not hand-edit generated files (`nvim/lua/palettes/<name>.lua`, `wezterm/colors/<name>.toml`, `ghostty/themes/<name>`, `zed/themes/<name>.json`, `jetbrains/<name>/*`).
-`nvim/lua/util/colorscheme.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit. `nvim/colors/<name>.lua` are one-line wrappers (`custom` is gruver16).
+`nvim/lua/util/colorscheme.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit. `nvim/colors/<name>.lua` are one-line wrappers.
 
 Terminal quirk: the ANSI "yellow" slot is sage (`base0A`) and ANSI "magenta" is the real yellow (`base0E`). Shells color commands with **magenta** so they show yellow (zsh `fg=magenta`, pwsh `` `e[35m ``).

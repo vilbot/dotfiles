@@ -1,1 +1,1 @@
-require("util.colorscheme")("gruvnord", "gruvnord")
+require("util.colorscheme")("gruvnord")
