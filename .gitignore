@@ -5,5 +5,3 @@ __pycache__/
 ghostty/session.ghostty
 prompts/
 keys/daemon/target/
-# a leftover link to None's own repo (~/none), for sessions started before the split
-/tty

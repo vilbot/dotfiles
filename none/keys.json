@@ -1,1 +1,6 @@
-{}
+{
+  "keys": {
+    "desktop.move.{n}": ["SUPER + SHIFT + {n}"],
+    "screenshot.region": ["SUPER + CTRL + SHIFT + 4"]
+  }
+}
