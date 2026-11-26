@@ -69,9 +69,13 @@ if [[ -f $zsh_plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ]]; th
     ZSH_HIGHLIGHT_STYLES[unknown-token]='fg=white'
 fi
 unset zsh_plugins
-export ANDROID_HOME=/home/vilgot/Android/Sdk
-export PATH=/home/vilgot/.local/bin:/home/vilgot/.local/share/bob/nvim-bin:/home/vilgot/.local/bin:/home/vilgot/.local/share/bob/nvim-bin:/home/vilgot/.local/bin:/home/vilgot/.local/share/bob/nvim-bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl:/emulator:/platform-tools
 
+# Android SDK (wherever its installer put it on this OS)
+for d in "$HOME/Android/Sdk" "$HOME/Library/Android/sdk"; do
+    [[ -d $d ]] && export ANDROID_HOME=$d && break
+done
+[[ -n $ANDROID_HOME ]] && path+=("$ANDROID_HOME/emulator" "$ANDROID_HOME/platform-tools")
+unset d
 
-# Added by Antigravity CLI installer
-export PATH="/home/vilgot/.local/bin:$PATH"
+# Never list the same directory twice in PATH.
+typeset -U path

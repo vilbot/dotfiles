@@ -1,0 +1,36 @@
+We're working on variations of my gruver16 colorscheme today. I'll look at colors and tell you what to
+change; you do the edits. This Mac's checkout of ~/dotfiles is old on purpose: my Linux
+machine has 45 unpushed commits, so keep changes narrow so they merge cleanly later.
+
+Setup:
+- Run `git pull --ff-only` in ~/dotfiles first. If it isn't a fast-forward, stop and tell me.
+
+How to change a color:
+- Edit `theme/gruver16.yaml` (the single source of truth), or `theme/templates/zed.json`
+  for Zed-only details like UI alpha values.
+- Run `python3 theme/build.py`. It regenerates the nvim palette, WezTerm, Ghostty, Zed and
+  JetBrains themes. `python3 theme/build.py --check` verifies nothing is stale.
+- Never hand-edit the generated files: `nvim/lua/palettes/gruver16.lua`,
+  `wezterm/colors/gruver16.toml`, `ghostty/themes/gruver16`, `zed/themes/gruver16.json`,
+  `jetbrains/gruver16/*`.
+- After each build, tell me what I need to reload to see it (e.g. Ghostty reload config,
+  `:colorscheme custom` in nvim).
+
+Which syntax group uses which color:
+- `nvim/colors/custom.lua` and `jetbrains/build.py` map palette slots to groups by hand;
+  those are fine to edit.
+- Exception: do NOT touch the top of `nvim/colors/custom.lua` (the `require("palettes.gruver16")`
+  line and the `blend = { ... }` table). That part was rewritten on Linux and will conflict.
+  If a color change makes those blend values look wrong, tell me instead; on Linux they're
+  now computed from the palette, so it fixes itself after the merge.
+
+Don't touch anything else in the repo: no `.zshrc`, `ghostty/config.ghostty`, `install.sh`,
+`AGENTS.md`, zed settings/keymaps, or nvim config outside the files above. No new files.
+
+Terminal quirk: the ANSI "yellow" slot is sage (base0A) and ANSI "magenta" is the real
+yellow (base0E), on purpose.
+
+Git: commit on main in small commits as we go, with plain messages. Don't push until I say
+so, and never force-push.
+
+also, is there a way for ghostty to render the color in gruver16.yaml, so if it says #95a99f that color is rendered as the background of that text? it works in html files
