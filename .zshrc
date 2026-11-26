@@ -3,6 +3,10 @@ export PATH="$HOME/.local/bin:$HOME/.local/share/bob/nvim-bin:$PATH"
 export EDITOR=nvim
 export SUDO_EDITOR="$HOME/.local/share/bob/nvim-bin/nvim"
 
+pdf() {
+  nohup zathura "$@" >/dev/null 2>&1 &!
+}
+
 [[ $OSTYPE == darwin* ]] && is_mac=1 || is_mac=0
 
 HISTFILE=~/.zsh_history

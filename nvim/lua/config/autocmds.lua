@@ -32,10 +32,9 @@ vim.api.nvim_create_autocmd("User", {
 	nested = true, -- so ColorScheme fires (plugins/ui.lua sets its indent colors there)
 	desc = "the None desktop's theme changed: draw with the new palette (palettes/current.lua)",
 	callback = function()
-		-- only the gruver16 family (colors/<name>.lua with a palette) draws with None's theme
-		local name = vim.g.colors_name
-		if name and pcall(require, "palettes." .. name) then
-			vim.cmd.colorscheme(name)
+		-- only "none" draws with None's theme; a colorscheme picked by hand stays
+		if vim.g.colors_name == "none" then
+			vim.cmd.colorscheme("none")
 		end
 	end,
 })

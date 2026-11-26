@@ -1,6 +1,7 @@
 local platform = require("config.platform")
 
 local git_bash = "C:/Program Files/Git/usr/bin/bash.exe"
+local none_agent_dir = vim.fn.expand("~/.local/share/none/agent")
 
 return {
 	{
@@ -21,6 +22,17 @@ return {
 			terminal = {
 				provider = "native",
 			},
+		},
+	},
+	{
+		dir = none_agent_dir,
+		name = "none-agent",
+		main = "none.agent",
+		lazy = false,
+		cond = vim.fn.isdirectory(none_agent_dir) == 1,
+		opts = {
+			reload_ms = 500,
+			keymaps = false, -- configured in lua/config/keymaps.lua
 		},
 	},
 }

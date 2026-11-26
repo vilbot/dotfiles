@@ -1,8 +1,10 @@
--- The palette util/colorscheme.lua draws with: `name`'s own (palettes/<name>.lua, generated), or
--- on the "None" desktop the theme picked there. None sets $NONE_THEME to its theme file (JSON
--- with base00..base0F as "#rrggbb", and "variant" = "dark" | "light") and, when the theme
--- changes, fires `User NoneTheme` in every nvim: config/autocmds.lua loads the colorscheme again
--- (which reads this again).
+-- The palette util/colorscheme.lua draws with: `name`'s own (palettes/<name>.lua, generated).
+-- The colorscheme "none" (the default on the "None" desktop, init.lua) draws with the theme
+-- picked there instead, so nvim follows None's theme until another colorscheme is chosen.
+-- None sets $NONE_THEME to its theme file (JSON with base00..base0F as "#rrggbb", and
+-- "variant" = "dark" | "light") and, when the theme changes, fires `User NoneTheme` in every
+-- nvim: config/autocmds.lua loads "none" again (which reads this again). Without a None theme,
+-- "none" is gruver16.
 -- Usage: require("palettes.current")(name); without a name, the running colorscheme's.
 
 -- `color` at `alpha` (0-255) over the background, as Zed draws its see-through colors
@@ -16,8 +18,9 @@ local function over(c, color, alpha)
 end
 
 return function(name)
+  name = name or vim.g.colors_name or "gruver16"
   local file = vim.env.NONE_THEME
-  if file and file ~= "" then
+  if name == "none" and file and file ~= "" then
     local ok, t = pcall(function()
       return vim.json.decode(table.concat(vim.fn.readfile(file), "\n"))
     end)
@@ -32,7 +35,6 @@ return function(name)
       return t
     end
   end
-  name = name or vim.g.colors_name or "gruver16"
   local mod = "palettes." .. name
   if not pcall(require, mod) then mod = "palettes.gruver16" end
   package.loaded[mod] = nil -- pick up a fresh build on :colorscheme

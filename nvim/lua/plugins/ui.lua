@@ -23,6 +23,11 @@ return {
 			vim.api.nvim_create_autocmd("ColorScheme", { callback = set_hl })
 		end,
 		opts = {
+			input = { enabled = true },
+			picker = {
+				enabled = true,
+				ui_select = true,
+			},
 			indent = {
 				animate = { enabled = false },
 				scope = {
@@ -154,10 +159,12 @@ return {
 	},
 	{
 		"nvim-lualine/lualine.nvim",
-		dependencies = { 'nvim-tree/nvim-web-devicons' },
+		dependencies = { "nvim-tree/nvim-web-devicons", "stevearc/overseer.nvim" },
 		opts = {
-
-		}
+			sections = {
+				lualine_x = { "overseer", "encoding", "fileformat", "filetype" },
+			},
+		},
 	},
 	{
 		-- Paint hex codes like #95a99f with their own color, in any file type

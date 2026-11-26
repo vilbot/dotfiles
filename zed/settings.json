@@ -72,6 +72,12 @@
     "include_warnings": true
   },
   "agent_servers": {
+    "antigravity-acp": {
+      "default_config_options": {
+        "model": "gemini-4-neon"
+      },
+      "type": "registry"
+    },
     "codex-acp": {
       "default_config_options": {
         "reasoning_effort": "medium"

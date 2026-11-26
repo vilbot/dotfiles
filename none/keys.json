@@ -1,6 +1,8 @@
 {
   "keys": {
     "desktop.move.{n}": ["SUPER + SHIFT + {n}"],
-    "screenshot.region": ["SUPER + CTRL + SHIFT + 4"]
+    "launcher.window": [],
+    "launcher.next": ["Down", "CTRL + N", "CTRL + J"],
+    "launcher.prev": ["Up", "SHIFT + Tab", "CTRL + K", "CTRL + P"]
   }
 }

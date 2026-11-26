@@ -43,7 +43,7 @@ Each `theme/<name>.yaml` (`gruver16`, `gruvnord`) is the source of truth for tha
 3. `python3 theme/build.py --check` verifies nothing is out of date.
 
 Do not hand-edit generated files (`nvim/lua/palettes/<name>.lua`, `wezterm/colors/<name>.toml`, `ghostty/themes/<name>`, `zed/themes/<name>.json`, `herdr/themes/<name>.json`, `jetbrains/<name>/*`).
-None has its own themes and generator (`~/none/themes/`, `theme.py build` there), with its own copy of gruver16: a change to gruver16 is made in both. nvim's colorscheme draws from `palettes/current.lua` (the theme's own palette, or on None the theme in `$NONE_THEME`; `config/autocmds.lua` reloads it on `User NoneTheme`).
+None has its own themes and generator (`~/none/themes/`, `theme.py build` there), with its own copy of gruver16: a change to gruver16 is made in both. My own themes for None are links in `none/themes/` to `theme/<name>.yaml` (gruvnord). nvim's colorschemes draw from `palettes/current.lua`: each its own palette, except `none`, the default on None (`init.lua`), which draws with the theme in `$NONE_THEME` (`config/autocmds.lua` reloads it on `User NoneTheme`).
 `nvim/lua/util/colorscheme.lua` and `jetbrains/build.py` map palette slots to syntax groups by hand; those are fine to edit. `nvim/colors/<name>.lua` are one-line wrappers.
 
 ## Keys (mackeys, Hyprland)

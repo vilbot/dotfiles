@@ -24,3 +24,10 @@ hl.on("hyprland.start", function()
     -- no key remapper on None: Gallery's mackeys and KDE's Toshy are stopped
     hl.exec_cmd("systemctl --user stop mackeys.service toshy-session-monitor.service toshy-config.service")
 end)
+
+hl.window_rule({
+    name = "float-apps",
+    match = { class = "^(imv|numbr)$" },
+    float = true,
+    center = true,
+})

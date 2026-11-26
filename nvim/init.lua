@@ -6,4 +6,5 @@ require("config.autocmds")
 require("config.keymaps")
 require("config.lsp")
 
-vim.cmd("colorscheme gruver16")
+-- On the "None" desktop: its theme (colors/none.lua). Elsewhere gruver16.
+vim.cmd("colorscheme " .. ((vim.env.NONE_THEME or "") ~= "" and "none" or "gruver16"))
